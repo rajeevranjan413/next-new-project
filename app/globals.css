@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.flow-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(5, 0, 255, 0.12);
+  background: rgba(5, 0, 255, 0.05);
+  color: #0500ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.work-section {
+  background: radial-gradient(circle at 14% 8%, rgba(5, 0, 255, 0.06), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(5, 0, 255, 0.04), transparent 22%),
+    #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.work-action-card {
+ border: 1px solid rgba(5, 0, 255, .08);
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 12px 28px rgba(16, 24, 40, .06);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* .work-section {
+  background: radial-gradient(circle at 14% 8%, rgba(5, 0, 255, 0.06), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(5, 0, 255, 0.04), transparent 22%),
+    #ffffff;
+} */

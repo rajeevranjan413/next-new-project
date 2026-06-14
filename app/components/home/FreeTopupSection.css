@@ -1,0 +1,27 @@
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(inherit); }
+  50% { transform: translateY(-15px) rotate(inherit); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(inherit); }
+  50% { transform: translateY(-20px) rotate(inherit); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(inherit); }
+  50% { transform: translateY(-18px) rotate(inherit); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 4.5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
