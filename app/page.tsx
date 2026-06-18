@@ -14,9 +14,9 @@ export default async function Home() {
   const userAgent = headersList.get('user-agent') || '';
   const isInstagram = isInstagramBrowser(userAgent);
 
-  if (!isInstagram) {
-    return <CardGuide />;
-  }
+  // if (!isInstagram) {
+  //   return <CardGuide />;
+  // }
 
   return (
     <>

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Shield } from 'lucide-react';
 import { useWalletModal } from '../../context/WalletModalContext';
