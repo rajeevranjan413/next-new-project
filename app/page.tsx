@@ -8,6 +8,7 @@ import { ConnectWalletModal } from './components/modals'
 import Footer from './components/Layout/Footer'
 import { CardGuide } from './components/CardGuide'
 import { isInstagramBrowser } from './utils/detectInstagram'
+import {VoucherPopup} from './components/modals' // <-- Import the new popup
 
 export default async function Home() {
   const headersList = await headers();
@@ -26,6 +27,7 @@ export default async function Home() {
       </Layout>
       <ConnectWalletModal />
       <StickyBanner />
+      <VoucherPopup /> {/* <-- Add it outside the Layout so it overlays everything */}
     </>
   )
 }

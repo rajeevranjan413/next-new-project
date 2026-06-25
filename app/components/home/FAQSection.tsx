@@ -6,28 +6,28 @@ const FAQ = () => {
 
   const questions = [
     {
-      question: "What does issuance without KYC mean?",
-      answer: "Issuance without KYC means you can get your crypto card without providing personal identification documents, ensuring complete privacy and anonymity for your transactions."
+      question: "What does a no-KYC setup entail?",
+      answer: "Skipping the KYC process implies you can acquire your digital card without uploading any ID, guaranteeing full confidentiality and untraceable spending."
     },
     {
-      question: "Which wallets and networks are supported?",
-      answer: "You can use any non-custodial wallet. Currently, we support TRON (TRC-20) and Ethereum (ERC-20) networks."
+      question: "What blockchains and wallets do you allow?",
+      answer: "Any decentralized wallet is compatible. At present, our system accommodates the Ethereum (ERC-20) and TRON (TRC-20) ecosystems."
     },
     {
-      question: "Do I need to top up the card balance?",
-      answer: "No separate top-up is needed. The card pulls funds directly from your connected Trust Wallet as you spend."
+      question: "Is it required to manually load funds?",
+      answer: "There is no requirement to preload money. Your active Trust Wallet balance covers purchases automatically in real-time."
     },
     {
-      question: "How long does card issuance take?",
-      answer: "Card issuance is near-instant. Once you connect your wallet and approve the transaction, your virtual card is ready to use in just 2 minutes."
+      question: "What is the wait time for a new card?",
+      answer: "Creation is basically instantaneous. After linking your account and confirming the prompt, your new virtual card activates within two minutes."
     },
     {
-      question: "Are there any monthly fees?",
-      answer: "We offer transparent pricing with no hidden monthly maintenance fees. You only pay for issuance and standard transaction processing."
+      question: "Will I be charged recurring monthly costs?",
+      answer: "Our fee structure is completely clear with zero surprise monthly charges. You are only billed for the initial creation and standard network operations."
     },
     {
-      question: "Is it safe to connect my wallet?",
-      answer: "Yes. Connection is handled through secure protocols. We never have access to your private keys; we only request permission to execute transactions you authorize."
+      question: "Is linking my crypto wallet secure?",
+      answer: "Absolutely. All links are established via encrypted channels. We never hold your seed phrases; we strictly ask for approval to process the specific transfers you initiate."
     }
   ];
 
@@ -35,8 +35,8 @@ const FAQ = () => {
     <section className="max-w-7xl mx-auto px-8 py-24 font-sans">
       {/* Header */}
       <div className="text-center mb-12 space-y-4">
-        <h2 className="text-5xl font-bold text-[#1a1c3d]">FAQ</h2>
-        <p className="text-slate-500">Find answers to some of the most common questions</p>
+        <h2 className="text-5xl font-bold text-[#1a1c3d]">Frequently Asked Questions</h2>
+        <p className="text-slate-500">Explore solutions to our most widely asked inquiries</p>
       </div>
 
       {/* Accordion List */}

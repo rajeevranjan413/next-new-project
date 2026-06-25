@@ -1,47 +1,46 @@
-
 const ReceivedPrivileges = () => {
   const privileges = [
     {
-      title: "Instant start, no registration",
-      description: "No need to register or create additional accounts. Start using your card immediately after connection.",
-      icon: "assets/privileges.svg", // Replace with your local image path
+      title: "Immediate setup, zero sign-ups",
+      description: "Skip the tedious registration process. Begin making purchases the second you authorize the connection.",
+      icon: "assets/privileges.png", // Replace with your local image path
     },
     {
-      title: "Direct connection to Trust Wallet",
-      description: "Crypto card is directly connected to your Trust Wallet. Payment goes directly from your wallet.",
-      icon: "assets/privileges-1.svg",
+      title: "Seamless Trust Wallet integration",
+      description: "Your digital card bridges flawlessly with your existing setup, ensuring all transactions pull straight from your primary balance.",
+      icon: "assets/privileges-1.png",
     },
     {
-      title: "Payment directly from Trust Wallet",
-      description: "Payment goes directly from your Trust Wallet. Use your crypto funds instantly without delays.",
-      icon: "assets/privileges-2.svg",
+      title: "Direct wallet deductions",
+      description: "Enjoy immediate purchasing power. Your cryptocurrency is utilized for payments right away, completely eliminating wait times or holding periods.",
+      icon: "assets/privileges-2.png",
     },
     {
-      title: "KYC-free card — complete anonymity",
-      description: "Crypto card from Trust Wallet without KYC, directly linked to your wallet.",
-      icon: "assets/privileges-3.svg",
+      title: "Total privacy with no KYC",
+      description: "Maintain complete anonymity. Enjoy a virtual card that requires absolutely no identity verification, tethered purely to your decentralized wallet.",
+      icon: "assets/privileges-3.png",
     },
     {
-      title: "Funds remain in your wallet",
-      description: "Money remains in your Trust Wallet until spent. It cannot be blocked or restricted.",
-      icon: "assets/privileges-4.svg",
+      title: "Assets stay under your control",
+      description: "Your cryptocurrency never leaves your account until the exact moment of purchase, shielding your capital from external freezes or holds.",
+      icon: "assets/privileges-4.png",
     },
     {
-      title: "Verified statistics and metrics",
-      description: "Number of users, total transaction volume, daily transaction count.",
-      icon: "assets/privileges-5.svg",
+      title: "Transparent data and insights",
+      description: "Access accurate records detailing our active user base, overall trading volume, and daily processing numbers.",
+      icon: "assets/privileges-5.png",
     },
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-8 py-20 font-sans">
+    <section className="max-w-7xl mx-auto px-8 pb-20 font-sans">
       {/* Header Section */}
       <div className="text-center mb-16 space-y-4">
         <h2 className="text-4xl md:text-5xl font-bold text-[#1a1c3d]">
-          Received privileges
+          Exclusive Benefits
         </h2>
         <p className="text-slate-500 text-sm md:text-base">
-          Benefits of using Crypto Card from Trust Wallet
+          Why choose the Trust Wallet virtual card
         </p>
       </div>
 

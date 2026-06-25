@@ -20,7 +20,7 @@ const Footer = () => {
 
         {/* Center: Copyright */}
         <div className="text-slate-400 text-sm font-medium">
-          ©2026 TrustWallet All Rights Reserved
+          ©2026 TrustCard All Rights Reserved
         </div>
 
         {/* Right: CTA Button */}

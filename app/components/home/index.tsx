@@ -13,6 +13,8 @@ import JoinUsSection from './JoinUsSection';
 import ReceivedPrivileges from './ReceivedPrivileges';
 import SpendControlSection from './SpendControlSection';
 import TrustAndReferral from './TrustAndReferralSection';
+import TestimonialSection from './TestimonialSection';
+import ContactSection from './ContactSection';
 
 
 
@@ -24,11 +26,13 @@ const HomePage = () => {
      <HeroSection />
      <HowItWorks />
      <TrustAndReferral/>
+     <TestimonialSection/>
      <ImpactSection/>
      <CardToday/>
      <FreeTopUp/>
      <SpendControlSection/>
      <ReceivedPrivileges/>
+     <ContactSection/>
      <FAQSection/>
      <JoinUsSection/>
     </>

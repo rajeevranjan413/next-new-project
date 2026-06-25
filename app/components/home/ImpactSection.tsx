@@ -12,20 +12,20 @@ const ImpactSection = () => {
         {/* Left: Content Layer (Z-index high to overlap the image) */}
         <div className="relative z-20 w-full md:w-1/2 space-y-6">
           <h2 className="text-5xl md:text-7xl font-bold text-white leading-tight tracking-tight">
-            Crypto Card from <br />
+            Digital Card by <br />
             <span className="text-[#36ef9b]">Trust Wallet</span> <br />
-            for daily life
+            for everyday use
           </h2>
           
           <p className="text-white/80 text-lg max-w-md leading-relaxed">
-            Payment goes directly from your Trust Wallet. Use your 
-            crypto card at millions of online and offline stores.
+            Funds are deducted straight from your Trust Wallet balance. Spend with your 
+            virtual card at countless digital and physical retailers.
           </p>
 
           <button 
             onClick={openModal}
             className="flex items-center gap-2 px-8 py-3 border border-white/30 bg-white/10 text-white font-semibold rounded-full hover:bg-white hover:text-blue-700 transition-all group">
-            Get Your Card
+            Claim Your Card
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -34,8 +34,8 @@ const ImpactSection = () => {
         <div className="absolute top-1/2 right-0 -translate-y-1/2 w-full md:w-[70%] h-full flex justify-end items-center z-10 pointer-events-none">
           {/* Replace 'image_0ccb3d.jpg' with your actual local file name */}
           <img 
-            src="/assets/trust.svg" 
-            alt="3D Trust Letters" 
+            src="/assets/trust.png" 
+            alt="Trust Wallet 3D Graphic" 
             className="w-full h-auto object-contain scale-110 md:scale-125"
           />
         </div>
