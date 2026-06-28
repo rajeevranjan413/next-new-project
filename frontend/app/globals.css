@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+.flow-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(5, 0, 255, 0.12);
+  background: rgba(5, 0, 255, 0.05);
+  color: #0500ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.work-section {
+  background: radial-gradient(circle at 14% 8%, rgba(5, 0, 255, 0.06), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(5, 0, 255, 0.04), transparent 22%),
+    #ffffff;
+}
+
+.work-action-card {
+ border: 1px solid rgba(5, 0, 255, .08);
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 12px 28px rgba(16, 24, 40, .06);
+}
+
+/* .work-section {
+  background: radial-gradient(circle at 14% 8%, rgba(5, 0, 255, 0.06), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(5, 0, 255, 0.04), transparent 22%),
+    #ffffff;
+} */

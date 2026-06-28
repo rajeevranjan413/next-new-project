@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>CryptoCard Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0B0E11;--s1:#1E2329;--s2:#2B3139;--s3:#363C45;
+  --bnb:#F0B90B;--bnb2:#d4a50a;--bnbg:rgba(240,185,11,.1);--bnbd:rgba(240,185,11,.25);
+  --green:#0ECB81;--gbg:rgba(14,203,129,.12);--gbd:rgba(14,203,129,.28);
+  --red:#F6465D;--rbg:rgba(246,70,93,.12);
+  --blue:#3b82f6;--bluebg:rgba(59,130,246,.12);
+  --text:#EAECEF;--t2:#B7BDC6;--t3:#848E9C;
+  --bd:#2B3139;--bd2:#363C45;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;max-width:430px;margin:0 auto;position:relative}
+button,input,select,textarea{font-family:'Inter',sans-serif}
+
+/* ── STATUS BAR ── */
+.sbar{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;background:var(--bg)}
+.sbar-time{font-size:14px;font-weight:700}
+.sbar-icons{display:flex;align-items:center;gap:5px;font-size:12px}
+
+/* ── TOP HEADER ── */
+.top-hdr{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;border-bottom:1px solid var(--bd)}
+.th-logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:var(--bnb);letter-spacing:-.3px}
+.th-right{display:flex;gap:8px}
+.th-btn{width:34px;height:34px;border-radius:50%;background:var(--s1);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;position:relative}
+.th-btn .bdot{position:absolute;top:-1px;right:-1px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid var(--bg)}
+
+/* ── SCREENS ── */
+.screens{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;opacity:0;pointer-events:none;transform:translateX(20px);transition:all .28s cubic-bezier(.4,0,.2,1);padding-bottom:76px}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.screen.prev{transform:translateX(-20px);opacity:0;pointer-events:none}
+
+/* ── BOTTOM NAV ── */
+.bnav{height:68px;background:var(--s1);border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:space-around;padding:0 6px;flex-shrink:0}
+.bn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;cursor:pointer;border-radius:12px;transition:all .15s;position:relative;min-width:52px}
+.bn .bi{font-size:20px;transition:transform .2s}
+.bn .bl{font-size:10px;font-weight:500;color:var(--t3);transition:color .15s}
+.bn.on .bl{color:var(--bnb)}
+.bn.on .bi{transform:scale(1.1)}
+.bn-center{width:54px;height:54px;border-radius:50%;background:var(--bnb);display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-18px;box-shadow:0 4px 18px rgba(240,185,11,.4);cursor:pointer;flex-shrink:0;transition:transform .15s}
+.bn-center:active{transform:scale(.93)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--gbd);border-radius:20px;padding:9px 18px;font-size:12.5px;color:var(--green);font-weight:600;z-index:999;box-shadow:0 4px 18px rgba(0,0,0,.5);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* ── BOTTOM SHEETS ── */
+.sheet-bg{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.72);display:none;align-items:flex-end;max-width:430px;margin:0 auto;backdrop-filter:blur(4px)}
+.sheet-bg.open{display:flex}
+.sheet{background:var(--s1);border-radius:22px 22px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:18px 16px 30px;scrollbar-width:none;animation:shUp .3s cubic-bezier(.22,1,.36,1)}
+.sheet::-webkit-scrollbar{display:none}
+@keyframes shUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sh-handle{width:38px;height:4px;background:var(--bd2);border-radius:2px;margin:0 auto 16px}
+.sh-title{font-size:17px;font-weight:800;margin-bottom:4px}
+.sh-sub{font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.55}
+
+/* ── HOME SCREEN ── */
+/* balance hero */
+.bal-hero{margin:12px 14px 14px;background:linear-gradient(135deg,#182030,#1e2940,#172030);border-radius:20px;padding:20px;position:relative;overflow:hidden}
+.bal-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(240,185,11,.16),transparent 65%)}
+.bal-hero::after{content:'';position:absolute;bottom:-30px;left:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(14,203,129,.07),transparent 65%)}
+.bh-eyebrow{font-size:11.5px;color:var(--t2);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.bh-val{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+/* 3 balance columns */
+.bh-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.bh-col{background:rgba(255,255,255,.05);border-radius:10px;padding:10px 8px}
+.bc-dot{width:6px;height:6px;border-radius:50%;margin-bottom:5px}
+.bc-lbl{font-size:10px;color:var(--t3);margin-bottom:3px}
+.bc-val{font-size:14px;font-weight:700;line-height:1}
+.bc-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;margin-top:3px;display:inline-block}
+
+/* quick actions row */
+.qa-row{display:flex;gap:0;padding:0 14px;margin-bottom:16px;justify-content:space-between}
+.qa{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex:1}
+.qa-ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .15s}
+.qa:active .qa-ic{transform:scale(.92)}
+.qa-lbl{font-size:10.5px;font-weight:500;color:var(--t2);text-align:center}
+
+/* ticker strip */
+.ticker{background:var(--s1);margin:0 14px 14px;border-radius:10px;height:30px;overflow:hidden;display:flex;align-items:center}
+.tk-inner{display:flex;gap:24px;animation:tkM 22s linear infinite;width:max-content;font-size:11px}
+@keyframes tkM{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tk{display:flex;align-items:center;gap:4px;white-space:nowrap;color:var(--t2)}
+.tk strong{color:var(--text);font-weight:600}
+.up{color:var(--green)}.dn{color:var(--red)}
+
+/* animated card showcase */
+.card-showcase{margin:0 14px 14px}
+.cs-lbl{font-size:11.5px;font-weight:600;color:var(--t3);margin-bottom:10px;text-align:center;display:flex;align-items:center;gap:8px}
+.cs-lbl::before,.cs-lbl::after{content:'';flex:1;height:1px;background:var(--bd2)}
+.card-3d{aspect-ratio:1.586;background:linear-gradient(135deg,#182035,#222d3d,#18202e);border-radius:16px;padding:20px;position:relative;overflow:hidden;animation:cfloat 4s ease-in-out infinite;cursor:pointer;border:1px solid rgba(255,255,255,.06);transition:background .5s}
+@keyframes cfloat{0%,100%{transform:translateY(0) rotate(-.5deg)}50%{transform:translateY(-7px) rotate(.5deg)}}
+.card-3d::before{content:'';position:absolute;top:-25px;right:-25px;width:110px;height:110px;background:radial-gradient(circle,rgba(240,185,11,.18),transparent 65%)}
+.card-3d::after{content:'VISA';position:absolute;bottom:16px;right:16px;font-size:18px;font-weight:800;color:rgba(255,255,255,.78);font-style:italic}
+.c3-chip{width:32px;height:22px;background:linear-gradient(135deg,#c9a20a,#8a6e08);border-radius:3px;margin-bottom:14px}
+.c3-num{font-size:13px;letter-spacing:2.5px;color:rgba(255,255,255,.6);margin-bottom:12px;font-family:monospace;transition:all .4s}
+.c3-holder{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.8px;text-transform:uppercase;transition:all .4s}
+.c3-logo{position:absolute;top:16px;right:16px;font-size:13px;font-weight:800;color:var(--bnb)}
+.c3-free{position:absolute;top:16px;left:16px;background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px}
+/* step dots */
+.step-dots{display:flex;justify-content:center;gap:6px;margin:10px 0 6px}
+.sd{width:6px;height:6px;border-radius:3px;background:var(--bd2);transition:all .3s}
+.sd.on{width:20px;background:var(--bnb)}
+.step-caption{text-align:center;font-size:12px;color:var(--t2);min-height:16px;transition:all .3s}
+
+/* section header */
+.sec-h{display:flex;align-items:center;justify-content:space-between;padding:0 14px;margin-bottom:10px}
+.sec-ht{font-size:15px;font-weight:700}
+.sec-hl{font-size:12px;color:var(--bnb);cursor:pointer}
+
+/* benefits horizontal scroll */
+.ben-scroll{display:flex;gap:10px;padding:0 14px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.ben-scroll::-webkit-scrollbar{display:none}
+.ben-card{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px;min-width:130px;flex-shrink:0}
+.bc-icon{font-size:22px;margin-bottom:6px}
+.bc-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.bc-desc{font-size:10.5px;color:var(--t3);line-height:1.45}
+
+/* stats row */
+.stats-row{display:flex;gap:8px;padding:0 14px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.stats-row::-webkit-scrollbar{display:none}
+.stat-p{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;flex-shrink:0;text-align:center;min-width:78px}
+.sp-n{font-size:17px;font-weight:700;color:var(--bnb)}
+.sp-l{font-size:10px;color:var(--t3);margin-top:2px}
+
+/* ── CARD SCREEN ── */
+.card-screen{padding:10px 14px}
+.vc-card{aspect-ratio:1.586;background:linear-gradient(135deg,#182035,#222d3d,#18202e);border-radius:16px;padding:20px;position:relative;overflow:hidden;margin-bottom:14px;border:1px solid rgba(255,255,255,.06)}
+.vc-card::before{content:'';position:absolute;top:-25px;right:-25px;width:120px;height:120px;background:radial-gradient(circle,rgba(240,185,11,.18),transparent 65%)}
+.vc-card::after{content:'VISA';position:absolute;bottom:16px;right:16px;font-size:18px;font-weight:800;color:rgba(255,255,255,.78);font-style:italic}
+.vc-chip{width:32px;height:22px;background:linear-gradient(135deg,#c9a20a,#8a6e08);border-radius:3px;margin-bottom:14px}
+.vc-num{font-size:13px;letter-spacing:2.5px;color:rgba(255,255,255,.65);margin-bottom:12px;font-family:monospace}
+.vc-foot{display:flex;justify-content:space-between;align-items:flex-end}
+.vc-holder{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.8px;text-transform:uppercase}
+.vc-logo{font-size:13px;font-weight:800;color:var(--bnb)}
+.vc-free{position:absolute;top:14px;left:14px;background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px}
+.vc-active{position:absolute;top:14px;right:14px;background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px}
+
+/* card detail tiles */
+.cd-tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.cd-t{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 11px}
+.cd-l{font-size:10px;color:var(--t3);margin-bottom:3px}
+.cd-v{font-size:13.5px;font-weight:700;font-family:monospace;display:flex;align-items:center;gap:4px;cursor:pointer}
+.blur-cvv{filter:blur(5px);transition:.2s}.blur-cvv:hover{filter:blur(0)}
+.copy-i{font-size:10px;color:var(--t3)}
+
+/* card action btns */
+.ca-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ca-btn{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px 12px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:border-color .15s}
+.ca-btn:hover{border-color:var(--bnb)}
+.ca-icon{font-size:20px}
+.ca-title{font-size:12.5px;font-weight:700}
+.ca-sub{font-size:10.5px;color:var(--t3);margin-top:1px}
+
+/* balance dashboard tiles */
+.bal-tiles{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.bt-row{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between}
+.bt-left .btl{font-size:10.5px;color:var(--t3);margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.bt-left .btv{font-size:20px;font-weight:700}
+.bt-left .bts{font-size:10.5px;color:var(--t3);margin-top:2px}
+.bt-left .btn-note{font-size:10.5px;color:var(--bnb);margin-top:3px}
+.bt-right{font-size:26px}
+
+/* connect prompt */
+.conn-prompt{background:var(--s1);border:1px dashed var(--bnbd);border-radius:16px;padding:24px 16px;text-align:center;margin-bottom:14px}
+.cp-ic{font-size:40px;margin-bottom:10px}
+.cp-t{font-size:16px;font-weight:700;margin-bottom:5px}
+.cp-s{font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.6}
+.btn-primary{background:var(--bnb);color:#000;border:none;border-radius:10px;padding:12px 22px;font-size:13.5px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:var(--bnb2)}
+.btn-primary:active{transform:scale(.97)}
+
+/* plan cards horizontal */
+.plan-scroll{display:flex;gap:10px;padding:0 14px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.plan-scroll::-webkit-scrollbar{display:none}
+.plan-c{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px;min-width:160px;flex-shrink:0;position:relative;cursor:pointer;transition:border-color .15s}
+.plan-c:hover{border-color:var(--bd2)}
+.plan-c.feat{border-color:var(--bnb)}
+.plan-pop{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--bnb);color:#000;font-size:9px;font-weight:700;padding:2px 8px;border-radius:0 0 4px 4px}
+.pc-ico{font-size:20px;margin-bottom:8px}
+.pc-nm{font-size:13px;font-weight:700;margin-bottom:2px}
+.pc-pr{font-size:16px;font-weight:700;color:var(--bnb);margin-bottom:10px}
+.pc-pr span{font-size:10px;color:var(--t3);font-weight:400}
+.pc-fl{list-style:none;display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.pc-fl li{display:flex;gap:5px;font-size:11px;color:var(--t2)}
+.pc-fl li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.pc-btn-s{width:100%;padding:7px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.pbs-o{background:transparent;border:1px solid var(--bd2);color:var(--text)}
+.pbs-f{background:var(--bnb);border:none;color:#000}
+
+/* ── APPLY SCREEN — STEP WIZARD ── */
+/* progress bar */
+.step-progress{padding:14px 14px 0}
+.sp-row{display:flex;align-items:center;gap:0;margin-bottom:6px}
+.sp-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.sp-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .3s;flex-shrink:0;border:2px solid var(--bd2);background:var(--s2);color:var(--t3)}
+.sp-dot.done{background:var(--green);border-color:var(--green);color:#000}
+.sp-dot.active{background:var(--bnb);border-color:var(--bnb);color:#000}
+.sp-line{flex:1;height:2px;background:var(--bd2);transition:background .3s}
+.sp-line.done{background:var(--green)}
+.sp-labels{display:flex;justify-content:space-between;padding:0 4px}
+.sp-lbl{font-size:9.5px;color:var(--t3);text-align:center;flex:1}
+.sp-lbl.active{color:var(--bnb);font-weight:600}
+.sp-lbl.done{color:var(--green)}
+
+/* step panels */
+.step-panels{flex:1}
+.step-panel{display:none;padding:14px 14px 0;animation:fadeIn .25s ease}
+.step-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.step-title{font-size:18px;font-weight:800;margin-bottom:4px}
+.step-sub{font-size:12.5px;color:var(--t3);margin-bottom:16px;line-height:1.55}
+
+/* form fields */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg label{font-size:11.5px;color:var(--t3);font-weight:500}
+.fg input,.fg select:not(.cc-sel){background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:12px 13px;color:var(--text);font-size:14px;outline:none;transition:border-color .15s;width:100%;-webkit-appearance:none}
+.fg input:focus,.fg select:not(.cc-sel):focus{border-color:var(--bnb)}
+.fg input::placeholder{color:var(--t3)}
+.fg select option{background:var(--s2)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.phone-row{display:flex;gap:0;width:100%}
+.cc-sel{background:var(--s2) !important;border:1px solid var(--bd2) !important;border-right:none !important;border-radius:8px 0 0 8px !important;padding:12px 6px !important;color:var(--text) !important;font-size:12.5px !important;outline:none !important;width:108px !important;max-width:108px !important;min-width:108px !important;-webkit-appearance:none !important;flex-shrink:0 !important;cursor:pointer}
+.cc-sel:focus{border-color:var(--bnb) !important}
+.ph-inp{flex:1 !important;min-width:0 !important;background:var(--s2);border:1px solid var(--bd2);border-left:none;border-radius:0 8px 8px 0;padding:12px 13px;color:var(--text);font-size:14px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+.ph-inp:focus{border-color:var(--bnb)}
+.ph-inp::placeholder{color:var(--t3)}
+
+/* live card preview in apply */
+.card-preview-sm{margin-bottom:14px}
+.cps-lbl{font-size:11px;color:var(--t3);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.card-sm{aspect-ratio:1.586;background:linear-gradient(135deg,#182035,#222d3d,#18202e);border-radius:14px;padding:18px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06);transition:all .3s}
+.card-sm::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(240,185,11,.18),transparent 65%)}
+.card-sm::after{content:'VISA';position:absolute;bottom:14px;right:14px;font-size:16px;font-weight:800;color:rgba(255,255,255,.78);font-style:italic}
+.csm-chip{width:28px;height:20px;background:linear-gradient(135deg,#c9a20a,#8a6e08);border-radius:3px;margin-bottom:12px}
+.csm-num{font-size:11.5px;letter-spacing:2px;color:rgba(255,255,255,.55);margin-bottom:10px;font-family:monospace;transition:all .4s}
+.csm-nm{font-size:9.5px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase;transition:all .4s}
+.csm-nm.typed{color:rgba(255,255,255,.8)}
+.csm-logo{position:absolute;top:14px;right:14px;font-size:12px;font-weight:800;color:var(--bnb)}
+.csm-free{position:absolute;top:14px;left:14px;background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 5px;border-radius:2px}
+
+/* plan selector in apply */
+.plan-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.plan-opt{background:var(--s2);border:1px solid var(--bd2);border-radius:12px;padding:13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .15s;position:relative}
+.plan-opt.sel{border-color:var(--bnb);background:var(--bnbg)}
+.po-ic{font-size:20px;flex-shrink:0}
+.po-info{flex:1}
+.po-nm{font-size:13px;font-weight:700}
+.po-pr{font-size:11.5px;color:var(--t3);margin-top:1px}
+.po-pop{position:absolute;top:8px;right:8px;background:var(--bnb);color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px}
+.po-chk{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;transition:all .15s}
+.plan-opt.sel .po-chk{background:var(--bnb);border-color:var(--bnb);color:#000}
+
+/* wallet grid */
+.w-section-lbl{font-size:12.5px;font-weight:700;margin-bottom:8px}
+.w-note{background:var(--gbg);border:1px solid var(--gbd);border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--green);margin-bottom:12px;display:flex;align-items:flex-start;gap:7px;line-height:1.55}
+.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.wb{background:var(--s2);border:1px solid var(--bd2);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .15s}
+.wb:hover{border-color:var(--bd2)}
+.wb.sel{border-color:var(--bnb);background:var(--bnbg)}
+.wb.conn{border-color:var(--green);background:var(--gbg)}
+.wb-ic{font-size:22px;margin-bottom:4px}
+.wb-nm{font-size:10.5px;color:var(--t3);transition:color .15s}
+.wb.sel .wb-nm,.wb.conn .wb-nm{color:var(--green)}
+
+/* terms row */
+.terms-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;font-size:12px;color:var(--t2);line-height:1.55}
+.terms-row input{margin-top:3px;accent-color:var(--bnb);flex-shrink:0}
+.terms-row a{color:var(--bnb);cursor:pointer;text-decoration:underline}
+
+/* step nav buttons */
+.step-nav{display:flex;gap:10px;padding:0 14px;margin-top:10px;padding-bottom:8px}
+.btn-back{flex:0 0 auto;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;padding:12px 18px;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
+.btn-next{flex:1;background:var(--bnb);color:#000;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-next:hover{background:var(--bnb2)}
+.btn-next:active{transform:scale(.97)}
+.btn-next:disabled{background:var(--s3);color:var(--t3);cursor:not-allowed;transform:none}
+
+/* success card */
+.success-card{background:linear-gradient(135deg,rgba(14,203,129,.1),rgba(240,185,11,.06));border:1px solid var(--gbd);border-radius:16px;padding:20px;text-align:center;margin-bottom:14px}
+.sc-ic{font-size:48px;margin-bottom:10px}
+.sc-title{font-size:18px;font-weight:800;color:var(--green);margin-bottom:5px}
+.sc-sub{font-size:12.5px;color:var(--t2);line-height:1.65;margin-bottom:16px}
+.sc-btn{width:100%;padding:13px;background:var(--bnb);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* ── SAFETY SCREEN ── */
+.safety-screen{padding:10px 14px}
+.safety-hero{background:linear-gradient(135deg,rgba(14,203,129,.08),rgba(240,185,11,.04));border:1px solid var(--gbd);border-radius:16px;padding:18px;margin-bottom:14px;text-align:center}
+.sh-ic{font-size:42px;margin-bottom:8px}
+.sh-title{font-size:17px;font-weight:800;color:var(--green);margin-bottom:5px}
+.sh-sub{font-size:12.5px;color:var(--t2);line-height:1.65}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.cg-c{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:13px}
+.cg-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cg-item{display:flex;align-items:flex-start;gap:5px;font-size:11.5px;color:var(--t2);line-height:1.5;margin-bottom:5px}
+.cg-item:last-child{margin-bottom:0}
+.how-wallet{background:var(--s1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.hw-hdr{padding:12px 14px;border-bottom:1px solid var(--bd);font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.hw-body{padding:12px 14px}
+.hw-step{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.hw-step:last-child{border-bottom:none}
+.hs-n{width:26px;height:26px;min-width:26px;border-radius:50%;background:var(--bnbg);border:1px solid var(--bnbd);color:var(--bnb);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.hs-n.ok{background:var(--gbg);border-color:var(--gbd);color:var(--green)}
+.hw-step h5{font-size:12.5px;font-weight:700;margin-bottom:2px}
+.hw-step p{font-size:11.5px;color:var(--t3);line-height:1.5}
+.why-box{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:15px;margin-bottom:14px}
+.why-box h4{font-size:13.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.why-box p{font-size:12.5px;color:var(--t2);line-height:1.8}
+.badges{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.badge-c{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:12px;display:flex;align-items:center;gap:9px}
+.badge-ic{font-size:22px;flex-shrink:0}
+.badge-nm{font-size:12px;font-weight:700}
+.badge-ds{font-size:10.5px;color:var(--t3);margin-top:1px}
+
+/* ── PROFILE SCREEN ── */
+.profile-screen{padding:10px 14px}
+.profile-hero{text-align:center;padding:16px 0 20px}
+.ph-av{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--bnb),#c9a20a);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#000;margin:0 auto 10px}
+.ph-name{font-size:18px;font-weight:800;margin-bottom:3px}
+.ph-email{font-size:12px;color:var(--t3);margin-bottom:8px}
+.ph-badge{display:inline-flex;align-items:center;gap:5px;background:var(--gbg);border:1px solid var(--gbd);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--green)}
+
+/* lang + country selectors */
+.lc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.lc-box{background:var(--s1);border:1px solid var(--bd);border-radius:14px;overflow:hidden}
+.lc-hdr{padding:10px 12px;border-bottom:1px solid var(--bd);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
+.lc-list{max-height:188px;overflow-y:auto;scrollbar-width:none}
+.lc-list::-webkit-scrollbar{display:none}
+.lc-item{display:flex;align-items:center;gap:7px;padding:9px 12px;font-size:12px;cursor:pointer;transition:background .12s;color:var(--t2);border-bottom:1px solid rgba(255,255,255,.03)}
+.lc-item:hover,.lc-item.sel{background:var(--s2);color:var(--text)}
+.lc-item.sel::after{content:'✓';color:var(--bnb);margin-left:auto;font-weight:700}
+.lc-flag{font-size:15px;flex-shrink:0}
+
+/* menu list */
+.menu-list{background:var(--s1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.mi{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .12s}
+.mi:last-child{border-bottom:none}
+.mi:hover{background:var(--s2)}
+.mi-ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.mi-nm{font-size:13px;font-weight:600}
+.mi-ds{font-size:11px;color:var(--t3);margin-top:1px}
+.mi-arrow{margin-left:auto;color:var(--t3);font-size:14px}
+
+/* ── SUPPORT SHEET ── */
+.t-tabs{display:flex;gap:7px;margin-bottom:12px}
+.ttab{flex:1;padding:9px;border-radius:8px;border:1px solid var(--bd2);background:var(--s2);color:var(--t3);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.ttab.on{border-color:var(--bnb);color:var(--bnb);background:var(--bnbg)}
+.tf{margin-bottom:10px}
+.tf label{display:block;font-size:11px;color:var(--t3);margin-bottom:5px}
+.tf input,.tf textarea{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:8px;padding:11px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.tf input:focus,.tf textarea:focus{border-color:var(--bnb)}
+.tf textarea{resize:none;height:70px}
+.tf-sbtn{width:100%;padding:13px;background:var(--bnb);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+#t-ok{display:none;text-align:center;padding:10px 0}
+#t-ok .tok{font-size:40px;margin-bottom:8px}
+#t-ok h4{color:var(--green);font-size:15px;font-weight:700;margin-bottom:5px}
+#t-ok p{font-size:12px;color:var(--t3)}
+
+/* ── TERMS SHEET ── */
+.terms-body{font-size:12px;line-height:1.75;color:var(--t2)}
+.terms-body h4{font-size:13px;font-weight:700;color:var(--text);margin:12px 0 5px}
+.terms-body h4:first-child{margin-top:0}
+.terms-body ul{padding-left:14px;margin-bottom:7px}
+.terms-body ul li{margin-bottom:3px}
+.terms-ok{width:100%;padding:13px;background:var(--bnb);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px;font-family:'Inter',sans-serif}
+
+/* physical card sheet */
+.phys-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.ph-opt{background:var(--s2);border:1px solid var(--bd2);border-radius:12px;padding:13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
+.ph-opt.sel{border-color:var(--bnb);background:var(--bnbg)}
+.ph-opt .pho-chk{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;margin-left:auto;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s}
+.ph-opt.sel .pho-chk{background:var(--bnb);border-color:var(--bnb);color:#000}
+#physNote{display:none;background:var(--gbg);border:1px solid var(--gbd);border-radius:8px;padding:10px 12px;font-size:11.5px;color:var(--green);margin-bottom:12px}
+
+/* chatbot fab */
+#chat-fab{position:fixed;bottom:80px;right:12px;z-index:400;width:46px;height:46px;border-radius:50%;background:var(--bnb);border:none;box-shadow:0 4px 14px rgba(240,185,11,.4);display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;transition:transform .15s}
+#chat-fab:hover{transform:scale(1.08)}
+.fdot{position:absolute;top:1px;right:1px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--bg)}
+.c-msgs{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:10px;scrollbar-width:thin}
+.cm{max-width:92%;font-size:12.5px;line-height:1.55;padding:9px 12px;border-radius:11px}
+.cm.bot{background:var(--s2);border:1px solid var(--bd);align-self:flex-start;border-bottom-left-radius:3px}
+.cm.user{background:var(--bnb);color:#000;font-weight:500;align-self:flex-end;border-bottom-right-radius:3px}
+.ctyp{display:flex;gap:3px;padding:9px 12px;background:var(--s2);border:1px solid var(--bd);border-radius:11px;border-bottom-left-radius:3px;align-self:flex-start}
+.ctyp span{width:5px;height:5px;border-radius:50%;background:var(--t3);animation:tdot 1.2s infinite}
+.ctyp span:nth-child(2){animation-delay:.2s}.ctyp span:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.cq-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.cq{background:var(--s2);border:1px solid var(--bd2);color:var(--t2);border-radius:16px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.cq:hover{border-color:var(--bnb);color:var(--bnb)}
+.c-inp-row{display:flex;gap:7px}
+#cinp{flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+#cinp:focus{border-color:var(--bnb)}
+#csend{width:38px;height:38px;background:var(--bnb);border:none;border-radius:10px;color:#000;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="sbar">
+  <span class="sbar-time" id="sbarTime">9:41</span>
+  <div class="sbar-icons">📶 🔋</div>
+</div>
+
+<!-- TOP HEADER -->
+<div class="top-hdr">
+  <div class="th-logo">
+    <svg width="20" height="20" viewBox="0 0 20 20"><polygon points="10,1 19,6.5 19,13.5 10,19 1,13.5 1,6.5" fill="#F0B90B"/><polygon points="10,5.5 15.5,8.8 15.5,11.2 10,14.5 4.5,11.2 4.5,8.8" fill="#0B0E11"/></svg>
+    CryptoCard Pro
+  </div>
+  <div class="th-right">
+    <div class="th-btn" onclick="openSheet('support-sheet')">🔔<div class="bdot"></div></div>
+    <div class="th-btn" onclick="goScreen('profile')">👤</div>
+  </div>
+</div>
+
+<!-- SCREENS CONTAINER -->
+<div class="screens">
+
+<!-- ── HOME SCREEN ── -->
+<div class="screen active" id="sc-home">
+  <!-- BALANCE HERO -->
+  <div class="bal-hero">
+    <div class="bh-eyebrow" data-t="totalPortfolio">💼 Total Portfolio</div>
+    <div class="bh-val" id="hBal">— USDT</div>
+    <div class="bh-cols">
+      <div class="bh-col">
+        <div class="bc-dot" style="background:var(--bnb)"></div>
+        <div class="bc-lbl" data-t="walletLbl">Wallet</div>
+        <div class="bc-val" id="hWallet">—</div>
+        <div class="bc-tag" style="background:var(--bnbg);color:var(--bnb)" id="hWTag" data-t="tagConnect">CONNECT</div>
+      </div>
+      <div class="bh-col">
+        <div class="bc-dot" style="background:var(--green)"></div>
+        <div class="bc-lbl" data-t="voucherLbl">Voucher</div>
+        <div class="bc-val" style="color:var(--green)" id="hVouch">0 USDT</div>
+        <div class="bc-tag" style="background:var(--rbg);color:var(--red)" id="hVTag" data-t="tagLocked">LOCKED</div>
+      </div>
+      <div class="bh-col">
+        <div class="bc-dot" style="background:var(--blue,#60a5fa)"></div>
+        <div class="bc-lbl" data-t="rewardsLbl">Rewards</div>
+        <div class="bc-val" style="color:#60a5fa" id="hRew">0 USDT</div>
+        <div class="bc-tag" style="background:var(--bluebg);color:#60a5fa" data-t="tagCashback">CASHBACK</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="qa-row" style="padding-top:14px">
+    <div class="qa" onclick="goScreen('card')">
+      <div class="qa-ic" style="background:var(--bnbg)">💳</div>
+      <div class="qa-lbl" data-t="qaCard">My Card</div>
+    </div>
+    <div class="qa" onclick="goScreen('apply')">
+      <div class="qa-ic" style="background:var(--gbg)">📝</div>
+      <div class="qa-lbl" data-t="qaApply">Apply</div>
+    </div>
+    <div class="qa" onclick="openSheet('support-sheet')">
+      <div class="qa-ic" style="background:var(--bluebg)">🎫</div>
+      <div class="qa-lbl" data-t="qaSupport">Support</div>
+    </div>
+    <div class="qa" onclick="goScreen('safety')">
+      <div class="qa-ic" style="background:rgba(139,92,246,.12)">🔒</div>
+      <div class="qa-lbl" data-t="qaSafety">Safety</div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker" style="margin-top:14px">
+    <div class="tk-inner" id="tkEl"></div>
+  </div>
+
+  <!-- ANIMATED CARD DEMO -->
+  <div class="card-showcase">
+    <div class="cs-lbl" data-t="demoLbl">Card Apply Demo</div>
+    <div class="card-3d" id="demoCard">
+      <div class="c3-free">FREE</div>
+      <div class="c3-logo">⬡ PRO</div>
+      <div class="c3-chip"></div>
+      <div class="c3-num" id="demoNum">•••• •••• •••• ••••</div>
+      <div class="c3-holder" id="demoHolder">YOUR NAME</div>
+    </div>
+    <div class="step-dots" id="demoDots">
+      <div class="sd on"></div><div class="sd"></div><div class="sd"></div><div class="sd"></div>
+    </div>
+    <div class="step-caption" id="demoCaption">📝 Step 1 — Fill your details</div>
+  </div>
+
+  <!-- STATS -->
+  <div style="padding:0 14px 6px"><div class="sec-ht" data-t="ourNumbers">Our Numbers</div></div>
+  <div class="stats-row">
+    <div class="stat-p"><div class="sp-n" id="s1">0</div><div class="sp-l">Cards Issued</div></div>
+    <div class="stat-p"><div class="sp-n" id="s2">0</div><div class="sp-l">Countries</div></div>
+    <div class="stat-p"><div class="sp-n" id="s3">0</div><div class="sp-l">USDT Paid</div></div>
+    <div class="stat-p"><div class="sp-n" id="s4">0</div><div class="sp-l">Users</div></div>
+  </div>
+
+  <!-- BENEFITS -->
+  <div class="sec-h"><div class="sec-ht" data-t="cardBenefits">Card Benefits</div></div>
+  <div class="ben-scroll">
+    <div class="ben-card"><div class="bc-icon">🌍</div><div class="bc-title">190+ Countries</div><div class="bc-desc">Any Visa terminal worldwide</div></div>
+    <div class="ben-card"><div class="bc-icon">⚡</div><div class="bc-title">Instant Convert</div><div class="bc-desc">Crypto → local currency instantly</div></div>
+    <div class="ben-card"><div class="bc-icon">🎁</div><div class="bc-title">100 USDT Bonus</div><div class="bc-desc">Welcome voucher on first use</div></div>
+    <div class="ben-card"><div class="bc-icon">💸</div><div class="bc-title">Zero Monthly Fee</div><div class="bc-desc">Mool card always free</div></div>
+    <div class="ben-card"><div class="bc-icon">🔐</div><div class="bc-title">Bank Security</div><div class="bc-desc">256-bit SSL + biometric</div></div>
+    <div class="ben-card"><div class="bc-icon">🤖</div><div class="bc-title">AI Fraud Protection</div><div class="bc-desc">24/7 monitoring</div></div>
+  </div>
+
+  <!-- PLANS PREVIEW -->
+  <div class="sec-h"><div class="sec-ht" data-t="choosePlan">Choose Plan</div><div class="sec-hl" onclick="goScreen('apply')" data-t="applyNow">Apply Now →</div></div>
+  <div class="plan-scroll">
+    <div class="plan-c" onclick="goScreen('apply')">
+      <div class="pc-ico">🥈</div><div class="pc-nm">Mool</div>
+      <div class="pc-pr" style="color:var(--green)">FREE <span>/ forever</span></div>
+      <ul class="pc-fl"><li>Worldwide ATM</li><li>100 USDT Voucher</li><li>0.5% Cashback</li></ul>
+      <button class="pc-btn-s pbs-o">Apply Free</button>
+    </div>
+    <div class="plan-c feat" onclick="goScreen('apply')">
+      <div class="plan-pop">⭐ Popular</div>
+      <div class="pc-ico">🥇</div><div class="pc-nm" style="color:var(--bnb)">Pro</div>
+      <div class="pc-pr">19.99 <span>USDT/mo</span></div>
+      <ul class="pc-fl"><li>Priority Global</li><li>100 USDT Voucher</li><li>1% Cashback</li><li>VIP Support</li></ul>
+      <button class="pc-btn-s pbs-f">Apply Pro 🔥</button>
+    </div>
+    <div class="plan-c" onclick="goScreen('apply')">
+      <div class="pc-ico">💎</div><div class="pc-nm" style="color:var(--t2)">Premium</div>
+      <div class="pc-pr" style="color:var(--t2)">49.99 <span>USDT/mo</span></div>
+      <ul class="pc-fl"><li>Unlimited Global</li><li>100 USDT Voucher</li><li>2% Cashback</li></ul>
+      <button class="pc-btn-s pbs-o">Apply Premium</button>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="padding:4px 14px 8px">
+    <button class="btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="goScreen('apply')" data-t="bigCta">🚀 Get FREE CryptoCard Now</button>
+  </div>
+</div><!-- /home -->
+
+<!-- ── CARD SCREEN ── -->
+<div class="screen" id="sc-card">
+  <div class="card-screen">
+
+    <!-- Before apply -->
+    <div id="preApply">
+      <div class="conn-prompt">
+        <div class="cp-ic">💳</div>
+        <div class="cp-t" data-t="noCardYet">No Card Yet</div>
+        <div class="cp-s" data-t="noCardSub">Apply for your FREE CryptoCard Pro and get your virtual card instantly with 100 USDT welcome bonus.</div>
+        <button class="btn-primary" onclick="goScreen('apply')">Apply for FREE Card →</button>
+      </div>
+      <!-- Plans -->
+      <div class="sec-h" style="padding:0"><div class="sec-ht" data-t="availPlans">Available Plans</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        <div class="plan-opt" onclick="goScreen('apply')">
+          <div class="po-ic">🥈</div><div class="po-info"><div class="po-nm">Mool</div><div class="po-pr">FREE forever · 0.5% cashback</div></div><div class="po-chk" style="color:var(--t3)">›</div>
+        </div>
+        <div class="plan-opt sel" onclick="goScreen('apply')">
+          <div class="po-pop">⭐ Popular</div>
+          <div class="po-ic">🥇</div><div class="po-info"><div class="po-nm" style="color:var(--bnb)">Pro</div><div class="po-pr">19.99 USDT/mo · 1% cashback</div></div><div class="po-chk" style="color:var(--t3)">›</div>
+        </div>
+        <div class="plan-opt" onclick="goScreen('apply')">
+          <div class="po-ic">💎</div><div class="po-info"><div class="po-nm">Premium</div><div class="po-pr">49.99 USDT/mo · 2% cashback</div></div><div class="po-chk" style="color:var(--t3)">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- After apply — hidden initially -->
+    <div id="postApply" style="display:none">
+      <div class="vc-card">
+        <div class="vc-free">FREE</div>
+        <div class="vc-active" id="vcActiveTag" style="left:auto;right:14px">ACTIVE</div>
+        <div class="vc-chip"></div>
+        <div class="vc-num" id="vcNum">4729 •••• •••• 8301</div>
+        <div class="vc-foot">
+          <div><div class="vc-holder" id="vcHolder">CARD HOLDER</div><div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px">Valid Thru <span id="vcExp">--/--</span></div></div>
+          <div class="vc-logo">⬡ PRO</div>
+        </div>
+      </div>
+
+      <div class="cd-tiles">
+        <div class="cd-t"><div class="cd-l">Card Number</div><div class="cd-v" id="cdNum" onclick="copyVal(genCard.num,'Card number copied!')">•••• <span id="cdLast4">0000</span> <span class="copy-i">📋</span></div></div>
+        <div class="cd-t"><div class="cd-l">CVV <small style="color:var(--t3)">(tap)</small></div><div class="cd-v blur-cvv" id="cdCvv" onclick="copyVal(genCard.cvv,'CVV copied!')">--- <span class="copy-i">📋</span></div></div>
+        <div class="cd-t"><div class="cd-l">Expiry</div><div class="cd-v" id="cdExp">--/--</div></div>
+      </div>
+
+      <div class="ca-grid">
+        <div class="ca-btn" onclick="openSheet('physical-sheet')"><div class="ca-icon">📦</div><div><div class="ca-title" data-t="physCard">Physical Card</div><div class="ca-sub" data-t="physSub">10 USDT · 7-10 days</div></div></div>
+        <div class="ca-btn" onclick="openSheet('support-sheet')"><div class="ca-icon">🎫</div><div><div class="ca-title" data-t="caSupport">Support</div><div class="ca-sub" data-t="caSupportSub">Get help from team</div></div></div>
+      </div>
+
+      <!-- Balance tiles -->
+      <div class="bal-tiles">
+        <div class="bt-row">
+          <div class="bt-left"><div class="btl">💰 Wallet Balance</div><div class="btv" id="cdWal">245.32 USDT</div><div class="bts" id="cdWalSub">Connected wallet</div></div>
+          <div class="bt-right">💰</div>
+        </div>
+        <div class="bt-row">
+          <div class="bt-left"><div class="btl">🎁 Voucher Balance</div><div class="btv" style="color:var(--green)" id="cdVouch">100.00 USDT</div><div class="bts">Welcome bonus</div><div class="btn-note" id="cdVNote">Do 100 USDT+ transaction to claim!</div></div>
+          <div class="bt-right">🎁</div>
+        </div>
+        <div class="bt-row">
+          <div class="bt-left"><div class="btl">⭐ Reward Balance</div><div class="btv" style="color:#60a5fa" id="cdRew">0.00 USDT</div><div class="bts">Cashback from transactions</div></div>
+          <div class="bt-right">⭐</div>
+        </div>
+      </div>
+
+      <div style="background:var(--gbg);border:1px solid var(--gbd);border-radius:10px;padding:11px 13px;font-size:12px;color:var(--green);margin-bottom:10px">
+        🛡️ <strong>Your money stays in YOUR wallet.</strong> Every payment needs your explicit approval — we only read your balance.
+      </div>
+    </div>
+  </div>
+</div><!-- /card -->
+
+<!-- ── APPLY SCREEN — STEP WIZARD ── -->
+<div class="screen" id="sc-apply">
+
+  <!-- STEP PROGRESS BAR -->
+  <div class="step-progress">
+    <div class="sp-row" id="spRow">
+      <div class="sp-step"><div class="sp-dot active" id="spd1">1</div></div>
+      <div class="sp-line" id="spl1"></div>
+      <div class="sp-step"><div class="sp-dot" id="spd2">2</div></div>
+      <div class="sp-line" id="spl2"></div>
+      <div class="sp-step"><div class="sp-dot" id="spd3">3</div></div>
+      <div class="sp-line" id="spl3"></div>
+      <div class="sp-step"><div class="sp-dot" id="spd4">4</div></div>
+    </div>
+    <div class="sp-labels">
+      <div class="sp-lbl active" id="spl-1" data-t="step1Lbl">Details</div>
+      <div class="sp-lbl" id="spl-2" data-t="step2Lbl">Plan</div>
+      <div class="sp-lbl" id="spl-3" data-t="step3Lbl">Wallet</div>
+      <div class="sp-lbl" id="spl-4" data-t="step4Lbl">Card!</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: PERSONAL DETAILS -->
+  <div class="step-panel active" id="panel1">
+    <div class="step-title" data-t="step1Title">Your Details 📝</div>
+    <div class="step-sub" data-t="step1Sub">Enter your personal information. Takes less than 2 minutes.</div>
+
+    <!-- Live card preview -->
+    <div class="card-preview-sm">
+      <div class="cps-lbl" data-t="livePreview">Live Card Preview</div>
+      <div class="card-sm">
+        <div class="csm-free">FREE</div>
+        <div class="csm-logo">⬡ PRO</div>
+        <div class="csm-chip"></div>
+        <div class="csm-num" id="prevNum">•••• •••• •••• ••••</div>
+        <div class="csm-nm" id="prevHolder">YOUR NAME</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="fg"><label data-t="lblFirst">First Name *</label><input type="text" id="fn" placeholder="Rahul" oninput="updatePrev()"/></div>
+      <div class="fg"><label data-t="lblLast">Last Name *</label><input type="text" id="ln" placeholder="Sharma" oninput="updatePrev()"/></div>
+    </div>
+    <div class="fg"><label data-t="lblEmail">Email Address *</label><input type="email" id="femail" placeholder="rahul@email.com"/></div>
+    <div class="fg"><label data-t="lblDob">Date of Birth *</label><input type="date" id="fdob"/></div>
+    <div class="fg"><label data-t="lblPhone">Phone Number *</label>
+      <div class="phone-row">
+        <select class="cc-sel" id="ccSel" style="width:108px;min-width:108px;max-width:108px;flex-shrink:0;border-radius:8px 0 0 8px;border-right:none">
+          <option value="+91">🇮🇳 +91</option><option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option><option value="+971">🇦🇪 +971</option>
+          <option value="+92">🇵🇰 +92</option><option value="+880">🇧🇩 +880</option>
+          <option value="+966">🇸🇦 +966</option><option value="+49">🇩🇪 +49</option>
+          <option value="+81">🇯🇵 +81</option><option value="+55">🇧🇷 +55</option>
+          <option value="+61">🇦🇺 +61</option><option value="+65">🇸🇬 +65</option>
+          <option value="+60">🇲🇾 +60</option><option value="+62">🇮🇩 +62</option>
+          <option value="+7">🇷🇺 +7</option><option value="+86">🇨🇳 +86</option>
+          <option value="+82">🇰🇷 +82</option><option value="+27">🇿🇦 +27</option>
+          <option value="+234">🇳🇬 +234</option><option value="+33">🇫🇷 +33</option>
+        </select>
+        <input class="ph-inp" type="tel" id="fphone" placeholder="98765 43210" style="flex:1;min-width:0;border-radius:0 8px 8px 0;border-left:none"/>
+      </div>
+    </div>
+    <div class="fg"><label data-t="lblCountry">Country *</label>
+      <select id="fcountry">
+        <option value="" data-t="selCountry">Select Country</option>
+        <option>India</option><option>Pakistan</option><option>Bangladesh</option>
+        <option>UAE</option><option>Saudi Arabia</option><option>United Kingdom</option>
+        <option>United States</option><option>Germany</option><option>Japan</option>
+        <option>Australia</option><option>Singapore</option><option>Other</option>
+      </select>
+    </div>
+    <div class="step-nav">
+      <button class="btn-next" onclick="nextStep(1)" data-t="btn1Next">Continue — Choose Plan →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: CHOOSE PLAN -->
+  <div class="step-panel" id="panel2">
+    <div class="step-title" data-t="step2Title">Choose Your Plan 📋</div>
+    <div class="step-sub" data-t="step2Sub">Select the plan that suits you best. You can upgrade anytime.</div>
+    <div class="plan-opts" id="planOpts">
+      <div class="plan-opt" id="planMool" onclick="pickPlan('Mool')">
+        <div class="po-ic">🥈</div>
+        <div class="po-info"><div class="po-nm">Mool</div><div class="po-pr">FREE forever · 0.5% cashback · 5% shopping discount</div></div>
+        <div class="po-chk" id="chkMool"></div>
+      </div>
+      <div class="plan-opt" id="planPro" onclick="pickPlan('Pro')">
+        <div class="po-pop">⭐ Popular</div>
+        <div class="po-ic">🥇</div>
+        <div class="po-info"><div class="po-nm" style="color:var(--bnb)">Pro</div><div class="po-pr">19.99 USDT/mo · 1% cashback · 10% discount · VIP support</div></div>
+        <div class="po-chk" id="chkPro"></div>
+      </div>
+      <div class="plan-opt" id="planPrem" onclick="pickPlan('Premium')">
+        <div class="po-ic">💎</div>
+        <div class="po-info"><div class="po-nm">Premium</div><div class="po-pr">49.99 USDT/mo · 2% cashback · Zero trading fees</div></div>
+        <div class="po-chk" id="chkPrem"></div>
+      </div>
+    </div>
+    <div style="background:var(--bnbg);border:1px solid var(--bnbd);border-radius:10px;padding:10px 13px;font-size:12px;color:var(--t2);margin-bottom:10px">
+      🎁 All plans include <strong style="color:var(--bnb)">100 USDT welcome voucher</strong> — claimed automatically on your first 100 USDT transaction.
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="prevStep(2)" data-t="btnBack">← Back</button>
+      <button class="btn-next" onclick="nextStep(2)">Continue — Connect Wallet →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: CONNECT WALLET -->
+  <div class="step-panel" id="panel3">
+    <div class="step-title" data-t="step3Title">Connect Wallet 🔗</div>
+    <div class="step-sub" data-t="step3Sub">Link your crypto wallet. Your funds stay completely safe.</div>
+    <div class="w-note">
+      🛡️ <span><strong>Your money never leaves your wallet.</strong> We connect read-only — only see your balance. Every transaction needs your explicit approval in your wallet app.</span>
+    </div>
+    <div class="w-section-lbl" data-t="selectWallet">Select Your Wallet</div>
+    <div class="wgrid">
+      <div class="wb" onclick="pickW(this,'MetaMask')"><div class="wb-ic">🦊</div><div class="wb-nm">MetaMask</div></div>
+      <div class="wb" onclick="pickW(this,'Trust Wallet')"><div class="wb-ic">🛡️</div><div class="wb-nm">Trust Wallet</div></div>
+      <div class="wb" onclick="pickW(this,'Coinbase')"><div class="wb-ic">🔵</div><div class="wb-nm">Coinbase</div></div>
+      <div class="wb" onclick="pickW(this,'Rainbow')"><div class="wb-ic">🌈</div><div class="wb-nm">Rainbow</div></div>
+      <div class="wb" onclick="pickW(this,'ZenGo')"><div class="wb-ic">🔑</div><div class="wb-nm">ZenGo</div></div>
+      <div class="wb" onclick="pickW(this,'Trezor')"><div class="wb-ic">🔐</div><div class="wb-nm">Trezor</div></div>
+    </div>
+    <div class="terms-row">
+      <input type="checkbox" id="termsChk"/>
+      <label for="termsChk">I agree to the <a onclick="openSheet('terms-sheet')">Terms & Conditions</a> and Reward Claim Policy.</label>
+    </div>
+    <div class="step-nav">
+      <button class="btn-back" onclick="prevStep(3)">← Back</button>
+      <button class="btn-next" onclick="nextStep(3)" data-t="btn3Next">Get My Card →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CARD READY -->
+  <div class="step-panel" id="panel4">
+    <div class="success-card">
+      <div class="sc-ic">🎉</div>
+      <div class="sc-title" data-t="cardApplied">Card Applied!</div>
+      <div class="sc-sub">Your FREE CryptoCard Pro is ready. Virtual card is now active below.<br><br>Complete a <strong style="color:var(--bnb)">100 USDT transaction</strong> to automatically claim your 100 USDT welcome voucher.</div>
+      <button class="sc-btn" onclick="showCard()" data-t="viewCard">View My Virtual Card →</button>
+    </div>
+
+    <!-- Generated card preview -->
+    <div class="card-sm" id="genCardEl" style="margin-bottom:14px;border-radius:16px;padding:20px">
+      <div class="csm-free">FREE</div>
+      <div class="csm-logo" style="font-size:13px">⬡ PRO</div>
+      <div class="csm-chip" style="width:34px;height:24px;margin-bottom:16px"></div>
+      <div class="csm-num" id="genNum" style="font-size:13.5px;margin-bottom:12px">4729 •••• •••• ••••</div>
+      <div class="csm-nm typed" id="genHolder" style="font-size:10px">CARD HOLDER</div>
+    </div>
+
+    <div style="background:var(--gbg);border:1px solid var(--gbd);border-radius:10px;padding:11px 13px;font-size:12px;color:var(--green);margin-bottom:14px">
+      ✅ Your voucher of 100 USDT is now <strong>PENDING</strong>. Make any 100 USDT+ transaction to auto-claim it to your wallet.
+    </div>
+  </div>
+
+</div><!-- /apply -->
+
+<!-- ── SAFETY SCREEN ── -->
+<div class="screen" id="sc-safety">
+  <div class="safety-screen">
+    <div class="safety-hero">
+      <div class="sh-ic">🛡️</div>
+      <div class="sh-title" data-t="safetyTitle">Your Money — Always Yours</div>
+      <div class="sh-sub">CryptoCard Pro is 100% non-custodial. Your crypto never leaves your wallet without your explicit approval — every single time.</div>
+    </div>
+    <div class="compare-grid">
+      <div class="cg-c">
+        <div class="cg-lbl" style="color:var(--red)" data-t="neverHappens">❌ NEVER Happens</div>
+        <div class="cg-item"><span>❌</span><span>Fund transferred to us</span></div>
+        <div class="cg-item"><span>❌</span><span>Seed phrase asked</span></div>
+        <div class="cg-item"><span>❌</span><span>Auto-deduct without approval</span></div>
+        <div class="cg-item"><span>❌</span><span>Hidden charges</span></div>
+      </div>
+      <div class="cg-c">
+        <div class="cg-lbl" style="color:var(--green)" data-t="alwaysHappens">✅ ALWAYS Happens</div>
+        <div class="cg-item"><span>✅</span><span>Read-only wallet link</span></div>
+        <div class="cg-item"><span>✅</span><span>Your approval every time</span></div>
+        <div class="cg-item"><span>✅</span><span>Fund stays with you</span></div>
+        <div class="cg-item"><span>✅</span><span>Transparent fees only</span></div>
+      </div>
+    </div>
+    <div class="how-wallet">
+      <div class="hw-hdr">🔗 How Wallet Connection Works</div>
+      <div class="hw-body">
+        <div class="hw-step"><div class="hs-n">1</div><div><h5>You Choose Your Wallet</h5><p>MetaMask, Trust Wallet — only you decide which connects.</p></div></div>
+        <div class="hw-step"><div class="hs-n">2</div><div><h5>Read-Only Permission</h5><p>We can ONLY see your address & balance. Cannot send anything automatically.</p></div></div>
+        <div class="hw-step"><div class="hs-n">3</div><div><h5>Every Payment = Your Approval</h5><p>Popup appears in your wallet app every time. Confirm = payment. Cancel = nothing happens.</p></div></div>
+        <div class="hw-step"><div class="hs-n ok">✓</div><div><h5 style="color:var(--green)">Full Control — Always</h5><p>Disconnect anytime, lock card, set limits. We are the bridge, you hold the keys.</p></div></div>
+      </div>
+    </div>
+    <div class="why-box">
+      <h4>🌐 Why CryptoCard Exists</h4>
+      <p>The world is moving to digital currency. You have crypto but can't use it at regular stores. CryptoCard Pro converts your crypto to local currency in real-time at every transaction — <strong style="color:var(--green)">your money stays with you, we are the smart exchange bridge.</strong></p>
+    </div>
+    <div class="badges">
+      <div class="badge-c"><div class="badge-ic">🔒</div><div><div class="badge-nm">256-bit SSL</div><div class="badge-ds">Bank-level encryption</div></div></div>
+      <div class="badge-c"><div class="badge-ic">🛡️</div><div><div class="badge-nm">PCI-DSS</div><div class="badge-ds">Card security standard</div></div></div>
+      <div class="badge-c"><div class="badge-ic">✅</div><div><div class="badge-nm">KYC Verified</div><div class="badge-ds">Identity protection</div></div></div>
+      <div class="badge-c"><div class="badge-ic">👁️</div><div><div class="badge-nm">Non-Custodial</div><div class="badge-ds">Your keys, your crypto</div></div></div>
+    </div>
+  </div>
+</div><!-- /safety -->
+
+<!-- ── PROFILE SCREEN ── -->
+<div class="screen" id="sc-profile">
+  <div class="profile-screen">
+    <div class="profile-hero">
+      <div class="ph-av" id="profAv">👤</div>
+      <div class="ph-name" id="profName">Guest User</div>
+      <div class="ph-email" id="profEmail">Apply to create your account</div>
+      <div class="ph-badge">✅ Verified Member</div>
+    </div>
+
+    <!-- Language + Country -->
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px" data-t="langRegion">🌐 Language & Region</div>
+    <div class="lc-wrap">
+      <div class="lc-box">
+        <div class="lc-hdr">🌐 Language</div>
+        <div class="lc-list">
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🇮🇳 Indian Languages</div>
+          <div class="lc-item sel" onclick="setLang(this,'EN','ltr')"><span class="lc-flag">🇬🇧</span>English</div>
+          <div class="lc-item" onclick="setLang(this,'HI','ltr')"><span class="lc-flag">🇮🇳</span>हिन्दी · Hindi</div>
+          <div class="lc-item" onclick="setLang(this,'UR','rtl')"><span class="lc-flag">🇵🇰</span>اردو · Urdu</div>
+          <div class="lc-item" onclick="setLang(this,'BN','ltr')"><span class="lc-flag">🇧🇩</span>বাংলা · Bengali</div>
+          <div class="lc-item" onclick="setLang(this,'TA','ltr')"><span class="lc-flag">🇮🇳</span>தமிழ் · Tamil</div>
+          <div class="lc-item" onclick="setLang(this,'TE','ltr')"><span class="lc-flag">🇮🇳</span>తెలుగు · Telugu</div>
+          <div class="lc-item" onclick="setLang(this,'MR','ltr')"><span class="lc-flag">🇮🇳</span>मराठी · Marathi</div>
+          <div class="lc-item" onclick="setLang(this,'PA','ltr')"><span class="lc-flag">🇮🇳</span>ਪੰਜਾਬੀ · Punjabi</div>
+          <div class="lc-item" onclick="setLang(this,'GU','ltr')"><span class="lc-flag">🇮🇳</span>ગુજરાતી · Gujarati</div>
+          <div class="lc-item" onclick="setLang(this,'KN','ltr')"><span class="lc-flag">🇮🇳</span>ಕನ್ನಡ · Kannada</div>
+          <div class="lc-item" onclick="setLang(this,'ML','ltr')"><span class="lc-flag">🇮🇳</span>മലയാളം · Malayalam</div>
+          <div class="lc-item" onclick="setLang(this,'OR','ltr')"><span class="lc-flag">🇮🇳</span>ଓଡ଼ିଆ · Odia</div>
+          <div class="lc-item" onclick="setLang(this,'AS','ltr')"><span class="lc-flag">🇮🇳</span>অসমীয়া · Assamese</div>
+          <div class="lc-item" onclick="setLang(this,'SAT','ltr')"><span class="lc-flag">🇮🇳</span>ᱥᱟᱱᱛᱟᱲᱤ · Santali</div>
+          <div class="lc-item" onclick="setLang(this,'KS','rtl')"><span class="lc-flag">🇮🇳</span>کٲشُر · Kashmiri</div>
+          <div class="lc-item" onclick="setLang(this,'NE','ltr')"><span class="lc-flag">🇳🇵</span>नेपाली · Nepali</div>
+          <div class="lc-item" onclick="setLang(this,'SI','ltr')"><span class="lc-flag">🇱🇰</span>සිංහල · Sinhala</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 World Languages</div>
+          <div class="lc-item" onclick="setLang(this,'AR','rtl')"><span class="lc-flag">🇸🇦</span>العربية · Arabic</div>
+          <div class="lc-item" onclick="setLang(this,'ZH','ltr')"><span class="lc-flag">🇨🇳</span>中文 · Chinese</div>
+          <div class="lc-item" onclick="setLang(this,'ES','ltr')"><span class="lc-flag">🇪🇸</span>Español · Spanish</div>
+          <div class="lc-item" onclick="setLang(this,'FR','ltr')"><span class="lc-flag">🇫🇷</span>Français · French</div>
+          <div class="lc-item" onclick="setLang(this,'DE','ltr')"><span class="lc-flag">🇩🇪</span>Deutsch · German</div>
+          <div class="lc-item" onclick="setLang(this,'PT','ltr')"><span class="lc-flag">🇧🇷</span>Português · Portuguese</div>
+          <div class="lc-item" onclick="setLang(this,'RU','ltr')"><span class="lc-flag">🇷🇺</span>Русский · Russian</div>
+          <div class="lc-item" onclick="setLang(this,'JA','ltr')"><span class="lc-flag">🇯🇵</span>日本語 · Japanese</div>
+          <div class="lc-item" onclick="setLang(this,'KO','ltr')"><span class="lc-flag">🇰🇷</span>한국어 · Korean</div>
+          <div class="lc-item" onclick="setLang(this,'TR','ltr')"><span class="lc-flag">🇹🇷</span>Türkçe · Turkish</div>
+          <div class="lc-item" onclick="setLang(this,'FA','rtl')"><span class="lc-flag">🇮🇷</span>فارسی · Persian</div>
+          <div class="lc-item" onclick="setLang(this,'ID','ltr')"><span class="lc-flag">🇮🇩</span>Bahasa Indonesia</div>
+          <div class="lc-item" onclick="setLang(this,'MS','ltr')"><span class="lc-flag">🇲🇾</span>Bahasa Melayu · Malay</div>
+          <div class="lc-item" onclick="setLang(this,'TH','ltr')"><span class="lc-flag">🇹🇭</span>ภาษาไทย · Thai</div>
+          <div class="lc-item" onclick="setLang(this,'VI','ltr')"><span class="lc-flag">🇻🇳</span>Tiếng Việt · Vietnamese</div>
+          <div class="lc-item" onclick="setLang(this,'PL','ltr')"><span class="lc-flag">🇵🇱</span>Polski · Polish</div>
+          <div class="lc-item" onclick="setLang(this,'IT','ltr')"><span class="lc-flag">🇮🇹</span>Italiano · Italian</div>
+          <div class="lc-item" onclick="setLang(this,'NL','ltr')"><span class="lc-flag">🇳🇱</span>Nederlands · Dutch</div>
+          <div class="lc-item" onclick="setLang(this,'UK','ltr')"><span class="lc-flag">🇺🇦</span>Українська · Ukrainian</div>
+          <div class="lc-item" onclick="setLang(this,'SW','ltr')"><span class="lc-flag">🇰🇪</span>Kiswahili · Swahili</div>
+          <div class="lc-item" onclick="setLang(this,'HA','ltr')"><span class="lc-flag">🇳🇬</span>Hausa</div>
+          <div class="lc-item" onclick="setLang(this,'YO','ltr')"><span class="lc-flag">🇳🇬</span>Yorùbá</div>
+          <div class="lc-item" onclick="setLang(this,'AM','ltr')"><span class="lc-flag">🇪🇹</span>አማርኛ · Amharic</div>
+          <div class="lc-item" onclick="setLang(this,'SV','ltr')"><span class="lc-flag">🇸🇪</span>Svenska · Swedish</div>
+          <div class="lc-item" onclick="setLang(this,'NO','ltr')"><span class="lc-flag">🇳🇴</span>Norsk · Norwegian</div>
+          <div class="lc-item" onclick="setLang(this,'DA','ltr')"><span class="lc-flag">🇩🇰</span>Dansk · Danish</div>
+          <div class="lc-item" onclick="setLang(this,'FI','ltr')"><span class="lc-flag">🇫🇮</span>Suomi · Finnish</div>
+          <div class="lc-item" onclick="setLang(this,'EL','ltr')"><span class="lc-flag">🇬🇷</span>Ελληνικά · Greek</div>
+          <div class="lc-item" onclick="setLang(this,'RO','ltr')"><span class="lc-flag">🇷🇴</span>Română · Romanian</div>
+          <div class="lc-item" onclick="setLang(this,'HU','ltr')"><span class="lc-flag">🇭🇺</span>Magyar · Hungarian</div>
+          <div class="lc-item" onclick="setLang(this,'CS','ltr')"><span class="lc-flag">🇨🇿</span>Čeština · Czech</div>
+          <div class="lc-item" onclick="setLang(this,'HE','rtl')"><span class="lc-flag">🇮🇱</span>עברית · Hebrew</div>
+          <div class="lc-item" onclick="setLang(this,'AZ','ltr')"><span class="lc-flag">🇦🇿</span>Azərbaycan · Azerbaijani</div>
+          <div class="lc-item" onclick="setLang(this,'KA','ltr')"><span class="lc-flag">🇬🇪</span>ქართული · Georgian</div>
+        </div>
+      </div>
+      <div class="lc-box">
+        <div class="lc-hdr">🌍 Country</div>
+        <div class="lc-list">
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">⭐ Popular</div>
+          <div class="lc-item sel" onclick="setCnt(this,'🇮🇳','India','INR','+91')"><span class="lc-flag">🇮🇳</span>India · INR ₹</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇰','Pakistan','PKR','+92')"><span class="lc-flag">🇵🇰</span>Pakistan · PKR ₨</div>
+          <div class="lc-item" onclick="setCnt(this,'🇧🇩','Bangladesh','BDT','+880')"><span class="lc-flag">🇧🇩</span>Bangladesh · BDT ৳</div>
+          <div class="lc-item" onclick="setCnt(this,'🇦🇪','UAE','AED','+971')"><span class="lc-flag">🇦🇪</span>UAE · AED د.إ</div>
+          <div class="lc-item" onclick="setCnt(this,'🇸🇦','Saudi Arabia','SAR','+966')"><span class="lc-flag">🇸🇦</span>Saudi Arabia · SAR ر.س</div>
+          <div class="lc-item" onclick="setCnt(this,'🇺🇸','United States','USD','+1')"><span class="lc-flag">🇺🇸</span>United States · USD $</div>
+          <div class="lc-item" onclick="setCnt(this,'🇬🇧','United Kingdom','GBP','+44')"><span class="lc-flag">🇬🇧</span>United Kingdom · GBP £</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 Asia</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇳','China','CNY','+86')"><span class="lc-flag">🇨🇳</span>China · CNY ¥</div>
+          <div class="lc-item" onclick="setCnt(this,'🇯🇵','Japan','JPY','+81')"><span class="lc-flag">🇯🇵</span>Japan · JPY ¥</div>
+          <div class="lc-item" onclick="setCnt(this,'🇰🇷','South Korea','KRW','+82')"><span class="lc-flag">🇰🇷</span>South Korea · KRW ₩</div>
+          <div class="lc-item" onclick="setCnt(this,'🇮🇩','Indonesia','IDR','+62')"><span class="lc-flag">🇮🇩</span>Indonesia · IDR Rp</div>
+          <div class="lc-item" onclick="setCnt(this,'🇲🇾','Malaysia','MYR','+60')"><span class="lc-flag">🇲🇾</span>Malaysia · MYR RM</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇭','Philippines','PHP','+63')"><span class="lc-flag">🇵🇭</span>Philippines · PHP ₱</div>
+          <div class="lc-item" onclick="setCnt(this,'🇹🇭','Thailand','THB','+66')"><span class="lc-flag">🇹🇭</span>Thailand · THB ฿</div>
+          <div class="lc-item" onclick="setCnt(this,'🇻🇳','Vietnam','VND','+84')"><span class="lc-flag">🇻🇳</span>Vietnam · VND ₫</div>
+          <div class="lc-item" onclick="setCnt(this,'🇸🇬','Singapore','SGD','+65')"><span class="lc-flag">🇸🇬</span>Singapore · SGD S$</div>
+          <div class="lc-item" onclick="setCnt(this,'🇳🇵','Nepal','NPR','+977')"><span class="lc-flag">🇳🇵</span>Nepal · NPR ₨</div>
+          <div class="lc-item" onclick="setCnt(this,'🇱🇰','Sri Lanka','LKR','+94')"><span class="lc-flag">🇱🇰</span>Sri Lanka · LKR ₨</div>
+          <div class="lc-item" onclick="setCnt(this,'🇲🇻','Maldives','MVR','+960')"><span class="lc-flag">🇲🇻</span>Maldives · MVR</div>
+          <div class="lc-item" onclick="setCnt(this,'🇲🇲','Myanmar','MMK','+95')"><span class="lc-flag">🇲🇲</span>Myanmar · MMK</div>
+          <div class="lc-item" onclick="setCnt(this,'🇰🇭','Cambodia','KHR','+855')"><span class="lc-flag">🇰🇭</span>Cambodia · KHR</div>
+          <div class="lc-item" onclick="setCnt(this,'🇱🇦','Laos','LAK','+856')"><span class="lc-flag">🇱🇦</span>Laos · LAK</div>
+          <div class="lc-item" onclick="setCnt(this,'🇧🇳','Brunei','BND','+673')"><span class="lc-flag">🇧🇳</span>Brunei · BND</div>
+          <div class="lc-item" onclick="setCnt(this,'🇹🇱','Timor-Leste','USD','+670')"><span class="lc-flag">🇹🇱</span>Timor-Leste · USD</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 Middle East</div>
+          <div class="lc-item" onclick="setCnt(this,'🇶🇦','Qatar','QAR','+974')"><span class="lc-flag">🇶🇦</span>Qatar · QAR ر.ق</div>
+          <div class="lc-item" onclick="setCnt(this,'🇰🇼','Kuwait','KWD','+965')"><span class="lc-flag">🇰🇼</span>Kuwait · KWD د.ك</div>
+          <div class="lc-item" onclick="setCnt(this,'🇧🇭','Bahrain','BHD','+973')"><span class="lc-flag">🇧🇭</span>Bahrain · BHD .د.ب</div>
+          <div class="lc-item" onclick="setCnt(this,'🇴🇲','Oman','OMR','+968')"><span class="lc-flag">🇴🇲</span>Oman · OMR ر.ع.</div>
+          <div class="lc-item" onclick="setCnt(this,'🇯🇴','Jordan','JOD','+962')"><span class="lc-flag">🇯🇴</span>Jordan · JOD د.ا</div>
+          <div class="lc-item" onclick="setCnt(this,'🇱🇧','Lebanon','LBP','+961')"><span class="lc-flag">🇱🇧</span>Lebanon · LBP</div>
+          <div class="lc-item" onclick="setCnt(this,'🇮🇶','Iraq','IQD','+964')"><span class="lc-flag">🇮🇶</span>Iraq · IQD</div>
+          <div class="lc-item" onclick="setCnt(this,'🇮🇷','Iran','IRR','+98')"><span class="lc-flag">🇮🇷</span>Iran · IRR ﷼</div>
+          <div class="lc-item" onclick="setCnt(this,'🇮🇱','Israel','ILS','+972')"><span class="lc-flag">🇮🇱</span>Israel · ILS ₪</div>
+          <div class="lc-item" onclick="setCnt(this,'🇹🇷','Turkey','TRY','+90')"><span class="lc-flag">🇹🇷</span>Turkey · TRY ₺</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 Europe</div>
+          <div class="lc-item" onclick="setCnt(this,'🇩🇪','Germany','EUR','+49')"><span class="lc-flag">🇩🇪</span>Germany · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇫🇷','France','EUR','+33')"><span class="lc-flag">🇫🇷</span>France · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇮🇹','Italy','EUR','+39')"><span class="lc-flag">🇮🇹</span>Italy · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇪🇸','Spain','EUR','+34')"><span class="lc-flag">🇪🇸</span>Spain · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇳🇱','Netherlands','EUR','+31')"><span class="lc-flag">🇳🇱</span>Netherlands · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇱','Poland','PLN','+48')"><span class="lc-flag">🇵🇱</span>Poland · PLN zł</div>
+          <div class="lc-item" onclick="setCnt(this,'🇷🇺','Russia','RUB','+7')"><span class="lc-flag">🇷🇺</span>Russia · RUB ₽</div>
+          <div class="lc-item" onclick="setCnt(this,'🇺🇦','Ukraine','UAH','+380')"><span class="lc-flag">🇺🇦</span>Ukraine · UAH ₴</div>
+          <div class="lc-item" onclick="setCnt(this,'🇸🇪','Sweden','SEK','+46')"><span class="lc-flag">🇸🇪</span>Sweden · SEK kr</div>
+          <div class="lc-item" onclick="setCnt(this,'🇳🇴','Norway','NOK','+47')"><span class="lc-flag">🇳🇴</span>Norway · NOK kr</div>
+          <div class="lc-item" onclick="setCnt(this,'🇩🇰','Denmark','DKK','+45')"><span class="lc-flag">🇩🇰</span>Denmark · DKK kr</div>
+          <div class="lc-item" onclick="setCnt(this,'🇫🇮','Finland','EUR','+358')"><span class="lc-flag">🇫🇮</span>Finland · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇹','Portugal','EUR','+351')"><span class="lc-flag">🇵🇹</span>Portugal · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇬🇷','Greece','EUR','+30')"><span class="lc-flag">🇬🇷</span>Greece · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇭','Switzerland','CHF','+41')"><span class="lc-flag">🇨🇭</span>Switzerland · CHF</div>
+          <div class="lc-item" onclick="setCnt(this,'🇦🇹','Austria','EUR','+43')"><span class="lc-flag">🇦🇹</span>Austria · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇧🇪','Belgium','EUR','+32')"><span class="lc-flag">🇧🇪</span>Belgium · EUR €</div>
+          <div class="lc-item" onclick="setCnt(this,'🇷🇴','Romania','RON','+40')"><span class="lc-flag">🇷🇴</span>Romania · RON lei</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇿','Czech Republic','CZK','+420')"><span class="lc-flag">🇨🇿</span>Czech Republic · CZK</div>
+          <div class="lc-item" onclick="setCnt(this,'🇭🇺','Hungary','HUF','+36')"><span class="lc-flag">🇭🇺</span>Hungary · HUF Ft</div>
+          <div class="lc-item" onclick="setCnt(this,'🇦🇿','Azerbaijan','AZN','+994')"><span class="lc-flag">🇦🇿</span>Azerbaijan · AZN</div>
+          <div class="lc-item" onclick="setCnt(this,'🇬🇪','Georgia','GEL','+995')"><span class="lc-flag">🇬🇪</span>Georgia · GEL ₾</div>
+          <div class="lc-item" onclick="setCnt(this,'🇰🇿','Kazakhstan','KZT','+7')"><span class="lc-flag">🇰🇿</span>Kazakhstan · KZT ₸</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 Africa</div>
+          <div class="lc-item" onclick="setCnt(this,'🇳🇬','Nigeria','NGN','+234')"><span class="lc-flag">🇳🇬</span>Nigeria · NGN ₦</div>
+          <div class="lc-item" onclick="setCnt(this,'🇿🇦','South Africa','ZAR','+27')"><span class="lc-flag">🇿🇦</span>South Africa · ZAR R</div>
+          <div class="lc-item" onclick="setCnt(this,'🇪🇬','Egypt','EGP','+20')"><span class="lc-flag">🇪🇬</span>Egypt · EGP £</div>
+          <div class="lc-item" onclick="setCnt(this,'🇰🇪','Kenya','KES','+254')"><span class="lc-flag">🇰🇪</span>Kenya · KES KSh</div>
+          <div class="lc-item" onclick="setCnt(this,'🇬🇭','Ghana','GHS','+233')"><span class="lc-flag">🇬🇭</span>Ghana · GHS ₵</div>
+          <div class="lc-item" onclick="setCnt(this,'🇪🇹','Ethiopia','ETB','+251')"><span class="lc-flag">🇪🇹</span>Ethiopia · ETB</div>
+          <div class="lc-item" onclick="setCnt(this,'🇹🇿','Tanzania','TZS','+255')"><span class="lc-flag">🇹🇿</span>Tanzania · TZS</div>
+          <div class="lc-item" onclick="setCnt(this,'🇺🇬','Uganda','UGX','+256')"><span class="lc-flag">🇺🇬</span>Uganda · UGX</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇮','Ivory Coast','XOF','+225')"><span class="lc-flag">🇨🇮</span>Ivory Coast · XOF</div>
+          <div class="lc-item" onclick="setCnt(this,'🇸🇳','Senegal','XOF','+221')"><span class="lc-flag">🇸🇳</span>Senegal · XOF</div>
+          <div class="lc-item" onclick="setCnt(this,'🇲🇦','Morocco','MAD','+212')"><span class="lc-flag">🇲🇦</span>Morocco · MAD</div>
+          <div class="lc-item" onclick="setCnt(this,'🇹🇳','Tunisia','TND','+216')"><span class="lc-flag">🇹🇳</span>Tunisia · TND</div>
+          <div class="lc-item" onclick="setCnt(this,'🇿🇲','Zambia','ZMW','+260')"><span class="lc-flag">🇿🇲</span>Zambia · ZMW</div>
+          <div class="lc-item" onclick="setCnt(this,'🇿🇼','Zimbabwe','USD','+263')"><span class="lc-flag">🇿🇼</span>Zimbabwe · USD</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 Americas</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇦','Canada','CAD','+1')"><span class="lc-flag">🇨🇦</span>Canada · CAD C$</div>
+          <div class="lc-item" onclick="setCnt(this,'🇧🇷','Brazil','BRL','+55')"><span class="lc-flag">🇧🇷</span>Brazil · BRL R$</div>
+          <div class="lc-item" onclick="setCnt(this,'🇲🇽','Mexico','MXN','+52')"><span class="lc-flag">🇲🇽</span>Mexico · MXN $</div>
+          <div class="lc-item" onclick="setCnt(this,'🇦🇷','Argentina','ARS','+54')"><span class="lc-flag">🇦🇷</span>Argentina · ARS $</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇴','Colombia','COP','+57')"><span class="lc-flag">🇨🇴</span>Colombia · COP $</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇱','Chile','CLP','+56')"><span class="lc-flag">🇨🇱</span>Chile · CLP $</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇪','Peru','PEN','+51')"><span class="lc-flag">🇵🇪</span>Peru · PEN S/</div>
+          <div class="lc-item" onclick="setCnt(this,'🇻🇪','Venezuela','VES','+58')"><span class="lc-flag">🇻🇪</span>Venezuela · VES</div>
+          <div class="lc-item" onclick="setCnt(this,'🇪🇨','Ecuador','USD','+593')"><span class="lc-flag">🇪🇨</span>Ecuador · USD</div>
+          <div class="lc-item" onclick="setCnt(this,'🇧🇴','Bolivia','BOB','+591')"><span class="lc-flag">🇧🇴</span>Bolivia · BOB</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇾','Paraguay','PYG','+595')"><span class="lc-flag">🇵🇾</span>Paraguay · PYG ₲</div>
+          <div class="lc-item" onclick="setCnt(this,'🇺🇾','Uruguay','UYU','+598')"><span class="lc-flag">🇺🇾</span>Uruguay · UYU $</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇷','Costa Rica','CRC','+506')"><span class="lc-flag">🇨🇷</span>Costa Rica · CRC ₡</div>
+          <div class="lc-item" onclick="setCnt(this,'🇨🇺','Cuba','CUP','+53')"><span class="lc-flag">🇨🇺</span>Cuba · CUP ₱</div>
+          <div style="padding:6px 10px;font-size:10px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;background:var(--s2)">🌍 Oceania</div>
+          <div class="lc-item" onclick="setCnt(this,'🇦🇺','Australia','AUD','+61')"><span class="lc-flag">🇦🇺</span>Australia · AUD A$</div>
+          <div class="lc-item" onclick="setCnt(this,'🇳🇿','New Zealand','NZD','+64')"><span class="lc-flag">🇳🇿</span>New Zealand · NZD NZ$</div>
+          <div class="lc-item" onclick="setCnt(this,'🇫🇯','Fiji','FJD','+679')"><span class="lc-flag">🇫🇯</span>Fiji · FJD</div>
+          <div class="lc-item" onclick="setCnt(this,'🇵🇬','Papua New Guinea','PGK','+675')"><span class="lc-flag">🇵🇬</span>Papua New Guinea · PGK</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-list">
+      <div class="mi" onclick="goScreen('card')"><div class="mi-ic" style="background:var(--bnbg)">💳</div><div><div class="mi-nm" data-t="menuCard">My Card</div><div class="mi-ds" data-t="menuCardSub">View or apply for card</div></div><div class="mi-arrow">›</div></div>
+      <div class="mi" onclick="goScreen('safety')"><div class="mi-ic" style="background:var(--gbg)">🔒</div><div><div class="mi-nm" data-t="menuSafety">Safety & Trust</div><div class="mi-ds" data-t="menuSafetySub">How your money stays safe</div></div><div class="mi-arrow">›</div></div>
+      <div class="mi" onclick="openSheet('support-sheet')"><div class="mi-ic" style="background:var(--bluebg)">🎫</div><div><div class="mi-nm" data-t="menuSupport">Support Ticket</div><div class="mi-ds" data-t="menuSupportSub">Telegram or WhatsApp help</div></div><div class="mi-arrow">›</div></div>
+      <div class="mi" onclick="openSheet('terms-sheet')"><div class="mi-ic" style="background:rgba(139,92,246,.12)">📜</div><div><div class="mi-nm" data-t="menuTerms">Terms & Conditions</div><div class="mi-ds" data-t="menuTermsSub">Reward claim policy</div></div><div class="mi-arrow">›</div></div>
+    </div>
+  </div>
+</div><!-- /profile -->
+
+</div><!-- /screens -->
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <div class="bn on" id="bn-home" onclick="goScreen('home')">
+    <div class="bi">🏠</div><div class="bl" data-t="navHome">Home</div>
+  </div>
+  <div class="bn" id="bn-card" onclick="goScreen('card')">
+    <div class="bi">💳</div><div class="bl" data-t="navCard">Card</div>
+  </div>
+  <div class="bn-center" onclick="goScreen('apply')">➕</div>
+  <div class="bn" id="bn-safety" onclick="goScreen('safety')">
+    <div class="bi">🔒</div><div class="bl" data-t="navSafety">Safety</div>
+  </div>
+  <div class="bn" id="bn-profile" onclick="goScreen('profile')">
+    <div class="bi">👤</div><div class="bl" data-t="navProfile">Profile</div>
+  </div>
+</div>
+
+<!-- BOTTOM SHEETS -->
+
+<!-- SUPPORT SHEET -->
+<div class="sheet-bg" id="support-sheet">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title" data-t="supportTitle">🎫 Support Ticket</div>
+    <div class="sh-sub" data-t="supportSub">Our team will contact you on Telegram or WhatsApp within 1–2 hours.</div>
+    <div class="t-tabs">
+      <button class="ttab on" id="ttg" onclick="ttab('tg')">📱 Telegram</button>
+      <button class="ttab" id="twa" onclick="ttab('wa')">💬 WhatsApp</button>
+    </div>
+    <div id="t-form-inner">
+      <div class="tf"><label id="t-lbl">Telegram Username</label><input type="text" id="t-contact" placeholder="@yourname"/></div>
+      <div class="tf"><label>Describe your problem</label><textarea id="t-desc" placeholder="e.g. Card apply issue, voucher not credited…"></textarea></div>
+      <button class="tf-sbtn" onclick="subTicket()" data-t="submitTicket">Submit Ticket ✅</button>
+    </div>
+    <div id="t-ok"><div class="tok">✅</div><h4>Ticket Submitted!</h4><p>Team will contact in 1–2 hours. Thank you!</p></div>
+  </div>
+</div>
+
+<!-- TERMS SHEET -->
+<div class="sheet-bg" id="terms-sheet">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">📜 Terms & Reward Policy</div>
+    <div class="terms-body">
+      <h4>1. Welcome Bonus — 100 USDT Voucher</h4>
+      <p>New users get a 100 USDT voucher on applying, shown separately in Voucher Balance (not Wallet Balance).</p>
+      <h4>2. Claim Conditions</h4>
+      <ul><li>Minimum 100 USDT transaction required to unlock voucher</li><li>Any transaction type counts — shopping, P2P, or payment</li><li>Voucher auto-claimed once condition is met — no manual step</li><li>One welcome bonus per account only</li></ul>
+      <h4>3. Balance Types</h4>
+      <ul><li><strong>Wallet Balance:</strong> Your actual crypto from connected wallet</li><li><strong>Voucher Balance:</strong> Promotional bonus (locked until condition met)</li><li><strong>Reward Balance:</strong> Cashback auto-credited after each transaction</li></ul>
+      <h4>4. Non-Custodial — Your Funds Are Safe</h4>
+      <ul><li>Funds NEVER leave your wallet without your explicit approval</li><li>Wallet connects with read-only permission only</li><li>Every transaction triggers an approval popup in your wallet app</li><li>You can disconnect your wallet anytime</li></ul>
+      <h4>5. Physical Card — 10 USDT Fee</h4>
+      <ul><li>One-time 10 USDT for physical card delivery</li><li>Standard or custom design — same card number & CVV as virtual</li><li>Delivery in 7–10 business days</li></ul>
+      <h4>6. Security</h4>
+      <p>We will NEVER ask for your seed phrase, private key, or password. Anyone asking is a scammer — report immediately.</p>
+    </div>
+    <button class="terms-ok" onclick="closeSheet('terms-sheet');document.getElementById('termsChk').checked=true">Accept & Close ✅</button>
+  </div>
+</div>
+
+<!-- PHYSICAL CARD SHEET -->
+<div class="sheet-bg" id="physical-sheet">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">📦 Order Physical Card</div>
+    <div class="sh-sub">One-time 10 USDT fee · 7–10 business days delivery · Same card number & CVV as your virtual card.</div>
+    <div class="phys-opts">
+      <div class="ph-opt" id="phStd" onclick="pickPhys('standard')">
+        <div style="font-size:20px">📋</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Standard Design</div><div style="font-size:11.5px;color:var(--t3);margin-top:2px">Official CryptoCard Pro design</div></div>
+        <div class="pho-chk" id="chkStd"></div>
+      </div>
+      <div class="ph-opt" id="phCust" onclick="pickPhys('custom')">
+        <div style="font-size:20px">🎨</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700">Custom Design</div><div style="font-size:11.5px;color:var(--t3);margin-top:2px">Our team contacts you for design</div></div>
+        <div class="pho-chk" id="chkCust"></div>
+      </div>
+    </div>
+    <div id="physNote"></div>
+    <button class="btn-primary" style="width:100%;padding:13px;font-size:14px" onclick="closeSheet('physical-sheet');showToast('📦 Physical card order submitted!')">Confirm Order — 10 USDT</button>
+  </div>
+</div>
+
+<!-- CHAT SHEET -->
+<div class="sheet-bg" id="chat-sheet">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">🤖 AI Support</div>
+    <div class="sh-sub" style="margin-bottom:10px">Ask anything — card, crypto, wallet, safety!</div>
+    <div class="c-msgs" id="cmsgs">
+      <div class="cm bot">Namaste! 👋 I'm CryptoCard Pro's AI assistant.<br><br>Ask me about card benefits, how wallet works, USDT voucher, or any crypto question! 😊</div>
+    </div>
+    <div class="cq-wrap" id="cqWrap">
+      <button class="cq" onclick="cq('Card ke kya fayede hain?')">Card benefits?</button>
+      <button class="cq" onclick="cq('Kya mera paisa safe hai?')">Paisa safe?</button>
+      <button class="cq" onclick="cq('100 USDT voucher kaise claim karein?')">Voucher kaise?</button>
+      <button class="cq" onclick="cq('Kya yeh scam hai?')">Scam check?</button>
+      <button class="cq" onclick="closeSheet('chat-sheet');openSheet('support-sheet')">🎫 Human support</button>
+    </div>
+    <div class="c-inp-row">
+      <input id="cinp" type="text" placeholder="Type your question…" onkeydown="if(event.key==='Enter')sendC()"/>
+      <button id="csend" onclick="sendC()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT FAB -->
+<button id="chat-fab" onclick="openSheet('chat-sheet')">🤖<div class="fdot"></div></button>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ── TIME ──
+function updateTime(){const n=new Date();const h=n.getHours()%12||12;const m=n.getMinutes().toString().padStart(2,'0');document.getElementById('sbarTime').textContent=h+':'+m;}
+updateTime();setInterval(updateTime,1000);
+
+// ── TOAST ──
+function showToast(m){const t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+// ── SCREEN NAV ──
+let currentScreen='home';
+const screenMap={home:'sc-home',card:'sc-card',apply:'sc-apply',safety:'sc-safety',profile:'sc-profile'};
+const bnMap={home:'bn-home',card:'bn-card',safety:'bn-safety',profile:'bn-profile'};
+function goScreen(name){
+  const prev=document.getElementById(screenMap[currentScreen]);
+  if(prev){prev.classList.remove('active');prev.classList.add('prev');setTimeout(()=>prev.classList.remove('prev'),300);}
+  const next=document.getElementById(screenMap[name]);
+  if(next){next.classList.add('active');next.scrollTop=0;}
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
+  if(bnMap[name])document.getElementById(bnMap[name]).classList.add('on');
+  currentScreen=name;
+  // Reset apply steps if going to apply
+  if(name==='apply')resetApplySteps();
+}
+
+// ── SHEETS ──
+function openSheet(id){document.getElementById(id).classList.add('open');}
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.sheet-bg').forEach(s=>s.addEventListener('click',e=>{if(e.target===s)s.classList.remove('open');}));
+
+// ── TICKER ──
+const tD=[{s:'BTC',p:'67,420',c:'+2.4%',u:1},{s:'ETH',p:'3,840',c:'+1.8%',u:1},{s:'BNB',p:'612',c:'+3.1%',u:1},{s:'USDT',p:'1.00',c:'0.0%',u:1},{s:'SOL',p:'178',c:'-0.9%',u:0},{s:'XRP',p:'0.62',c:'+1.2%',u:1},{s:'ADA',p:'0.48',c:'-1.4%',u:0},{s:'DOGE',p:'0.14',c:'+5.2%',u:1}];
+document.getElementById('tkEl').innerHTML=[...tD,...tD].map(t=>`<div class="tk"><strong>${t.s}</strong>&nbsp;$${t.p}&nbsp;<span class="${t.u?'up':'dn'}">${t.c}</span></div>`).join('');
+
+// ── STATS ──
+function animN(id,t,s=''){const el=document.getElementById(id);let c=0;const st=Math.ceil(t/60);const iv=setInterval(()=>{c=Math.min(c+st,t);el.textContent=c.toLocaleString()+s;if(c>=t)clearInterval(iv);},18);}
+setTimeout(()=>{animN('s1',284700);animN('s2',190,'+');animN('s3',94200);animN('s4',180000);},400);
+
+// ── ANIMATED CARD DEMO ──
+const demoSteps=[
+  {num:'•••• •••• •••• ••••',holder:'YOUR NAME',caption:'📝 Step 1 — Fill your personal details',bg:'linear-gradient(135deg,#182035,#222d3d,#18202e)'},
+  {num:'4729 •••• •••• ••••',holder:'RAHUL SHARMA',caption:'📋 Step 2 — Choose your card plan',bg:'linear-gradient(135deg,#182535,#1e2f40,#182030)'},
+  {num:'4729 8301 •••• ••••',holder:'RAHUL SHARMA',caption:'🔗 Step 3 — Connect your wallet safely',bg:'linear-gradient(135deg,#182530,#1a3028,#182520)'},
+  {num:'4729 8301 6247 1983',holder:'RAHUL SHARMA',caption:'🎉 Step 4 — Virtual card ready + 100 USDT voucher!',bg:'linear-gradient(135deg,#1a2a30,#1e3530,#1a2520)'},
+];
+let demoIdx=0;
+function runDemo(){
+  const s=demoSteps[demoIdx];
+  const card=document.getElementById('demoCard');
+  document.getElementById('demoNum').textContent=s.num;
+  document.getElementById('demoHolder').textContent=s.holder;
+  document.getElementById('demoCaption').textContent=s.caption;
+  if(card)card.style.background=s.bg;
+  document.querySelectorAll('.sd').forEach((d,i)=>{d.classList.toggle('on',i===demoIdx);});
+  demoIdx=(demoIdx+1)%demoSteps.length;
+}
+setInterval(runDemo,2800);
+
+// ── APPLY STEP WIZARD ──
+let currentStep=1;let chosenPlan='';let chosenWallet='';
+function resetApplySteps(){currentStep=1;updateStepUI();}
+function updateStepUI(){
+  // panels
+  for(let i=1;i<=4;i++){
+    const p=document.getElementById('panel'+i);
+    if(p){p.classList.toggle('active',i===currentStep);}
+  }
+  // dots
+  for(let i=1;i<=4;i++){
+    const d=document.getElementById('spd'+i);
+    const l=document.getElementById('spl-'+i);
+    if(d){
+      d.classList.remove('active','done');
+      if(i<currentStep)d.classList.add('done');
+      else if(i===currentStep)d.classList.add('active');
+    }
+    if(l){
+      l.classList.remove('active','done');
+      if(i<currentStep)l.classList.add('done');
+      else if(i===currentStep)l.classList.add('active');
+    }
+  }
+  // lines
+  for(let i=1;i<=3;i++){
+    const ln=document.getElementById('spl'+i);
+    if(ln)ln.classList.toggle('done',i<currentStep);
+  }
+  document.getElementById('sc-apply').scrollTop=0;
+}
+function nextStep(from){
+  if(from===1){
+    const fn=document.getElementById('fn').value.trim();
+    const ln=document.getElementById('ln').value.trim();
+    const em=document.getElementById('femail').value.trim();
+    const ph=document.getElementById('fphone').value.trim();
+    const co=document.getElementById('fcountry').value;
+    if(!fn||!ln||!em||!ph||!co){showToast('⚠️ Please fill all fields!');return;}
+    // Update profile name
+    document.getElementById('profName').textContent=fn+' '+ln;
+    document.getElementById('profEmail').textContent=em;
+    document.getElementById('profAv').textContent=fn[0].toUpperCase();
+  }
+  if(from===2){
+    if(!chosenPlan){showToast('⚠️ Please select a plan!');return;}
+  }
+  if(from===3){
+    if(!chosenWallet){showToast('⚠️ Please connect a wallet!');return;}
+    if(!document.getElementById('termsChk').checked){showToast('⚠️ Please accept Terms & Conditions!');return;}
+    genCardData();
+    // Update step 4 card
+    const fn=document.getElementById('fn').value.trim();
+    const ln=document.getElementById('ln').value.trim();
+    const holder=(fn+' '+ln).toUpperCase();
+    document.getElementById('genNum').textContent=genCard.num;
+    document.getElementById('genHolder').textContent=holder;
+  }
+  currentStep=Math.min(from+1,4);
+  updateStepUI();
+}
+function prevStep(from){currentStep=Math.max(from-1,1);updateStepUI();}
+
+// ── PLAN ──
+function pickPlan(p){
+  chosenPlan=p;
+  ['Mool','Pro','Prem'].forEach(n=>{
+    const el=document.getElementById('plan'+n);
+    const chk=document.getElementById('chk'+n);
+    if(el)el.classList.remove('sel');
+    if(chk){chk.textContent='';chk.style.background='transparent';chk.style.borderColor='var(--bd2)';}
+  });
+  const selEl=document.getElementById('plan'+p.substring(0,4));
+  const selChk=document.getElementById('chk'+p.substring(0,4));
+  if(selEl)selEl.classList.add('sel');
+  if(selChk){selChk.textContent='✓';selChk.style.background='var(--bnb)';selChk.style.borderColor='var(--bnb)';}
+}
+
+// ── LIVE CARD PREVIEW ──
+function updatePrev(){
+  const fn=document.getElementById('fn').value.trim();
+  const ln=document.getElementById('ln').value.trim();
+  const name=(fn+' '+ln).trim().toUpperCase()||'YOUR NAME';
+  const el=document.getElementById('prevHolder');
+  if(el){el.textContent=name;el.classList.toggle('typed',!!(fn||ln));}
+  // Update greeting on home
+  if(fn)document.getElementById('profAv').textContent=fn[0].toUpperCase();
+}
+
+// ── WALLET ──
+function pickW(el,name){
+  document.querySelectorAll('.wb').forEach(b=>{b.classList.remove('sel','conn');b.querySelector('.wb-nm').textContent=b.querySelector('.wb-ic').textContent==='🦊'?'MetaMask':b.querySelector('.wb-ic').textContent==='🛡️'?'Trust Wallet':b.querySelector('.wb-ic').textContent==='🔵'?'Coinbase':b.querySelector('.wb-ic').textContent==='🌈'?'Rainbow':b.querySelector('.wb-ic').textContent==='🔑'?'ZenGo':'Trezor';});
+  el.classList.add('sel');chosenWallet=name;
+  setTimeout(()=>{
+    el.classList.remove('sel');el.classList.add('conn');
+    el.querySelector('.wb-nm').textContent='✓ Connected';
+    const bal=(200+Math.floor(Math.random()*400)).toFixed(2);
+    document.getElementById('hBal').textContent=bal+' USDT';
+    document.getElementById('hWallet').textContent=bal;
+    document.getElementById('hWTag').textContent='LIVE';
+    document.getElementById('hVouch').textContent='100 USDT';
+    document.getElementById('hVTag').textContent='PENDING';
+    document.getElementById('hVTag').style.cssText='background:var(--bnbg);color:var(--bnb)';
+    showToast('✅ '+name+' connected!');
+  },700);
+}
+
+// ── CARD GENERATOR ──
+let genCard={num:'',cvv:'',exp:'',holder:''};
+function genCardData(){
+  genCard.num=[4729,Math.floor(1000+Math.random()*9000),Math.floor(1000+Math.random()*9000),Math.floor(1000+Math.random()*9000)].join(' ');
+  genCard.cvv=String(Math.floor(100+Math.random()*900));
+  const y=(new Date().getFullYear()+4)%100;
+  genCard.exp='0'+(Math.floor(Math.random()*12)+1)+'/'+y;
+  const fn=document.getElementById('fn').value.trim();const ln=document.getElementById('ln').value.trim();
+  genCard.holder=(fn+' '+ln).trim().toUpperCase()||'CARD HOLDER';
+}
+function showCard(){
+  document.getElementById('preApply').style.display='none';
+  document.getElementById('postApply').style.display='block';
+  // Populate card screen
+  document.getElementById('vcNum').textContent=genCard.num;
+  document.getElementById('vcHolder').textContent=genCard.holder;
+  document.getElementById('vcExp').textContent=genCard.exp;
+  const last4=genCard.num.slice(-4);
+  document.getElementById('cdLast4').textContent=last4;
+  document.getElementById('cdCvv').innerHTML=genCard.cvv+' <span class="copy-i">📋</span>';
+  document.getElementById('cdExp').textContent=genCard.exp;
+  const bal=(200+Math.floor(Math.random()*400)).toFixed(2);
+  document.getElementById('cdWal').textContent=bal+' USDT';
+  document.getElementById('cdWalSub').textContent='Connected: '+chosenWallet;
+  // Update home balance
+  document.getElementById('hBal').textContent=bal+' USDT';
+  goScreen('card');
+}
+function copyVal(val,msg){navigator.clipboard.writeText(val).catch(()=>{});showToast(msg);}
+
+// ── PHYSICAL CARD ──
+function pickPhys(t){
+  ['Std','Cust'].forEach(k=>{const o=document.getElementById('ph'+k);const c=document.getElementById('chk'+k);if(o)o.classList.remove('sel');if(c){c.textContent='';c.style.background='transparent';c.style.borderColor='var(--bd2)';}});
+  const k=t==='standard'?'Std':'Cust';
+  const o=document.getElementById('ph'+k);const c=document.getElementById('chk'+k);
+  if(o)o.classList.add('sel');if(c){c.textContent='✓';c.style.background='var(--bnb)';c.style.borderColor='var(--bnb)';}
+  const n=document.getElementById('physNote');n.style.display='block';
+  n.textContent=t==='standard'?'✅ Standard selected. 10 USDT fee. Same card number & CVV. Delivery 7–10 days.':'✅ Custom selected. 10 USDT fee. Team will contact for design. Card number & CVV unchanged.';
+}
+
+// ── SUPPORT ──
+function ttab(tab){
+  document.getElementById('ttg').classList.toggle('on',tab==='tg');
+  document.getElementById('twa').classList.toggle('on',tab==='wa');
+  document.getElementById('t-lbl').textContent=tab==='tg'?'Telegram Username':'WhatsApp Number';
+  document.getElementById('t-contact').placeholder=tab==='tg'?'@yourname':'+91 98765 43210';
+}
+function subTicket(){
+  const c=document.getElementById('t-contact').value.trim(),d=document.getElementById('t-desc').value.trim();
+  if(!c||!d){showToast('⚠️ Please fill both fields!');return;}
+  document.getElementById('t-form-inner').style.display='none';
+  document.getElementById('t-ok').style.display='block';
+}
+
+// ── COMPREHENSIVE TRANSLATION SYSTEM ──
+// All UI strings - English is the master
+const EN = {
+  navHome:"Home", navCard:"Card", navSafety:"Safety", navProfile:"Profile",
+  totalPortfolio:"💼 Total Portfolio", walletLbl:"Wallet", voucherLbl:"Voucher", rewardsLbl:"Rewards",
+  tagConnect:"CONNECT", tagLocked:"LOCKED", tagCashback:"CASHBACK",
+  qaCard:"My Card", qaApply:"Apply", qaSupport:"Support", qaSafety:"Safety",
+  demoLbl:"Card Apply Demo", ourNumbers:"Our Numbers", cardBenefits:"Card Benefits",
+  choosePlan:"Choose Plan", applyNow:"Apply Now →",
+  noCardYet:"No Card Yet", noCardSub:"Apply for your FREE CryptoCard Pro and get your virtual card instantly with 100 USDT welcome bonus.",
+  availPlans:"Available Plans",
+  step1Lbl:"Details", step2Lbl:"Plan", step3Lbl:"Wallet", step4Lbl:"Card!",
+  step1Title:"Your Details 📝", step1Sub:"Enter your personal information. Takes less than 2 minutes.",
+  step2Title:"Choose Your Plan 📋", step2Sub:"Select the plan that suits you best. You can upgrade anytime.",
+  step3Title:"Connect Wallet 🔗", step3Sub:"Link your crypto wallet. Your funds stay completely safe.",
+  livePreview:"Live Card Preview", btn1Next:"Continue — Choose Plan →",
+  btn3Next:"Get My Card →", btnBack:"← Back",
+  selectWallet:"Select Your Wallet",
+  lblFirst:"First Name *", lblLast:"Last Name *", lblEmail:"Email Address *",
+  lblDob:"Date of Birth *", lblPhone:"Phone Number *", lblCountry:"Country *",
+  selCountry:"Select Country",
+  trustNote:"🛡️ Your fund stays in YOUR wallet. Read-only connect. Every payment needs YOUR approval.",
+  bigCta:"🚀 Get FREE CryptoCard Now",
+  safetyTitle:"Your Money — Always Yours",
+  neverHappens:"❌ NEVER Happens", alwaysHappens:"✅ ALWAYS Happens",
+  langRegion:"🌐 Language & Region",
+  menuCard:"My Card", menuCardSub:"View or apply for card",
+  menuSafety:"Safety & Trust", menuSafetySub:"How your money stays safe",
+  menuSupport:"Support Ticket", menuSupportSub:"Telegram or WhatsApp help",
+  menuTerms:"Terms & Conditions", menuTermsSub:"Reward claim policy",
+  supportTitle:"🎫 Support Ticket", supportSub:"Our team will contact you on Telegram or WhatsApp within 1–2 hours.",
+  submitTicket:"Submit Ticket ✅",
+  physCard:"Physical Card", physSub:"10 USDT · 7-10 days",
+  caSupport:"Support", caSupportSub:"Get help from team",
+  cardApplied:"Card Applied!", viewCard:"View My Virtual Card →",
+};
+
+const LANGS = {
+  EN: EN,
+  HI: {
+    navHome:"होम", navCard:"कार्ड", navSafety:"सुरक्षा", navProfile:"प्रोफाइल",
+    totalPortfolio:"💼 कुल बैलेंस", walletLbl:"वॉलेट", voucherLbl:"वाउचर", rewardsLbl:"रिवॉर्ड",
+    tagConnect:"कनेक्ट", tagLocked:"लॉक्ड", tagCashback:"कैशबैक",
+    qaCard:"मेरा कार्ड", qaApply:"अप्लाई", qaSupport:"सहायता", qaSafety:"सुरक्षा",
+    demoLbl:"कार्ड डेमो", ourNumbers:"हमारे आंकड़े", cardBenefits:"कार्ड के फायदे",
+    choosePlan:"प्लान चुनें", applyNow:"अभी अप्लाई करें →",
+    noCardYet:"अभी तक कोई कार्ड नहीं", noCardSub:"अपना FREE CryptoCard Pro के लिए अप्लाई करें और तुरंत वर्चुअल कार्ड पाएं।",
+    availPlans:"उपलब्ध प्लान",
+    step1Lbl:"जानकारी", step2Lbl:"प्लान", step3Lbl:"वॉलेट", step4Lbl:"कार्ड!",
+    step1Title:"आपकी जानकारी 📝", step1Sub:"अपनी व्यक्तिगत जानकारी भरें। 2 मिनट से कम लगेगा।",
+    step2Title:"अपना प्लान चुनें 📋", step2Sub:"वह प्लान चुनें जो आपके लिए सबसे उपयुक्त हो।",
+    step3Title:"वॉलेट कनेक्ट करें 🔗", step3Sub:"अपना क्रिप्टो वॉलेट लिंक करें। आपका पैसा पूरी तरह सुरक्षित रहेगा।",
+    livePreview:"लाइव कार्ड प्रीव्यू", btn1Next:"जारी रखें — प्लान चुनें →",
+    btn3Next:"मेरा कार्ड पाएं →", btnBack:"← वापस",
+    selectWallet:"अपना वॉलेट चुनें",
+    lblFirst:"पहला नाम *", lblLast:"अंतिम नाम *", lblEmail:"ईमेल पता *",
+    lblDob:"जन्म तिथि *", lblPhone:"फोन नंबर *", lblCountry:"देश *",
+    selCountry:"देश चुनें",
+    trustNote:"🛡️ आपका पैसा आपके वॉलेट में रहता है। रीड-ओनली कनेक्ट। हर पेमेंट पर आपकी मंजूरी जरूरी।",
+    bigCta:"🚀 अभी FREE CryptoCard पाएं",
+    safetyTitle:"आपका पैसा — हमेशा आपके पास",
+    neverHappens:"❌ कभी नहीं होता", alwaysHappens:"✅ हमेशा होता है",
+    langRegion:"🌐 भाषा और क्षेत्र",
+    menuCard:"मेरा कार्ड", menuCardSub:"कार्ड देखें या अप्लाई करें",
+    menuSafety:"सुरक्षा और विश्वास", menuSafetySub:"आपका पैसा कैसे सुरक्षित रहता है",
+    menuSupport:"सपोर्ट टिकट", menuSupportSub:"टेलीग्राम या व्हाट्सएप सहायता",
+    menuTerms:"नियम और शर्तें", menuTermsSub:"रिवॉर्ड क्लेम नीति",
+    supportTitle:"🎫 सपोर्ट टिकट", supportSub:"हमारी टीम 1-2 घंटे में Telegram या WhatsApp पर संपर्क करेगी।",
+    submitTicket:"टिकट सबमिट करें ✅",
+    physCard:"फिजिकल कार्ड", physSub:"10 USDT · 7-10 दिन",
+    caSupport:"सहायता", caSupportSub:"टीम से मदद लें",
+    cardApplied:"कार्ड अप्लाई हो गया!", viewCard:"मेरा वर्चुअल कार्ड देखें →",
+  },
+  UR: {
+    navHome:"ہوم", navCard:"کارڈ", navSafety:"حفاظت", navProfile:"پروفائل",
+    totalPortfolio:"💼 کل بیلنس", walletLbl:"ولیٹ", voucherLbl:"واؤچر", rewardsLbl:"انعام",
+    tagConnect:"جوڑیں", tagLocked:"مقفل", tagCashback:"کیش بیک",
+    qaCard:"میرا کارڈ", qaApply:"اپلائی", qaSupport:"مدد", qaSafety:"حفاظت",
+    demoLbl:"کارڈ ڈیمو", ourNumbers:"ہمارے اعداد", cardBenefits:"کارڈ کے فوائد",
+    choosePlan:"پلان منتخب کریں", applyNow:"ابھی اپلائی کریں →",
+    noCardYet:"ابھی کوئی کارڈ نہیں", noCardSub:"اپنا FREE CryptoCard Pro کے لیے اپلائی کریں اور فوری ورچوئل کارڈ حاصل کریں۔",
+    availPlans:"دستیاب پلانز",
+    step1Lbl:"معلومات", step2Lbl:"پلان", step3Lbl:"ولیٹ", step4Lbl:"کارڈ!",
+    step1Title:"آپ کی معلومات 📝", step1Sub:"اپنی ذاتی معلومات درج کریں۔ 2 منٹ سے کم لگیں گے۔",
+    step2Title:"اپنا پلان چنیں 📋", step2Sub:"وہ پلان چنیں جو آپ کے لیے بہترین ہو۔",
+    step3Title:"ولیٹ کنیکٹ کریں 🔗", step3Sub:"اپنا کرپٹو ولیٹ لنک کریں۔ آپ کا پیسہ مکمل محفوظ رہے گا۔",
+    livePreview:"لائیو کارڈ پیش نظارہ", btn1Next:"جاری رکھیں — پلان چنیں →",
+    btn3Next:"میرا کارڈ حاصل کریں →", btnBack:"← واپس",
+    selectWallet:"اپنا ولیٹ منتخب کریں",
+    lblFirst:"پہلا نام *", lblLast:"آخری نام *", lblEmail:"ای میل پتہ *",
+    lblDob:"تاریخ پیدائش *", lblPhone:"فون نمبر *", lblCountry:"ملک *",
+    selCountry:"ملک منتخب کریں",
+    trustNote:"🛡️ آپ کا پیسہ آپ کے ولیٹ میں رہتا ہے۔ ریڈ اونلی کنیکٹ۔ ہر پیمنٹ پر آپ کی منظوری ضروری۔",
+    bigCta:"🚀 ابھی FREE CryptoCard حاصل کریں",
+    safetyTitle:"آپ کا پیسہ — ہمیشہ آپ کے پاس",
+    neverHappens:"❌ کبھی نہیں ہوتا", alwaysHappens:"✅ ہمیشہ ہوتا ہے",
+    langRegion:"🌐 زبان اور علاقہ",
+    menuCard:"میرا کارڈ", menuCardSub:"کارڈ دیکھیں یا اپلائی کریں",
+    menuSafety:"حفاظت اور اعتماد", menuSafetySub:"آپ کا پیسہ کیسے محفوظ رہتا ہے",
+    menuSupport:"سپورٹ ٹکٹ", menuSupportSub:"Telegram یا WhatsApp مدد",
+    menuTerms:"شرائط و ضوابط", menuTermsSub:"ریوارڈ کلیم پالیسی",
+    supportTitle:"🎫 سپورٹ ٹکٹ", supportSub:"ہماری ٹیم 1-2 گھنٹے میں Telegram یا WhatsApp پر رابطہ کرے گی۔",
+    submitTicket:"ٹکٹ جمع کریں ✅",
+    physCard:"فزیکل کارڈ", physSub:"10 USDT · 7-10 دن",
+    caSupport:"سپورٹ", caSupportSub:"ٹیم سے مدد لیں",
+    cardApplied:"کارڈ اپلائی ہو گیا!", viewCard:"میرا ورچوئل کارڈ دیکھیں →",
+  },
+  AR: {
+    navHome:"الرئيسية", navCard:"البطاقة", navSafety:"الأمان", navProfile:"الملف الشخصي",
+    totalPortfolio:"💼 إجمالي المحفظة", walletLbl:"المحفظة", voucherLbl:"القسيمة", rewardsLbl:"المكافآت",
+    tagConnect:"اتصال", tagLocked:"مقفل", tagCashback:"استرداد نقدي",
+    qaCard:"بطاقتي", qaApply:"تقديم", qaSupport:"الدعم", qaSafety:"الأمان",
+    demoLbl:"عرض البطاقة", ourNumbers:"أرقامنا", cardBenefits:"فوائد البطاقة",
+    choosePlan:"اختر الخطة", applyNow:"التقدم الآن →",
+    noCardYet:"لا توجد بطاقة بعد", noCardSub:"تقدم للحصول على CryptoCard Pro مجاناً واحصل على بطاقتك الافتراضية فوراً.",
+    availPlans:"الخطط المتاحة",
+    step1Lbl:"التفاصيل", step2Lbl:"الخطة", step3Lbl:"المحفظة", step4Lbl:"البطاقة!",
+    step1Title:"تفاصيلك 📝", step1Sub:"أدخل معلوماتك الشخصية. يستغرق أقل من دقيقتين.",
+    step2Title:"اختر خطتك 📋", step2Sub:"اختر الخطة الأنسب لك. يمكنك الترقية في أي وقت.",
+    step3Title:"توصيل المحفظة 🔗", step3Sub:"اربط محفظتك المشفرة. أموالك تبقى آمنة تماماً.",
+    livePreview:"معاينة البطاقة المباشرة", btn1Next:"متابعة — اختر الخطة →",
+    btn3Next:"احصل على بطاقتي →", btnBack:"← رجوع",
+    selectWallet:"اختر محفظتك",
+    lblFirst:"الاسم الأول *", lblLast:"اسم العائلة *", lblEmail:"البريد الإلكتروني *",
+    lblDob:"تاريخ الميلاد *", lblPhone:"رقم الهاتف *", lblCountry:"الدولة *",
+    selCountry:"اختر الدولة",
+    trustNote:"🛡️ أموالك تبقى في محفظتك. اتصال للقراءة فقط. كل معاملة تتطلب موافقتك.",
+    bigCta:"🚀 احصل على CryptoCard مجاناً الآن",
+    safetyTitle:"أموالك — دائماً معك",
+    neverHappens:"❌ لا يحدث أبداً", alwaysHappens:"✅ يحدث دائماً",
+    langRegion:"🌐 اللغة والمنطقة",
+    menuCard:"بطاقتي", menuCardSub:"عرض أو التقدم للبطاقة",
+    menuSafety:"الأمان والثقة", menuSafetySub:"كيف تبقى أموالك آمنة",
+    menuSupport:"تذكرة الدعم", menuSupportSub:"مساعدة عبر Telegram أو WhatsApp",
+    menuTerms:"الشروط والأحكام", menuTermsSub:"سياسة استرداد المكافأة",
+    supportTitle:"🎫 تذكرة الدعم", supportSub:"سيتصل بك فريقنا عبر Telegram أو WhatsApp خلال 1-2 ساعة.",
+    submitTicket:"إرسال التذكرة ✅",
+    physCard:"بطاقة فيزيائية", physSub:"10 USDT · 7-10 أيام",
+    caSupport:"الدعم", caSupportSub:"احصل على مساعدة من الفريق",
+    cardApplied:"تم تقديم البطاقة!", viewCard:"عرض بطاقتي الافتراضية →",
+  },
+  BN: {
+    navHome:"হোম", navCard:"কার্ড", navSafety:"নিরাপত্তা", navProfile:"প্রোফাইল",
+    totalPortfolio:"💼 মোট ব্যালেন্স", walletLbl:"ওয়ালেট", voucherLbl:"ভাউচার", rewardsLbl:"রিওয়ার্ড",
+    tagConnect:"কানেক্ট", tagLocked:"লক্ড", tagCashback:"ক্যাশব্যাক",
+    qaCard:"আমার কার্ড", qaApply:"আবেদন", qaSupport:"সাপোর্ট", qaSafety:"নিরাপত্তা",
+    demoLbl:"কার্ড ডেমো", ourNumbers:"আমাদের সংখ্যা", cardBenefits:"কার্ডের সুবিধা",
+    choosePlan:"প্ল্যান বেছে নিন", applyNow:"এখনই আবেদন করুন →",
+    noCardYet:"এখনও কোনো কার্ড নেই", noCardSub:"আপনার FREE CryptoCard Pro এর জন্য আবেদন করুন এবং তাৎক্ষণিক ভার্চুয়াল কার্ড পান।",
+    availPlans:"উপলব্ধ প্ল্যান",
+    step1Lbl:"তথ্য", step2Lbl:"প্ল্যান", step3Lbl:"ওয়ালেট", step4Lbl:"কার্ড!",
+    step1Title:"আপনার তথ্য 📝", step1Sub:"আপনার ব্যক্তিগত তথ্য দিন। ২ মিনিটের কম লাগবে।",
+    step2Title:"আপনার প্ল্যান বেছে নিন 📋", step2Sub:"আপনার জন্য সবচেয়ে উপযুক্ত প্ল্যান বেছে নিন।",
+    step3Title:"ওয়ালেট কানেক্ট করুন 🔗", step3Sub:"আপনার ক্রিপ্টো ওয়ালেট লিঙ্ক করুন। আপনার অর্থ সম্পূর্ণ নিরাপদ থাকবে।",
+    livePreview:"লাইভ কার্ড প্রিভিউ", btn1Next:"চালিয়ে যান — প্ল্যান বেছে নিন →",
+    btn3Next:"আমার কার্ড পান →", btnBack:"← পিছনে",
+    selectWallet:"আপনার ওয়ালেট বেছে নিন",
+    lblFirst:"প্রথম নাম *", lblLast:"শেষ নাম *", lblEmail:"ইমেইল ঠিকানা *",
+    lblDob:"জন্ম তারিখ *", lblPhone:"ফোন নম্বর *", lblCountry:"দেশ *",
+    selCountry:"দেশ বেছে নিন",
+    trustNote:"🛡️ আপনার অর্থ আপনার ওয়ালেটে থাকে। রিড-অনলি কানেক্ট। প্রতিটি পেমেন্টে আপনার অনুমোদন দরকার।",
+    bigCta:"🚀 এখনই FREE CryptoCard পান",
+    safetyTitle:"আপনার অর্থ — সবসময় আপনার কাছে",
+    neverHappens:"❌ কখনো হয় না", alwaysHappens:"✅ সবসময় হয়",
+    langRegion:"🌐 ভাষা এবং অঞ্চল",
+    menuCard:"আমার কার্ড", menuCardSub:"কার্ড দেখুন বা আবেদন করুন",
+    menuSafety:"নিরাপত্তা এবং বিশ্বাস", menuSafetySub:"আপনার অর্থ কিভাবে নিরাপদ থাকে",
+    menuSupport:"সাপোর্ট টিকিট", menuSupportSub:"Telegram বা WhatsApp সাহায্য",
+    menuTerms:"নিয়মাবলী", menuTermsSub:"রিওয়ার্ড ক্লেম নীতি",
+    supportTitle:"🎫 সাপোর্ট টিকিট", supportSub:"আমাদের টিম ১-২ ঘন্টার মধ্যে Telegram বা WhatsApp এ যোগাযোগ করবে।",
+    submitTicket:"টিকিট জমা দিন ✅",
+    physCard:"ফিজিক্যাল কার্ড", physSub:"10 USDT · ৭-১০ দিন",
+    caSupport:"সাপোর্ট", caSupportSub:"টিম থেকে সাহায্য নিন",
+    cardApplied:"কার্ড আবেদন সম্পন্ন!", viewCard:"আমার ভার্চুয়াল কার্ড দেখুন →",
+  },
+  TA: {
+    navHome:"முகப்பு", navCard:"அட்டை", navSafety:"பாதுகாப்பு", navProfile:"சுயவிவரம்",
+    totalPortfolio:"💼 மொத்த இருப்பு", walletLbl:"வாலெட்", voucherLbl:"வவுச்சர்", rewardsLbl:"வெகுமதி",
+    tagConnect:"இணை", tagLocked:"பூட்டியது", tagCashback:"கேஷ்பேக்",
+    qaCard:"என் அட்டை", qaApply:"விண்ணப்பி", qaSupport:"ஆதரவு", qaSafety:"பாதுகாப்பு",
+    demoLbl:"அட்டை டெமோ", ourNumbers:"எங்கள் எண்கள்", cardBenefits:"அட்டை நன்மைகள்",
+    choosePlan:"திட்டம் தேர்வு", applyNow:"இப்போது விண்ணப்பி →",
+    noCardYet:"இன்னும் அட்டை இல்லை", noCardSub:"FREE CryptoCard Pro-க்கு விண்ணப்பிக்கவும்.",
+    availPlans:"கிடைக்கும் திட்டங்கள்",
+    step1Lbl:"விவரங்கள்", step2Lbl:"திட்டம்", step3Lbl:"வாலெட்", step4Lbl:"அட்டை!",
+    step1Title:"உங்கள் விவரங்கள் 📝", step1Sub:"உங்கள் தனிப்பட்ட தகவலை உள்ளிடவும். 2 நிமிடங்களுக்கும் குறைவாகும்.",
+    step2Title:"உங்கள் திட்டத்தை தேர்வு செய்யுங்கள் 📋", step2Sub:"உங்களுக்கு மிகவும் பொருத்தமான திட்டத்தைத் தேர்ந்தெடுக்கவும்.",
+    step3Title:"வாலெட் இணைக்கவும் 🔗", step3Sub:"உங்கள் கிரிப்டோ வாலெட்டை இணைக்கவும். உங்கள் நிதி முழுவதும் பாதுகாப்பாக இருக்கும்.",
+    livePreview:"நேரடி அட்டை மாதிரி", btn1Next:"தொடரவும் — திட்டம் தேர்வு →",
+    btn3Next:"என் அட்டையைப் பெறுங்கள் →", btnBack:"← பின்",
+    selectWallet:"உங்கள் வாலெட்டைத் தேர்ந்தெடுங்கள்",
+    lblFirst:"முதல் பெயர் *", lblLast:"கடைசி பெயர் *", lblEmail:"மின்னஞ்சல் *",
+    lblDob:"பிறந்த தேதி *", lblPhone:"தொலைபேசி எண் *", lblCountry:"நாடு *",
+    selCountry:"நாட்டைத் தேர்ந்தெடுக்கவும்",
+    trustNote:"🛡️ உங்கள் நிதி உங்கள் வாலெட்டில் இருக்கும். படிக்க மட்டும் இணைப்பு. ஒவ்வொரு பரிவர்த்தனைக்கும் உங்கள் அனுமதி தேவை.",
+    bigCta:"🚀 இப்போதே FREE CryptoCard பெறுங்கள்",
+    safetyTitle:"உங்கள் பணம் — எப்போதும் உங்களிடம்",
+    neverHappens:"❌ ஒருபோதும் நடக்காது", alwaysHappens:"✅ எப்போதும் நடக்கும்",
+    langRegion:"🌐 மொழி மற்றும் பிராந்தியம்",
+    menuCard:"என் அட்டை", menuCardSub:"அட்டையை பார்க்கவும் அல்லது விண்ணப்பிக்கவும்",
+    menuSafety:"பாதுகாப்பு மற்றும் நம்பிக்கை", menuSafetySub:"உங்கள் பணம் எவ்வாறு பாதுகாப்பாக இருக்கிறது",
+    menuSupport:"ஆதரவு டிக்கெட்", menuSupportSub:"Telegram அல்லது WhatsApp உதவி",
+    menuTerms:"விதிமுறைகள்", menuTermsSub:"வெகுமதி கோரல் கொள்கை",
+    supportTitle:"🎫 ஆதரவு டிக்கெட்", supportSub:"எங்கள் குழு 1-2 மணி நேரத்தில் Telegram அல்லது WhatsApp-ல் தொடர்பு கொள்ளும்.",
+    submitTicket:"டிக்கெட் சமர்ப்பிக்கவும் ✅",
+    physCard:"இயல்பு அட்டை", physSub:"10 USDT · 7-10 நாட்கள்",
+    caSupport:"ஆதரவு", caSupportSub:"குழுவிடம் உதவி பெறுங்கள்",
+    cardApplied:"அட்டை விண்ணப்பிக்கப்பட்டது!", viewCard:"என் மெய்நிகர் அட்டையை பார்க்கவும் →",
+  },
+  TE: {
+    navHome:"హోమ్", navCard:"కార్డ్", navSafety:"భద్రత", navProfile:"ప్రొఫైల్",
+    totalPortfolio:"💼 మొత్తం బ్యాలెన్స్", walletLbl:"వాలెట్", voucherLbl:"వౌచర్", rewardsLbl:"రివార్డ్",
+    tagConnect:"కనెక్ట్", tagLocked:"లాక్డ్", tagCashback:"క్యాష్‌బ్యాక్",
+    qaCard:"నా కార్డ్", qaApply:"దరఖాస్తు", qaSupport:"మద్దతు", qaSafety:"భద్రత",
+    demoLbl:"కార్డ్ డెమో", ourNumbers:"మా సంఖ్యలు", cardBenefits:"కార్డ్ ప్రయోజనాలు",
+    choosePlan:"ప్లాన్ ఎంచుకోండి", applyNow:"ఇప్పుడే దరఖాస్తు చేయండి →",
+    noCardYet:"ఇంకా కార్డ్ లేదు", noCardSub:"FREE CryptoCard Pro కోసం దరఖాస్తు చేయండి.",
+    availPlans:"అందుబాటులో ఉన్న ప్లాన్లు",
+    step1Lbl:"వివరాలు", step2Lbl:"ప్లాన్", step3Lbl:"వాలెట్", step4Lbl:"కార్డ్!",
+    step1Title:"మీ వివరాలు 📝", step1Sub:"మీ వ్యక్తిగత సమాచారాన్ని నమోదు చేయండి. 2 నిమిషాలు మాత్రమే.",
+    step2Title:"మీ ప్లాన్ ఎంచుకోండి 📋", step2Sub:"మీకు అత్యంత అనుకూలమైన ప్లాన్ ఎంచుకోండి.",
+    step3Title:"వాలెట్ కనెక్ట్ చేయండి 🔗", step3Sub:"మీ క్రిప్టో వాలెట్ లింక్ చేయండి. మీ నిధులు సంపూర్ణంగా సురక్షితంగా ఉంటాయి.",
+    livePreview:"లైవ్ కార్డ్ ప్రివ్యూ", btn1Next:"కొనసాగండి — ప్లాన్ ఎంచుకోండి →",
+    btn3Next:"నా కార్డ్ పొందండి →", btnBack:"← వెనుకకు",
+    selectWallet:"మీ వాలెట్ ఎంచుకోండి",
+    lblFirst:"మొదటి పేరు *", lblLast:"చివరి పేరు *", lblEmail:"ఇమెయిల్ చిరునామా *",
+    lblDob:"పుట్టిన తేదీ *", lblPhone:"ఫోన్ నంబర్ *", lblCountry:"దేశం *",
+    selCountry:"దేశం ఎంచుకోండి",
+    trustNote:"🛡️ మీ నిధులు మీ వాలెట్‌లో ఉంటాయి. రీడ్-ఓన్లీ కనెక్ట్. ప్రతి చెల్లింపుకు మీ అనుమతి అవసరం.",
+    bigCta:"🚀 ఇప్పుడే FREE CryptoCard పొందండి",
+    safetyTitle:"మీ డబ్బు — ఎల్లప్పుడూ మీతో",
+    neverHappens:"❌ ఎప్పుడూ జరగదు", alwaysHappens:"✅ ఎల్లప్పుడూ జరుగుతుంది",
+    langRegion:"🌐 భాష మరియు ప్రాంతం",
+    menuCard:"నా కార్డ్", menuCardSub:"కార్డ్ చూడండి లేదా దరఖాస్తు చేయండి",
+    menuSafety:"భద్రత మరియు విశ్వాసం", menuSafetySub:"మీ డబ్బు ఎలా సురక్షితంగా ఉంటుంది",
+    menuSupport:"మద్దతు టికెట్", menuSupportSub:"Telegram లేదా WhatsApp సహాయం",
+    menuTerms:"నిబంధనలు", menuTermsSub:"రివార్డ్ క్లెయిమ్ విధానం",
+    supportTitle:"🎫 మద్దతు టికెట్", supportSub:"మా బృందం 1-2 గంటల్లో Telegram లేదా WhatsApp లో సంప్రదిస్తుంది.",
+    submitTicket:"టికెట్ సమర్పించండి ✅",
+    physCard:"ఫిజికల్ కార్డ్", physSub:"10 USDT · 7-10 రోజులు",
+    caSupport:"మద్దతు", caSupportSub:"బృందం నుండి సహాయం పొందండి",
+    cardApplied:"కార్డ్ దరఖాస్తు చేయబడింది!", viewCard:"నా వర్చువల్ కార్డ్ చూడండి →",
+  },
+};
+
+// Generate stubs for all other languages using English as base
+const LANG_CODES = ['MR','PA','GU','KN','ML','OR','AS','SAT','KS','NE','SI','ZH','ES','FR','DE','PT','RU','JA','KO','TR','FA','ID','MS','TH','VI','PL','IT','NL','UK','SW','HA','YO','AM','SV','NO','DA','FI','EL','RO','HU','CS','HE','AZ','KA'];
+LANG_CODES.forEach(c => { if(!LANGS[c]) LANGS[c] = EN; });
+
+let curLang = 'EN';
+
+function setLang(el, code, dir) {
+  // Remove sel from all in language list
+  const langList = el.closest('.lc-list');
+  if(langList) langList.querySelectorAll('.lc-item').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+  curLang = code;
+  document.documentElement.dir = dir || 'ltr';
+  // Apply all translations at once
+  const t = LANGS[code] || EN;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if(t[key]) el.textContent = t[key];
+    else if(EN[key]) el.textContent = EN[key];
+  });
+  // Also update placeholder text for inputs
+  const fp = document.getElementById('fphone');
+  if(fp) fp.placeholder = code === 'HI' ? 'फोन नंबर' : code === 'AR' ? 'رقم الهاتف' : '98765 43210';
+  showToast('✅ ' + el.textContent.split(' · ')[0] + ' selected!');
+}
+
+function setCnt(el, flag, name, cur, phoneCode){
+  document.querySelectorAll('.lc-list')[1].querySelectorAll('.lc-item').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  // Auto-set phone country code
+  if(phoneCode){
+    const sel=document.getElementById('ccSel');
+    if(sel){for(let o of sel.options){if(o.value===phoneCode){sel.value=phoneCode;break;}}}
+  }
+  // Update country select in form
+  const fcountry=document.getElementById('fcountry');
+  if(fcountry){for(let o of fcountry.options){if(o.text===name||o.text.includes(name.split(' ')[0])){fcountry.value=o.value;break;}}}
+  showToast(flag+' '+name+' · '+cur);
+}
+
+// ── AI CHATBOT ──
+const CSYS=`You are CryptoCard Pro's friendly AI assistant. Reply in same language as the user (Hindi/Hinglish/Urdu/English/etc). Keep replies to 2-3 sentences max.
+
+KEY FACTS:
+SAFETY: Non-custodial — user's fund NEVER leaves wallet without explicit approval each time. Wallet is read-only connected. Every transaction needs popup approval in user's wallet. We NEVER ask for seed phrase.
+
+CARD: Mool (FREE), Pro (19.99 USDT/mo), Premium (49.99 USDT/mo). All get 100 USDT welcome voucher.
+VOUCHER: Apply → connect wallet → voucher shows as PENDING → do any 100 USDT+ transaction → auto-claimed to wallet balance.
+BALANCE TYPES: Wallet Balance (your crypto), Voucher Balance (bonus, locked until condition), Reward Balance (cashback).
+PHYSICAL: 10 USDT fee, 7-10 days, standard or custom, same card number & CVV.
+We are an exchange bridge: crypto → local currency in real-time at every transaction.`;
+
+async function getBR(msg){try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:400,system:CSYS,messages:[{role:"user",content:msg}]})});const d=await r.json();return d.content?.[0]?.text||"Technical issue. Please submit a support ticket!";}catch{return "Connection issue. Try again or submit a support ticket! 🙏";}}
+function addCM(txt,type){const d=document.createElement('div');d.className='cm '+type;d.innerHTML=txt.replace(/\n/g,'<br>');document.getElementById('cmsgs').appendChild(d);document.getElementById('cmsgs').scrollTop=99999;}
+function showCT(){const d=document.createElement('div');d.className='ctyp';d.id='ctEl';d.innerHTML='<span></span><span></span><span></span>';document.getElementById('cmsgs').appendChild(d);document.getElementById('cmsgs').scrollTop=99999;}
+function remCT(){const t=document.getElementById('ctEl');if(t)t.remove();}
+async function sendC(){const inp=document.getElementById('cinp'),txt=inp.value.trim();if(!txt)return;inp.value='';addCM(txt,'user');document.getElementById('cqWrap').style.display='none';showCT();const rep=await getBR(txt);remCT();addCM(rep,'bot');}
+function cq(q){document.getElementById('cinp').value=q;sendC();}
+</script>
+</body>
+</html>
