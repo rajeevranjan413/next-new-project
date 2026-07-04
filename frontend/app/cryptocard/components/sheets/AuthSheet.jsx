@@ -215,7 +215,7 @@ export default function AuthSheet() {
                   className={s['as-input']}
                   type="tel"
                   inputMode="numeric"
-                  placeholder="9414145614"
+                  placeholder=""
                   value={value}
                   onChange={e => setValue(e.target.value.replace(/\D/g, ''))}
                   onKeyDown={e => e.key === 'Enter' && handleNext()}

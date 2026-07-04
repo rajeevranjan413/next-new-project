@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRight, CreditCard, ShieldCheck, Headphones, FileText, BadgeCheck, Globe, Map, Search, Check } from 'lucide-react';
+import { ChevronRight, CreditCard, ShieldCheck, Headphones, FileText, BadgeCheck, Globe, Map, Search, Check, LogOut } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
 import { LANGUAGES, COUNTRIES, LANGS } from '../../data';
 import s from '../../cryptocard.module.css';
@@ -14,7 +14,7 @@ const MENU_ITEMS = [
 ];
 
 export default function ProfileScreen({ active }) {
-  const { profName, profEmail, profInitial, lang, setLangCode, setDir, dir, selectedCountry, setSelectedCountry, showToast, goScreen, openSheet, screenFlash } = useCryptoCard();
+  const { profName, profEmail, profInitial, lang, setLangCode, setDir, dir, selectedCountry, setSelectedCountry, showToast, goScreen, openSheet, screenFlash, user, logout } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
 
   const flashing = screenFlash === 'profile';
@@ -50,6 +50,12 @@ export default function ProfileScreen({ active }) {
   );
 
   const switchTab = (tab) => { setLcTab(tab); setSearch(''); };
+
+  const handleLogout = () => {
+    logout();
+    showToast(t.loggedOut || 'Logged out');
+    goScreen('home');
+  };
 
   return (
     <div className={`${s.screen} ${active ? s.active : ''} ${flashing ? s['screen-flash'] : ''}`} dir={dir}>
@@ -171,6 +177,19 @@ export default function ProfileScreen({ active }) {
               <div className={s['mi-arrow']}><ChevronRight size={16} strokeWidth={2} /></div>
             </div>
           ))}
+
+          {user && (
+            <div className={s.mi} onClick={handleLogout}>
+              <div className={s['mi-ic']} style={{ background: 'rgba(246,70,93,.12)', color: '#F6465D' }}>
+                <LogOut size={18} strokeWidth={1.8} />
+              </div>
+              <div>
+                <div className={s['mi-nm']} style={{ color: '#F6465D' }}>{t.menuLogout || 'Log out'}</div>
+                <div className={s['mi-ds']}>{t.menuLogoutSub || 'Sign out of your account'}</div>
+              </div>
+              <div className={s['mi-arrow']}><ChevronRight size={16} strokeWidth={2} /></div>
+            </div>
+          )}
         </div>
 
       </div>
