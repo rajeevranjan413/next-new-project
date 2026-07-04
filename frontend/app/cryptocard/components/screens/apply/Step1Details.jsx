@@ -28,18 +28,18 @@ export default function Step1Details({ t }) {
       <div className={s['two-col']}>
         <div className={s.fg}>
           <label>{t.lblFirst}</label>
-          <input type="text" placeholder="Rahul" value={form.firstName}
+          <input type="text" placeholder="" value={form.firstName}
             onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} />
         </div>
         <div className={s.fg}>
           <label>{t.lblLast}</label>
-          <input type="text" placeholder="Sharma" value={form.lastName}
+          <input type="text" placeholder="" value={form.lastName}
             onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} />
         </div>
       </div>
       <div className={s.fg}>
         <label>{t.lblEmail}</label>
-        <input type="email" placeholder="rahul@email.com" value={form.email}
+        <input type="email" placeholder="" value={form.email}
           onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
       </div>
       <div className={s.fg}>
@@ -54,7 +54,7 @@ export default function Step1Details({ t }) {
             onChange={e => setForm(f => ({ ...f, countryCode: e.target.value }))}>
             {PHONE_CODES.map(pc => <option key={pc.code} value={pc.code}>{pc.label}</option>)}
           </select>
-          <input className={s['ph-inp']} type="tel" placeholder="98765 43210"
+          <input className={s['ph-inp']} type="tel" placeholder=""
             value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
         </div>
       </div>
