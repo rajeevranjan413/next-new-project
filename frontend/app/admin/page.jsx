@@ -44,6 +44,17 @@ async function apiUploadLogo(token, file) {
   const r = await fetch(`${API}/api/config/logo`, { method: 'POST', headers: auth(token), body: fd });
   const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
 }
+async function apiTickets(token, { page = 1, status = '', search = '' } = {}) {
+  const p = new URLSearchParams({ page, limit: 20 });
+  if (status) p.set('status', status);
+  if (search) p.set('search', search);
+  const r = await fetch(`${API}/api/tickets?${p}`, { headers: auth(token) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
+}
+async function apiUpdateTicket(token, id, fields) {
+  const r = await fetch(`${API}/api/tickets/${id}`, { method: 'PATCH', headers: { ...json, ...auth(token) }, body: JSON.stringify(fields) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d.ticket;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtDate(iso) {
@@ -57,7 +68,10 @@ function Avatar({ name, email, phone }) {
 }
 function useToast() {
   const [msg, setMsg] = useState('');
-  const show = (m) => { setMsg(m); setTimeout(() => setMsg(''), 3200); };
+  // Memoized so its identity is stable — otherwise any effect/useCallback that
+  // depends on `show` (e.g. TicketsPanel's data loader) would re-run every
+  // render and spin into an infinite fetch loop.
+  const show = useCallback((m) => { setMsg(m); setTimeout(() => setMsg(''), 3200); }, []);
   return [msg, show];
 }
 
@@ -67,13 +81,17 @@ const Icons = {
   Users:      () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0H2zm11-8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm4 8a5 5 0 0 0-5-5 5 5 0 0 1 9 0h-4z"/></svg>,
   Appearance: () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM10 2a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm.5 4.5h-1v5l4.3 2.5.5-.9-3.8-2.2V6.5z" opacity="0"/><circle cx="10" cy="10" r="3"/><path d="M10 2v2m0 12v2M2 10h2m12 0h2m-3.2-6.8-1.4 1.4M6.6 13.4l-1.4 1.4m0-10 1.4 1.4m6.8 6.8 1.4 1.4"/></svg>,
   Brand:      () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 1 0-2 0v1H7a1 1 0 0 0 0 2h1v1.1A6 6 0 0 0 10 18a6 6 0 0 0 2-11.9V6h1a1 1 0 1 0 0-2h-2V3z"/></svg>,
+  Tickets:    () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 5a2 2 0 0 0-2 2v1.5a1.5 1.5 0 0 1 0 3V13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1.5a1.5 1.5 0 0 1 0-3V7a2 2 0 0 0-2-2H3zm10 1h1v1h-1V6zm0 3h1v1h-1V9zm0 3h1v1h-1v-1z"/></svg>,
+  Voucher:    () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1.6l2.2 1.6 2.7-.2.9 2.6 2.2 1.6-.9 2.6.9 2.6-2.2 1.6-.9 2.6-2.7-.2L10 18.4l-2.2-1.6-2.7.2-.9-2.6L2 12.8l.9-2.6L2 7.6l2.2-1.6.9-2.6 2.7.2L10 1.6zm-1 9.9l4-4-1-1-3 3-1.5-1.5-1 1L9 11.5z"/></svg>,
 };
 
 const NAV_ITEMS = [
   { key: 'overview',   label: 'Overview',   Icon: Icons.Overview },
   { key: 'users',      label: 'Users',      Icon: Icons.Users },
+  { key: 'tickets',    label: 'Tickets',    Icon: Icons.Tickets },
   { key: 'appearance', label: 'Appearance', Icon: Icons.Appearance },
   { key: 'brand',      label: 'Brand Info', Icon: Icons.Brand },
+  { key: 'voucher',    label: 'Voucher Popup', Icon: Icons.Voucher },
 ];
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -280,6 +298,170 @@ function UsersPanel({ token, onLogout }) {
   );
 }
 
+// ── Tickets panel ─────────────────────────────────────────────────────────────
+const TICKET_CHANNELS = {
+  tg:    { label: 'Telegram', color: '#229ED9' },
+  wa:    { label: 'WhatsApp', color: '#25D366' },
+  email: { label: 'Email',    color: '#EA4335' },
+};
+const STATUS_META = {
+  open:        { label: 'Open',        badge: 'bBlue'  },
+  in_progress: { label: 'In Progress', badge: 'bAmber' },
+  resolved:    { label: 'Resolved',    badge: 'bGreen' },
+};
+const STATUS_FILTERS = [
+  { key: '',            label: 'All' },
+  { key: 'open',        label: 'Open' },
+  { key: 'in_progress', label: 'In Progress' },
+  { key: 'resolved',    label: 'Resolved' },
+];
+
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function TicketsPanel({ token, onLogout }) {
+  const [tickets, setTickets] = useState([]);
+  const [counts, setCounts]   = useState({ open: 0, in_progress: 0, resolved: 0 });
+  const [total, setTotal]     = useState(0);
+  const [pages, setPages]     = useState(1);
+  const [page, setPage]       = useState(1);
+  const [status, setStatus]   = useState('');
+  const [search, setSearch]   = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
+  const [toastMsg, showToast] = useToast();
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const d = await apiTickets(token, { page, status, search });
+      setTickets(d.tickets); setTotal(d.total); setPages(d.pages);
+      if (d.counts) setCounts(d.counts);
+    } catch (e) {
+      if (e.message?.includes('Unauthorized')) onLogout();
+      else showToast('Error: ' + e.message);
+    } finally { setLoading(false); }
+  }, [token, page, status, search, onLogout, showToast]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function changeStatus(ticket, next) {
+    if (next === ticket.status) return;
+    setUpdatingId(ticket._id);
+    try {
+      const updated = await apiUpdateTicket(token, ticket._id, { status: next });
+      setTickets(list => list.map(t => (t._id === ticket._id ? updated : t)));
+      // Keep the header counts in sync without a full refetch.
+      setCounts(c => ({ ...c, [ticket.status]: Math.max(0, c[ticket.status] - 1), [next]: c[next] + 1 }));
+      showToast(`Ticket ${updated.ref} → ${STATUS_META[next].label}`);
+    } catch (e) {
+      showToast('Error: ' + e.message);
+    } finally { setUpdatingId(null); }
+  }
+
+  return (
+    <div className={s.panel}>
+      <Toast msg={toastMsg} />
+      <div className={s.panelHead}>
+        <h2 className={s.panelTitle}>Support Tickets <span className={s.totalBadge}>{total}</span></h2>
+        <p className={s.panelSub}>Tickets submitted from the in-app Support Center — from both registered users and guests</p>
+      </div>
+
+      {/* Status filter chips */}
+      <div className={s.filterRow}>
+        {STATUS_FILTERS.map(f => {
+          const active = status === f.key;
+          const count = f.key ? counts[f.key] : (counts.open + counts.in_progress + counts.resolved);
+          return (
+            <button key={f.key || 'all'}
+              className={s.filterChip + (active ? ' ' + s.filterChipActive : '')}
+              onClick={() => { setStatus(f.key); setPage(1); }}>
+              {f.label}<span className={s.filterCount}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search */}
+      <form className={s.searchRow} onSubmit={e => { e.preventDefault(); setPage(1); setSearch(searchInput.trim()); }}>
+        <input className={s.searchInput} placeholder="Search by ref, contact, name or message…"
+          value={searchInput} onChange={e => setSearchInput(e.target.value)} />
+        <button className={s.searchBtn} type="submit">Search</button>
+        {search && <button className={s.clearBtn} type="button" onClick={() => { setSearchInput(''); setSearch(''); setPage(1); }}>Clear</button>}
+      </form>
+
+      <div className={s.tableWrap}>
+        <table className={s.table}>
+          <thead><tr><th>Ref</th><th>From</th><th>Channel</th><th>Message</th><th>Received</th><th>Status</th></tr></thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} className={s.tdCenter}>Loading…</td></tr>
+            ) : tickets.length === 0 ? (
+              <tr><td colSpan={6} className={s.tdCenter}>No tickets found</td></tr>
+            ) : tickets.map(tk => {
+              const ch = TICKET_CHANNELS[tk.channel] || { label: tk.channelLabel || tk.channel, color: '#9ca3af' };
+              const who = tk.userSnapshot?.name || tk.userSnapshot?.email
+                || tk.userSnapshot?.phone || tk.contact;
+              return (
+                <tr key={tk._id}>
+                  <td className={s.refCell}>{tk.ref}</td>
+                  <td>
+                    <div className={s.userCell}>
+                      <Avatar name={tk.userSnapshot?.name} email={tk.userSnapshot?.email} phone={tk.contact} />
+                      <div>
+                        <div className={s.userName}>{who}</div>
+                        <div className={s.dim}>
+                          {tk.isGuest
+                            ? <span className={s.badge + ' ' + s.bGrey}>Guest</span>
+                            : <span className={s.badge + ' ' + s.bGreen}>Registered</span>}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className={s.chChip}>
+                      <span className={s.chDot} style={{ background: ch.color }} />
+                      {ch.label}
+                    </span>
+                    <div className={s.dim}>{tk.contact}</div>
+                  </td>
+                  <td className={s.descCell}>{tk.description}</td>
+                  <td className={s.dim}>{fmtDateTime(tk.createdAt)}</td>
+                  <td>
+                    <select
+                      className={s.statusSelect}
+                      value={tk.status}
+                      disabled={updatingId === tk._id}
+                      onChange={e => changeStatus(tk, e.target.value)}
+                    >
+                      {Object.entries(STATUS_META).map(([key, m]) => (
+                        <option key={key} value={key}>{m.label}</option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {pages > 1 && (
+        <div className={s.pagination}>
+          <button className={s.pageBtn} onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>← Prev</button>
+          <span className={s.pageInfo}>Page {page} of {pages}</span>
+          <button className={s.pageBtn} onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}>Next →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Appearance panel ──────────────────────────────────────────────────────────
 function AppearancePanel({ token }) {
   const [cfg, setCfg] = useState({});
@@ -469,6 +651,129 @@ function BrandPanel({ token }) {
   );
 }
 
+// ── Voucher popup panel ─────────────────────────────────────────────────────────
+// Placeholders double as the built-in fallback copy so the admin sees what a
+// blank field will render as on the live app.
+const VOUCHER_PLACEHOLDERS = {
+  limitedText: 'LIMITED — Today Only',
+  title:       'Apply Today & Get',
+  highlight:   '100 USDT FREE',
+  subtitle:    'Welcome bonus for new applicants — today only!',
+  amount:      '100 USDT',
+  bonusNote:   'Min. 100 USDT transaction → auto-claimed to wallet',
+  ctaText:     'Apply Now — Claim 100 USDT',
+  skipText:    "No thanks, I'll miss this",
+};
+
+function VoucherPanel({ token }) {
+  const [v, setV] = useState({
+    enabled: true, limitedText: '', title: '', highlight: '', subtitle: '',
+    amount: '', bonusNote: '', offerMinutes: 15, ctaText: '', slots: 47, skipText: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [toastMsg, showToast] = useToast();
+
+  useEffect(() => {
+    apiGetConfig().then(c => { if (c?.voucher) setV(prev => ({ ...prev, ...c.voucher })); }).catch(() => {});
+  }, []);
+
+  const set = (key, val) => setV(x => ({ ...x, [key]: val }));
+
+  async function handleSave(e) {
+    e.preventDefault(); setSaving(true);
+    try {
+      const updated = await apiSaveConfig(token, {
+        voucher: {
+          ...v,
+          offerMinutes: Number(v.offerMinutes) || 15,
+          slots: Number(v.slots) || 0,
+        },
+      });
+      if (updated?.voucher) setV(prev => ({ ...prev, ...updated.voucher }));
+      showToast('Voucher popup saved — frontend updates on next load');
+    } catch (e) { showToast('Error: ' + e.message); }
+    finally { setSaving(false); }
+  }
+
+  const txt = (key, label, full = false) => (
+    <div className={s.fieldGroup} style={full ? { gridColumn: '1 / -1' } : undefined}>
+      <label className={s.label}>{label}</label>
+      <input className={s.input} type="text" placeholder={VOUCHER_PLACEHOLDERS[key] || ''}
+        value={v[key] ?? ''} onChange={e => set(key, e.target.value)} />
+    </div>
+  );
+
+  return (
+    <div className={s.panel}>
+      <Toast msg={toastMsg} />
+      <div className={s.panelHead}>
+        <h2 className={s.panelTitle}>Voucher Popup</h2>
+        <p className={s.panelSub}>The welcome-bonus popup that greets visitors. Leave a text field blank to use the app’s built-in translated copy.</p>
+      </div>
+
+      <form className={s.card} onSubmit={handleSave}>
+        {/* Enable toggle */}
+        <div className={s.cardHead}>
+          <div>
+            <div className={s.cardTitle}>Show popup</div>
+            <div className={s.cardSub}>Turn the welcome-bonus popup on or off for all visitors</div>
+          </div>
+          <button type="button" role="switch" aria-checked={v.enabled}
+            onClick={() => set('enabled', !v.enabled)}
+            style={{
+              width: 46, height: 26, borderRadius: 999, border: 'none', cursor: 'pointer',
+              position: 'relative', flexShrink: 0,
+              background: v.enabled ? '#6366f1' : '#d1d5db', transition: 'background .2s',
+            }}>
+            <span style={{
+              position: 'absolute', top: 3, left: v.enabled ? 23 : 3, width: 20, height: 20,
+              borderRadius: '50%', background: '#fff', transition: 'left .2s',
+              boxShadow: '0 1px 3px rgba(0,0,0,.3)',
+            }} />
+          </button>
+        </div>
+
+        <div className={s.cardTitle} style={{ marginTop: 20, marginBottom: 4 }}>Content</div>
+        <div className={s.cardSub} style={{ marginBottom: 16 }}>Marketing copy shown inside the popup</div>
+        <div className={s.formGrid}>
+          {txt('limitedText', 'Urgency ribbon')}
+          {txt('amount', 'Bonus amount (big number)')}
+          {txt('title', 'Headline')}
+          {txt('highlight', 'Highlighted line')}
+          {txt('subtitle', 'Subtitle', true)}
+          {txt('bonusNote', 'Bonus note', true)}
+          {txt('ctaText', 'Button text')}
+          {txt('skipText', 'Dismiss link text')}
+        </div>
+
+        <div className={s.cardTitle} style={{ marginTop: 20, marginBottom: 4 }}>Behaviour</div>
+        <div className={s.cardSub} style={{ marginBottom: 16 }}>Countdown length and the starting scarcity number</div>
+        <div className={s.formGrid}>
+          <div className={s.fieldGroup}>
+            <label className={s.label}>Countdown (minutes)</label>
+            <input className={s.input} type="number" min={1} max={240}
+              value={v.offerMinutes} onChange={e => set('offerMinutes', e.target.value)} />
+          </div>
+          <div className={s.fieldGroup}>
+            <label className={s.label}>Starting “slots left”</label>
+            <input className={s.input} type="number" min={0} max={100000}
+              value={v.slots} onChange={e => set('slots', e.target.value)} />
+          </div>
+        </div>
+
+        <div className={s.cardFooter}>
+          <div className={s.previewNote}>
+            <strong>Note:</strong> blank text fields fall back to the app’s localized copy; numbers and the on/off toggle always apply. Changes appear on the visitor’s next page load.
+          </div>
+          <button className={s.btnPrimary} type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 // ── Login ─────────────────────────────────────────────────────────────────────
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -600,8 +905,10 @@ export default function AdminPage() {
       <div className={s.content}>
         {nav === 'overview'   && <OverviewPanel   token={token} onNav={setNav} onLogout={handleLogout} />}
         {nav === 'users'      && <UsersPanel      token={token} onLogout={handleLogout} />}
+        {nav === 'tickets'    && <TicketsPanel    token={token} onLogout={handleLogout} />}
         {nav === 'appearance' && <AppearancePanel token={token} />}
         {nav === 'brand'      && <BrandPanel      token={token} />}
+        {nav === 'voucher'    && <VoucherPanel    token={token} />}
       </div>
     </div>
   );

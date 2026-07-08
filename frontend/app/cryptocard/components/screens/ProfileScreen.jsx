@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronRight, CreditCard, ShieldCheck, Headphones, FileText, BadgeCheck, Globe, Map, Search, Check, LogOut } from 'lucide-react';
+import { ChevronRight, CreditCard, ShieldCheck, Headphones, FileText, BadgeCheck, Globe, Map, Search, Check, LogOut, Calendar, Phone, MapPin } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
-import { LANGUAGES, COUNTRIES, LANGS } from '../../data';
+import { LANGUAGES, COUNTRIES, LANGS, WORLD_COUNTRIES } from '../../data';
 import s from '../../cryptocard.module.css';
 
 const MENU_ITEMS = [
@@ -14,7 +14,7 @@ const MENU_ITEMS = [
 ];
 
 export default function ProfileScreen({ active }) {
-  const { profName, profEmail, profInitial, lang, setLangCode, setDir, dir, selectedCountry, setSelectedCountry, showToast, goScreen, openSheet, screenFlash, user, logout } = useCryptoCard();
+  const { profName, profEmail, profInitial, profileDetails, lang, setLangCode, setDir, dir, selectedCountry, setSelectedCountry, showToast, goScreen, openSheet, screenFlash, user, logout } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
 
   const flashing = screenFlash === 'profile';
@@ -23,6 +23,21 @@ export default function ProfileScreen({ active }) {
 
   const currentCountry = COUNTRIES.find(c => c.name === selectedCountry);
   const currentLang = LANGUAGES.find(l => l.code === lang);
+
+  // Personal details captured from the apply-form Step 1 (see nextStep in context).
+  const pd = profileDetails;
+  const pdCountry = pd && WORLD_COUNTRIES.find(c => c.name === pd.country);
+  const fmtDob = (d) => {
+    if (!d) return '';
+    const dt = new Date(d);
+    return isNaN(dt.getTime()) ? d : dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  // Only the details not already shown in the hero (which has name + email).
+  const detailRows = pd ? [
+    { Icon: Calendar, label: t.pdDob     || 'Date of Birth', value: fmtDob(pd.dob) },
+    { Icon: Phone,    label: t.pdPhone   || 'Phone',         value: pd.phone ? `${pd.countryCode || ''} ${pd.phone}`.trim() : '' },
+    { Icon: MapPin,   label: t.pdCountry || 'Country',       value: pd.country ? `${pdCountry ? pdCountry.flag + ' ' : ''}${pd.country}` : '' },
+  ].filter(r => r.value) : [];
 
   const handleLang = (item) => {
     setLangCode(item.code);
@@ -60,6 +75,7 @@ export default function ProfileScreen({ active }) {
   return (
     <div className={`${s.screen} ${active ? s.active : ''} ${flashing ? s['screen-flash'] : ''}`} dir={dir}>
       <div className={s['profile-screen']}>
+
 
         {/* Profile Hero */}
         <div className={s['profile-hero']}>

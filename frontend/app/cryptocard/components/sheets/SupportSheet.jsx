@@ -1,10 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { CheckCircle, X, HeadphonesIcon, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle, X, HeadphonesIcon, ChevronRight, Clock } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
+import { submitTicket } from '../../services/api';
 import { LANGS } from '../../data';
 import s from '../../cryptocard.module.css';
+
+/* ── Guest submit cooldown ──
+ * A non-logged-in user may submit only one ticket every 2 hours. We persist the
+ * "unlocked at" timestamp in localStorage so the window survives reloads and tab
+ * closes for the full 2h (sessionStorage would reset when the tab closes and
+ * defeat the purpose). Logged-in users are not throttled here. */
+const GUEST_COOLDOWN_MS  = 2 * 60 * 60 * 1000; // 2 hours
+const GUEST_COOLDOWN_KEY = 'cc_guest_ticket_until';
+
+function readGuestCooldownUntil() {
+  if (typeof window === 'undefined') return 0;
+  try { return parseInt(localStorage.getItem(GUEST_COOLDOWN_KEY), 10) || 0; } catch { return 0; }
+}
+function writeGuestCooldownUntil(ts) {
+  try { localStorage.setItem(GUEST_COOLDOWN_KEY, String(ts)); } catch {}
+}
+function fmtRemaining(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${sec}s`;
+}
 
 /* ── Brand-coloured social icons ── */
 const TelegramIcon = () => (
@@ -35,23 +61,100 @@ const CHANNELS = [
   { id: 'email', label: 'Email',     Icon: EmailIcon,     placeholder: 'you@example.com',  hint: 'Your email address' },
 ];
 
+/* ── Quick help FAQ — tap a question to reveal its answer ── */
+const QUICK_HELP = [
+  {
+    q: 'How to apply for a card?',
+    a: 'Tap “Apply”, enter your details, pick a plan and card design, then connect a wallet. Your virtual card is issued instantly — no paperwork needed.',
+  },
+  {
+    q: 'Card delivery timeline',
+    a: 'Virtual cards are ready to use the moment you apply. Physical cards are printed and shipped within 7–14 business days, depending on your country.',
+  },
+  {
+    q: 'How to top up wallet?',
+    a: 'Open the Wallet screen, connect a supported wallet, then transfer USDT to your card address. Your balance updates automatically once the transfer confirms.',
+  },
+];
+
 export default function SupportSheet() {
-  const { sheet, closeSheet, ticketSubmitted, setTicketSubmitted, showToast, lang, appConfig } = useCryptoCard();
+  const { sheet, closeSheet, ticketSubmitted, setTicketSubmitted, showToast, lang, appConfig, user } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
 
   const [channel, setChannel] = useState('tg');
   const [contact, setContact]   = useState('');
   const [desc, setDesc]         = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [ticketRef, setTicketRef]   = useState('');
+  const [openHelp, setOpenHelp]     = useState(null);
+
+  // Guest cooldown: `until` timestamp + a `now` ticker so the remaining time
+  // counts down live while the sheet is open.
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
 
   const active = CHANNELS.find(c => c.id === channel);
 
-  const submit = () => {
+  // Load any stored cooldown when the support sheet opens (guests only).
+  useEffect(() => {
+    if (sheet === 'support' && !user) {
+      setCooldownUntil(readGuestCooldownUntil());
+      setNow(Date.now());
+    }
+  }, [sheet, user]);
+
+  // Tick every second while a guest cooldown is active; stop once it elapses.
+  useEffect(() => {
+    if (user || !cooldownUntil || cooldownUntil <= Date.now()) return;
+    const id = setInterval(() => {
+      const t = Date.now();
+      setNow(t);
+      if (t >= cooldownUntil) clearInterval(id);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldownUntil, user]);
+
+  const remaining    = user ? 0 : Math.max(0, cooldownUntil - now);
+  const guestBlocked = remaining > 0;
+
+  const submit = async () => {
+    if (submitting) return;
+    // Enforce the 2-hour guest cooldown before doing anything else.
+    if (!user) {
+      const until = readGuestCooldownUntil();
+      if (until > Date.now()) {
+        setCooldownUntil(until);
+        showToast(`Please wait ${fmtRemaining(until - Date.now())} before submitting another ticket`);
+        return;
+      }
+    }
     if (!contact.trim()) { showToast(`Enter your ${active.hint}`); return; }
     if (!desc.trim())    { showToast('Please describe your issue'); return; }
-    setTicketSubmitted(true);
+
+    setSubmitting(true);
+    try {
+      const { ticket } = await submitTicket({
+        channel,
+        contact: contact.trim(),
+        description: desc.trim(),
+      });
+      setTicketRef(ticket?.ref || '');
+      setTicketSubmitted(true);
+      // Start the 2-hour window for guests.
+      if (!user) {
+        const until = Date.now() + GUEST_COOLDOWN_MS;
+        writeGuestCooldownUntil(until);
+        setCooldownUntil(until);
+        setNow(Date.now());
+      }
+    } catch (err) {
+      showToast(err.message || 'Could not submit ticket. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const reset = () => { setContact(''); setDesc(''); setTicketSubmitted(false); };
+  const reset = () => { setContact(''); setDesc(''); setTicketRef(''); setTicketSubmitted(false); };
 
   return (
     <div
@@ -79,7 +182,44 @@ export default function SupportSheet() {
           <button className={s['sup-close']} onClick={closeSheet}><X size={18} /></button>
         </div>
 
-        {!ticketSubmitted ? (
+        {ticketSubmitted ? (
+          /* Success state */
+          <div className={s['sup-success']}>
+            <div className={s['sup-success-icon']}>
+              <CheckCircle size={52} strokeWidth={1.4} style={{ color: 'var(--green)' }} />
+            </div>
+            <div className={s['sup-success-title']}>Ticket Submitted!</div>
+            <div className={s['sup-success-msg']}>
+              Our team will reach out via <strong>{active?.label}</strong> within 1–2 hours.
+            </div>
+            <div className={s['sup-success-ref']}>
+              Ref #{ticketRef || '—'}
+            </div>
+            {user ? (
+              <button className={s['sup-submit']} onClick={reset} style={{ marginTop: 20 }}>
+                Submit Another Ticket
+              </button>
+            ) : (
+              <div className={s['sup-success-msg']} style={{ marginTop: 16, fontSize: '12.5px', opacity: .85 }}>
+                You can submit another ticket in <strong>{fmtRemaining(remaining)}</strong>.
+              </div>
+            )}
+          </div>
+        ) : guestBlocked ? (
+          /* Guest cooldown — already submitted within the last 2 hours */
+          <div className={s['sup-success']}>
+            <div className={s['sup-success-icon']}>
+              <Clock size={52} strokeWidth={1.4} style={{ color: 'var(--bnb)' }} />
+            </div>
+            <div className={s['sup-success-title']}>You already have an open ticket</div>
+            <div className={s['sup-success-msg']}>
+              You can submit another ticket in <strong>{fmtRemaining(remaining)}</strong>.
+            </div>
+            <div className={s['sup-success-msg']} style={{ marginTop: 8, fontSize: '12.5px', opacity: .8 }}>
+              Need urgent help? Reach us directly on Telegram, WhatsApp or email.
+            </div>
+          </div>
+        ) : (
           <>
             {/* Channel selector */}
             <div className={s['sup-section-lbl']}>Choose contact method</div>
@@ -125,38 +265,42 @@ export default function SupportSheet() {
             </div>
 
             {/* Submit */}
-            <button className={s['sup-submit']} onClick={submit}>
-              Submit Ticket <ChevronRight size={16} style={{ marginLeft: 4, verticalAlign: 'middle' }} />
+            <button className={s['sup-submit']} onClick={submit} disabled={submitting}>
+              {submitting ? 'Submitting…' : (
+                <>Submit Ticket <ChevronRight size={16} style={{ marginLeft: 4, verticalAlign: 'middle' }} /></>
+              )}
             </button>
 
-            {/* Quick links */}
+            {/* Quick help — tap a question to reveal its answer */}
             <div className={s['sup-quick']}>
               <div className={s['sup-quick-lbl']}>Quick help</div>
-              {['How to apply for a card?', 'Card delivery timeline', 'How to top up wallet?'].map(q => (
-                <div key={q} className={s['sup-quick-item']}>
-                  <ChevronRight size={13} style={{ color: 'var(--bnb)', flexShrink: 0 }} />
-                  <span>{q}</span>
-                </div>
-              ))}
+              {QUICK_HELP.map(({ q, a }, i) => {
+                const open = openHelp === i;
+                return (
+                  <div key={q} className={s['sup-quick-entry']}>
+                    <button
+                      type="button"
+                      className={s['sup-quick-item']}
+                      onClick={() => setOpenHelp(open ? null : i)}
+                      aria-expanded={open}
+                    >
+                      <ChevronRight
+                        size={13}
+                        style={{
+                          color: 'var(--bnb)',
+                          flexShrink: 0,
+                          transform: open ? 'rotate(90deg)' : 'none',
+                          transition: 'transform .18s ease',
+                        }}
+                      />
+                      <span>{q}</span>
+                    </button>
+                    {open && <div className={s['sup-quick-ans']}>{a}</div>}
+                  </div>
+                );
+              })}
             </div>
           </>
-        ) : (
-          /* Success state */
-          <div className={s['sup-success']}>
-            <div className={s['sup-success-icon']}>
-              <CheckCircle size={52} strokeWidth={1.4} style={{ color: 'var(--green)' }} />
-            </div>
-            <div className={s['sup-success-title']}>Ticket Submitted!</div>
-            <div className={s['sup-success-msg']}>
-              Our team will reach out via <strong>{active?.label}</strong> within 1–2 hours.
-            </div>
-            <div className={s['sup-success-ref']}>
-              Ref #{Math.random().toString(36).slice(2,8).toUpperCase()}
-            </div>
-            <button className={s['sup-submit']} onClick={reset} style={{ marginTop: 20 }}>
-              Submit Another Ticket
-            </button>
-          </div>
         )}
       </div>
     </div>

@@ -5,7 +5,7 @@
 export { CARD_THEMES }              from './config/theme';
 export { PLANS }                    from './config/plans';
 export { WALLETS }                  from './config/wallets';
-export { TICKER_DATA, BENEFITS, PHONE_CODES, FORM_COUNTRIES } from './config/content';
+export { TICKER_DATA, BENEFITS, PHONE_CODES, FORM_COUNTRIES, WORLD_COUNTRIES } from './config/content';
 export { LANGUAGES, COUNTRIES }     from './config/languages';
 export { LANGS, CHATBOT_SYSTEM }    from './config/i18n';
 

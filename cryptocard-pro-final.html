@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>CryptoCard Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0B0E11;--s1:#1E2329;--s2:#2B3139;--s3:#363C45;
+  --bnb:#F0B90B;--bnb2:#d4a50a;--bnb-bg:rgba(240,185,11,.09);--bnb-bd:rgba(240,185,11,.24);
+  --green:#0ECB81;--gbg:rgba(14,203,129,.1);--gbd:rgba(14,203,129,.25);
+  --red:#F6465D;--rbg:rgba(246,70,93,.1);--rbd:rgba(246,70,93,.25);
+  --text:#EAECEF;--t2:#B7BDC6;--t3:#848E9C;
+  --bd:#2B3139;--bd2:#363C45;
+  --r3:3px;--r6:6px;--r8:8px;--r12:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+button{font-family:'Inter',sans-serif;cursor:pointer}
+input,select,textarea{font-family:'Inter',sans-serif}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:400;height:52px;background:rgba(11,14,17,.97);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 14px;gap:10px;backdrop-filter:blur(14px)}
+.t-logo{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:800;color:var(--bnb);white-space:nowrap;letter-spacing:-.3px;flex-shrink:0}
+.t-nav{display:flex;overflow-x:auto;scrollbar-width:none;flex:1}
+.t-nav::-webkit-scrollbar{display:none}
+.tnav{padding:0 11px;height:52px;display:flex;align-items:center;font-size:12.5px;font-weight:500;color:var(--t3);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tnav:hover,.tnav.on{color:var(--text);border-bottom-color:var(--bnb)}
+.t-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+
+/* top selectors */
+.top-sel-btn{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:5px 9px;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.top-sel-btn:hover{border-color:var(--bnb);color:var(--text)}
+.top-sel-btn .flag{font-size:14px}
+.sel-arrow{font-size:8px;color:var(--t3);margin-left:2px}
+
+/* dropdowns */
+.dd-wrap{position:relative}
+.dd-panel{position:absolute;top:calc(100% + 6px);right:0;background:var(--s1);border:1px solid var(--bd2);border-radius:var(--r8);min-width:220px;max-height:320px;overflow-y:auto;z-index:500;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5);scrollbar-width:thin;scrollbar-color:var(--bd2) transparent}
+.dd-panel.open{display:block}
+.dd-search{padding:8px;border-bottom:1px solid var(--bd)}
+.dd-search input{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:6px 10px;color:var(--text);font-size:12px;outline:none}
+.dd-search input:focus{border-color:var(--bnb)}
+.dd-section-lbl{padding:7px 12px 4px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.dd-item{display:flex;align-items:center;gap:9px;padding:8px 12px;font-size:12.5px;cursor:pointer;transition:background .12s;color:var(--t2)}
+.dd-item:hover,.dd-item.sel{background:var(--s2);color:var(--text)}
+.dd-item .di-flag{font-size:16px;flex-shrink:0}
+.dd-item .di-name{flex:1}
+.dd-item .di-sub{font-size:10.5px;color:var(--t3)}
+.dd-item.sel .di-name::after{content:' ✓';color:var(--bnb)}
+
+/* ── TICKER ── */
+.ticker-bar{position:fixed;top:52px;left:0;right:0;z-index:399;background:var(--s1);border-bottom:1px solid var(--bd);height:28px;overflow:hidden;display:flex;align-items:center}
+.tick-inner{display:flex;gap:28px;animation:tickM 28s linear infinite;width:max-content;font-size:11px}
+@keyframes tickM{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tick{display:flex;align-items:center;gap:4px;white-space:nowrap;color:var(--t2)}
+.tick strong{color:var(--text);font-weight:600}
+.up{color:var(--green)}.dn{color:var(--red)}
+
+/* ── MAIN 2-COLUMN LAYOUT ── */
+.page{max-width:1100px;margin:0 auto;padding:96px 14px 80px}
+.main-layout{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+@media(max-width:768px){.main-layout{grid-template-columns:1fr}}
+
+/* ── LEFT PANEL ── */
+.left-panel{position:sticky;top:96px;display:flex;flex-direction:column;gap:12px}
+@media(max-width:768px){.left-panel{position:static}}
+
+/* LIVE CARD PREVIEW */
+.card-preview-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r8);padding:16px}
+.cp-title{font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.card-3d{width:100%;max-width:260px;aspect-ratio:1.586;background:linear-gradient(135deg,#1a2035,#252d3d,#1a1e2e);border:1px solid var(--bd2);border-radius:12px;padding:18px;position:relative;overflow:hidden;margin:0 auto}
+.card-3d::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(240,185,11,.18),transparent 70%);pointer-events:none}
+.card-3d::after{content:'VISA';position:absolute;bottom:14px;right:16px;font-size:17px;font-weight:800;color:rgba(255,255,255,.85);font-style:italic;letter-spacing:-1px}
+.c3-chip{width:30px;height:22px;background:linear-gradient(135deg,#c9a20a,#8a6e08);border-radius:3px;margin-bottom:14px}
+.c3-num{font-size:12px;letter-spacing:2px;color:rgba(255,255,255,.55);margin-bottom:12px;font-family:monospace}
+.c3-name{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.7px;text-transform:uppercase;margin-bottom:2px;transition:color .3s}
+.c3-name.filled{color:rgba(255,255,255,.85)}
+.c3-logo{position:absolute;top:14px;right:14px;font-size:13px;font-weight:800;color:var(--bnb)}
+.c3-badge{position:absolute;top:14px;left:14px;background:var(--green);color:#000;font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px}
+
+/* wallet connect overlay on card */
+.card-overlay{position:absolute;inset:0;border-radius:12px;background:rgba(11,14,17,.78);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:opacity .3s}
+.card-overlay.hidden{opacity:0;pointer-events:none}
+.co-icon{font-size:22px}
+.co-text{font-size:11px;font-weight:600;color:var(--bnb);text-align:center;line-height:1.4;padding:0 10px}
+.co-sub{font-size:10px;color:var(--t3);text-align:center;padding:0 12px}
+
+/* balance dashboard */
+.bal-wrap{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r8);overflow:hidden}
+.bal-hdr{padding:10px 14px;border-bottom:1px solid var(--bd);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.bal-hdr .bhdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 1.3s infinite}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.2}}
+.bal-row{padding:12px 14px;border-bottom:1px solid var(--bd)}
+.bal-row:last-child{border-bottom:none}
+.bal-label{font-size:10.5px;color:var(--t3);margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.bal-dot{width:5px;height:5px;border-radius:50%}
+.bal-val{font-size:19px;font-weight:700;line-height:1}
+.bal-sub{font-size:10px;color:var(--t3);margin-top:2px}
+.bal-note{font-size:10px;color:var(--bnb);margin-top:3px}
+.bal-tag{display:inline-block;background:var(--rbg);color:var(--red);font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;margin-top:3px}
+.bal-tag.active{background:var(--gbg);color:var(--green)}
+
+/* trust mini */
+.trust-mini{background:var(--s1);border:1px solid var(--gbd);border-radius:var(--r8);padding:12px 14px}
+.tm-row{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;font-size:11px;color:var(--t2);line-height:1.5}
+.tm-row:last-child{margin-bottom:0}
+.tm-row .tm-ic{flex-shrink:0;margin-top:1px}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;gap:14px}
+
+/* section card */
+.sec-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r8);overflow:hidden}
+.sec-card-hdr{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.sc-title{font-size:13.5px;font-weight:700}
+.sc-badge{background:var(--bnb-bg);color:var(--bnb);border:1px solid var(--bnb-bd);border-radius:var(--r3);font-size:10px;font-weight:700;padding:2px 8px}
+.sec-card-body{padding:16px}
+
+/* form */
+.f2-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:500px){.f2-grid{grid-template-columns:1fr}}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:11px;color:var(--t3);font-weight:500}
+.fg input,.fg select{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:9px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s;width:100%}
+.fg input:focus,.fg select:focus{border-color:var(--bnb)}
+.fg input::placeholder{color:var(--t3)}
+.fg select option{background:var(--s2)}
+.phone-row{display:flex;gap:0}
+.cc-sel{background:var(--s2);border:1px solid var(--bd2);border-right:none;border-radius:var(--r3) 0 0 var(--r3);padding:9px 8px;color:var(--text);font-size:12.5px;outline:none;transition:border-color .15s;min-width:95px;max-width:110px}
+.cc-sel:focus{border-color:var(--bnb)}
+.phone-inp{flex:1;background:var(--s2);border:1px solid var(--bd2);border-left:none;border-radius:0 var(--r3) var(--r3) 0;padding:9px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.phone-inp:focus{border-color:var(--bnb)}
+
+/* wallet grid */
+.divlbl{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);margin:12px 0 9px}
+.divlbl::before,.divlbl::after{content:'';flex:1;height:1px;background:var(--bd2)}
+.w-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}
+.w-btn{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:9px 5px;text-align:center;transition:all .15s}
+.w-btn:hover{border-color:var(--bd2)}
+.w-btn.sel{border-color:var(--bnb);background:var(--bnb-bg)}
+.wi{font-size:17px;margin-bottom:2px}
+.wn{font-size:10px;color:var(--t3)}
+.w-btn.sel .wn{color:var(--bnb)}
+.w-btn.connected{border-color:var(--green);background:var(--gbg)}
+.w-btn.connected .wn{color:var(--green)}
+
+/* terms row */
+.terms-row{display:flex;align-items:flex-start;gap:8px;margin:10px 0;font-size:11.5px;color:var(--t2);line-height:1.55}
+.terms-row input{margin-top:3px;accent-color:var(--bnb);flex-shrink:0}
+.terms-row a{color:var(--bnb);cursor:pointer;text-decoration:underline}
+
+/* submit btn */
+.sub-btn{width:100%;padding:12px;background:var(--bnb);color:#000;border:none;border-radius:var(--r3);font-size:14px;font-weight:700;transition:background .15s;margin-top:4px}
+.sub-btn:hover{background:var(--bnb2)}
+.form-disc{font-size:11px;color:var(--t3);text-align:center;margin-top:8px}
+
+/* plan cards */
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:500px){.plans-grid{grid-template-columns:1fr}}
+.pc{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:16px;position:relative;cursor:pointer;transition:border-color .15s}
+.pc:hover{border-color:var(--t3)}
+.pc.feat{border-color:var(--bnb)}
+.pc-pop{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--bnb);color:#000;font-size:9px;font-weight:700;padding:2px 9px;border-radius:0 0 var(--r3) var(--r3);white-space:nowrap}
+.pc-icon{font-size:18px;margin-bottom:8px}
+.pc-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.pc-price{font-size:18px;font-weight:700;color:var(--bnb);margin-bottom:10px;line-height:1}
+.pc-price span{font-size:10.5px;color:var(--t3);font-weight:400}
+.pc-feats{list-style:none;display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.pc-feats li{display:flex;gap:6px;font-size:11.5px;color:var(--t2)}
+.pc-feats li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.pc-btn{width:100%;padding:8px;border-radius:var(--r3);font-size:12px;font-weight:700;transition:all .15s}
+.pc-btn-o{background:transparent;border:1px solid var(--bd2);color:var(--text)}
+.pc-btn-o:hover{border-color:var(--bnb);color:var(--bnb)}
+.pc-btn-f{background:var(--bnb);color:#000;border:none}
+.pc-btn-f:hover{background:var(--bnb2)}
+
+/* benefits */
+.ben-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:500px){.ben-grid{grid-template-columns:1fr 1fr}}
+.ben-c{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:12px}
+.ben-c .bi{font-size:20px;margin-bottom:6px}
+.ben-c h4{font-size:12px;font-weight:700;margin-bottom:3px}
+.ben-c p{font-size:11px;color:var(--t3);line-height:1.5}
+
+/* how it works */
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:500px){.steps-grid{grid-template-columns:1fr 1fr}}
+.step-c{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:13px;text-align:center}
+.step-n{width:26px;height:26px;border-radius:50%;background:var(--bnb-bg);border:1px solid var(--bnb-bd);color:var(--bnb);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.step-c .si{font-size:18px;margin-bottom:6px}
+.step-c h4{font-size:11.5px;font-weight:700;margin-bottom:3px}
+.step-c p{font-size:10.5px;color:var(--t3);line-height:1.45}
+
+/* trust section */
+.trust-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+@media(max-width:500px){.trust-row{grid-template-columns:1fr}}
+.tr-c{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:12px}
+.tr-c-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.tr-item{display:flex;align-items:flex-start;gap:6px;font-size:11.5px;color:var(--t2);line-height:1.55;margin-bottom:5px}
+.tr-item:last-child{margin-bottom:0}
+.wallet-steps{display:flex;flex-direction:column;gap:0}
+.ws-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd2)}
+.ws-row:last-child{border-bottom:none}
+.ws-num{width:24px;height:24px;min-width:24px;border-radius:50%;background:var(--bnb-bg);border:1px solid var(--bnb-bd);color:var(--bnb);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.ws-num.ok{background:var(--gbg);border-color:var(--gbd);color:var(--green)}
+.ws-row h5{font-size:12px;font-weight:600;margin-bottom:2px}
+.ws-row p{font-size:11px;color:var(--t3);line-height:1.5}
+.sec-badges{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media(max-width:500px){.sec-badges{grid-template-columns:repeat(2,1fr)}}
+.sb-c{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:11px 8px;text-align:center}
+.sb-c .si{font-size:18px;margin-bottom:4px}
+.sb-c h5{font-size:11px;font-weight:700;margin-bottom:2px}
+.sb-c p{font-size:10px;color:var(--t3)}
+
+/* live feed */
+.live-hdr{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--t2)}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pdot 1.2s infinite}
+.lcount{margin-left:auto;font-size:11px;color:var(--t3)}
+.feed-list{max-height:160px;overflow:hidden;position:relative}
+.feed-list::after{content:'';position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(transparent,var(--s1))}
+.f-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11.5px;animation:rIn .3s ease}
+@keyframes rIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.fav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.fi{flex:1;min-width:0}
+.fn{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.fa{font-size:10.5px;color:var(--t3)}
+.fb{font-size:9.5px;font-weight:600;padding:2px 5px;border-radius:2px;white-space:nowrap;flex-shrink:0}
+.fb-a{background:var(--bnb-bg);color:var(--bnb)}
+.fb-c{background:var(--gbg);color:var(--green)}
+.ft{font-size:10px;color:var(--t3);font-family:monospace;flex-shrink:0}
+
+/* stat row */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border-radius:var(--r8);overflow:hidden}
+@media(max-width:500px){.stat-row{grid-template-columns:repeat(2,1fr)}}
+.stat-c{background:var(--s1);padding:12px;text-align:center}
+.stat-c .n{font-size:17px;font-weight:700;color:var(--bnb);margin-bottom:2px}
+.stat-c .l{font-size:10px;color:var(--t3)}
+
+/* virtual card screen */
+#vc-screen{display:none}
+.vc-info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.vc-ic{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:9px 11px}
+.vc-ic .vl{font-size:10px;color:var(--t3);margin-bottom:3px}
+.vc-ic .vv{font-size:13px;font-weight:700;font-family:monospace;display:flex;align-items:center;gap:5px;cursor:pointer}
+.cvv-b{filter:blur(5px);transition:filter .2s}
+.cvv-b:hover{filter:blur(0)}
+.copy-ic{font-size:10px;color:var(--t3)}
+.copy-ic:hover{color:var(--bnb)}
+.phys-box{background:var(--bnb-bg);border:1px solid var(--bnb-bd);border-radius:var(--r8);padding:13px;margin-top:12px}
+.phys-box h4{font-size:12.5px;font-weight:700;margin-bottom:4px}
+.phys-box p{font-size:11.5px;color:var(--t2);margin-bottom:10px;line-height:1.6}
+.phys-opts{display:flex;gap:7px;flex-wrap:wrap}
+.phys-opt{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:6px 11px;font-size:11.5px;font-weight:600;transition:all .15s}
+.phys-opt:hover,.phys-opt.sel{border-color:var(--bnb);color:var(--bnb);background:var(--bnb-bg)}
+#physNote{display:none;margin-top:9px;padding:8px 11px;background:var(--gbg);border:1px solid var(--gbd);border-radius:var(--r3);font-size:11px;color:var(--green)}
+
+/* ── POPUP ── */
+#pop-ov{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;opacity:0;animation:pf .4s 1.4s forwards;backdrop-filter:blur(5px)}
+@keyframes pf{to{opacity:1}}
+#pop-box{background:var(--s1);border:1px solid rgba(240,185,11,.3);border-radius:var(--r12);max-width:360px;width:93%;padding:24px 20px;position:relative;text-align:center;transform:translateY(16px) scale(.97);animation:ps .4s 1.4s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes ps{to{transform:translateY(0) scale(1)}}
+.px{position:absolute;top:9px;right:10px;background:var(--s2);border:none;color:var(--t3);width:24px;height:24px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center;transition:color .15s}
+.px:hover{color:var(--text)}
+.p-ribbon{display:inline-flex;align-items:center;gap:4px;background:var(--rbg);border:1px solid var(--rbd);color:var(--red);border-radius:var(--r3);padding:3px 9px;font-size:10px;font-weight:700;margin-bottom:11px;letter-spacing:.4px}
+.p-ribbon::before{content:'●';font-size:7px;animation:pdot 1s infinite}
+#pop-box h2{font-size:17px;font-weight:800;margin-bottom:5px;line-height:1.2}
+#pop-box h2 em{font-style:normal;color:var(--bnb)}
+.p-sub{font-size:11px;color:var(--t3);margin-bottom:13px}
+.p-bonus{background:var(--s2);border:1px solid var(--bnb-bd);border-radius:var(--r8);padding:13px;margin-bottom:11px}
+.p-amt{font-size:38px;font-weight:800;color:var(--bnb);line-height:1}
+.p-blbl{font-size:10px;color:var(--t3);margin-top:4px}
+.p-timer{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:var(--t3);margin-bottom:11px}
+#ptimer{font-size:16px;font-weight:700;color:var(--red);font-family:monospace;background:var(--rbg);border:1px solid var(--rbd);border-radius:var(--r3);padding:3px 9px}
+.p-cta{width:100%;padding:11px;background:var(--bnb);color:#000;border:none;border-radius:var(--r3);font-size:13.5px;font-weight:700;margin-bottom:7px;transition:background .15s}
+.p-cta:hover{background:var(--bnb2)}
+.p-slots{font-size:10px;color:var(--red);font-weight:600;margin-bottom:6px}
+.p-skip{font-size:10.5px;color:var(--t3)}
+.p-skip:hover{color:var(--t2)}
+
+/* ── CHATBOT ── */
+#chat-fab{position:fixed;bottom:20px;right:16px;z-index:400;width:48px;height:48px;border-radius:50%;background:var(--bnb);border:none;box-shadow:0 4px 16px rgba(240,185,11,.4);display:flex;align-items:center;justify-content:center;font-size:20px;transition:transform .15s}
+#chat-fab:hover{transform:scale(1.08)}
+.fdot{position:absolute;top:2px;right:2px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--bg);animation:pdot 1.3s infinite}
+#chat-win{position:fixed;bottom:78px;right:16px;z-index:400;width:300px;max-height:440px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r12);display:none;flex-direction:column;box-shadow:0 14px 44px rgba(0,0,0,.55);overflow:hidden}
+#chat-win.open{display:flex}
+.c-hdr{background:var(--s2);border-bottom:1px solid var(--bd);padding:10px 12px;display:flex;align-items:center;gap:8px}
+.c-av{width:30px;height:30px;border-radius:50%;background:var(--bnb);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:#000}
+.c-hdr-info h4{font-size:12px;font-weight:700}
+.c-online{font-size:10px;color:var(--green);display:flex;align-items:center;gap:3px}
+.c-online::before{content:'●';font-size:7px}
+.c-x{margin-left:auto;background:none;border:none;color:var(--t3);font-size:17px;line-height:1}
+.c-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:var(--bd2) transparent}
+.cm{max-width:92%;font-size:12px;line-height:1.55;padding:8px 10px;border-radius:9px}
+.cm.bot{background:var(--s2);border:1px solid var(--bd);align-self:flex-start;border-bottom-left-radius:2px}
+.cm.user{background:var(--bnb);color:#000;font-weight:500;align-self:flex-end;border-bottom-right-radius:2px}
+.ctyp{display:flex;gap:3px;padding:8px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:9px;border-bottom-left-radius:2px;align-self:flex-start}
+.ctyp span{width:5px;height:5px;border-radius:50%;background:var(--t3);animation:tdot 1.2s infinite}
+.ctyp span:nth-child(2){animation-delay:.2s}.ctyp span:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.c-quick{display:flex;flex-wrap:wrap;gap:5px;padding:7px 10px;border-top:1px solid rgba(255,255,255,.04)}
+.cq{background:var(--s2);border:1px solid var(--bd2);color:var(--t2);border-radius:var(--r3);padding:4px 8px;font-size:10.5px;transition:all .15s}
+.cq:hover{border-color:var(--bnb);color:var(--bnb)}
+.c-inp-row{display:flex;gap:5px;padding:8px 10px;border-top:1px solid var(--bd)}
+#cinp{flex:1;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:7px 9px;color:var(--text);font-size:12px;outline:none;transition:border-color .15s}
+#cinp:focus{border-color:var(--bnb)}
+#csend{width:30px;height:30px;background:var(--bnb);border:none;border-radius:var(--r3);color:#000;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+
+/* ── TICKET ── */
+#t-ov{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#t-ov.open{display:flex}
+#t-modal{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r12);max-width:360px;width:93%;padding:22px;position:relative;animation:ps .3s ease}
+#t-modal h3{font-size:14px;font-weight:700;margin-bottom:3px}
+.t-sub{font-size:11px;color:var(--t3);margin-bottom:14px}
+.t-tabs{display:flex;gap:6px;margin-bottom:12px}
+.ttab{flex:1;padding:7px;border-radius:var(--r3);border:1px solid var(--bd2);background:var(--s2);color:var(--t3);font-size:11.5px;font-weight:600;transition:all .15s}
+.ttab.on{border-color:var(--bnb);color:var(--bnb);background:var(--bnb-bg)}
+.tf{margin-bottom:10px}
+.tf label{display:block;font-size:11px;color:var(--t3);margin-bottom:4px}
+.tf input,.tf textarea{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r3);padding:8px 10px;color:var(--text);font-size:12.5px;outline:none;transition:border-color .15s}
+.tf input:focus,.tf textarea:focus{border-color:var(--bnb)}
+.tf textarea{resize:vertical;min-height:60px}
+.t-sbtn{width:100%;padding:10px;background:var(--bnb);color:#000;border:none;border-radius:var(--r3);font-size:13px;font-weight:700;transition:background .15s}
+.t-sbtn:hover{background:var(--bnb2)}
+.t-x{position:absolute;top:9px;right:10px;background:var(--s2);border:none;color:var(--t3);width:24px;height:24px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center}
+#t-ok{display:none;text-align:center;padding:12px 0}
+#t-ok .tok{font-size:36px;margin-bottom:8px}
+#t-ok h4{color:var(--green);font-size:13px;font-weight:700;margin-bottom:5px}
+#t-ok p{font-size:11px;color:var(--t3)}
+
+/* ── TERMS MODAL ── */
+#terms-ov{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#terms-ov.open{display:flex}
+#terms-box{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r12);max-width:460px;width:93%;max-height:80vh;display:flex;flex-direction:column;animation:ps .3s ease}
+.terms-hdr{padding:15px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.terms-hdr h3{font-size:14px;font-weight:700}
+.terms-body{flex:1;overflow-y:auto;padding:16px 18px;font-size:11.5px;line-height:1.75;color:var(--t2)}
+.terms-body h4{font-size:12.5px;font-weight:700;color:var(--text);margin:12px 0 5px}
+.terms-body h4:first-child{margin-top:0}
+.terms-body ul{padding-left:14px;margin-bottom:7px;display:flex;flex-direction:column;gap:3px}
+.terms-foot{padding:12px 18px;border-top:1px solid var(--bd)}
+.terms-ok{width:100%;padding:10px;background:var(--bnb);color:#000;border:none;border-radius:var(--r3);font-size:13px;font-weight:700}
+
+/* success modal */
+#sm-ov{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#sm-ov.open{display:flex}
+.sm-box{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r12);max-width:340px;width:93%;padding:26px 20px;text-align:center;animation:ps .3s ease}
+.sm-ic{font-size:42px;margin-bottom:10px}
+.sm-box h3{font-size:16px;font-weight:700;color:var(--green);margin-bottom:6px}
+.sm-box p{font-size:12px;color:var(--t2);line-height:1.65;margin-bottom:16px}
+.sm-close{width:100%;padding:10px;background:var(--bnb);color:#000;border:none;border-radius:var(--r3);font-size:13px;font-weight:700;transition:background .15s}
+.sm-close:hover{background:var(--bnb2)}
+
+/* notif */
+.notif-pop{position:fixed;bottom:78px;left:12px;z-index:300;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r8);padding:9px 12px;display:flex;align-items:center;gap:8px;max-width:240px;font-size:11px;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:rIn .3s ease;transition:opacity .4s;display:none}
+.notif-pop .nav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.notif-pop strong{display:block;font-size:11.5px;margin-bottom:1px}
+.notif-pop span{font-size:10.5px;color:var(--t3)}
+.toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--gbd);border-radius:var(--r8);padding:8px 14px;font-size:12px;color:var(--green);font-weight:500;z-index:800;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* footer */
+footer{background:var(--s1);border-top:1px solid var(--bd);padding:20px 14px;text-align:center}
+.f-logo{font-size:14px;font-weight:800;color:var(--bnb);margin-bottom:7px}
+.f-links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:9px}
+.f-links a{font-size:11.5px;color:var(--t3);cursor:pointer}
+.f-links a:hover{color:var(--t2)}
+.f-copy{font-size:10.5px;color:var(--t3)}
+
+@media(max-width:480px){#chat-win{width:calc(100vw - 24px);right:12px}}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<nav class="topbar">
+  <div class="t-logo">
+    <svg width="18" height="18" viewBox="0 0 20 20"><polygon points="10,1 19,6.5 19,13.5 10,19 1,13.5 1,6.5" fill="#F0B90B"/><polygon points="10,5.5 15.5,8.8 15.5,11.2 10,14.5 4.5,11.2 4.5,8.8" fill="#0B0E11"/></svg>
+    CryptoCard Pro
+  </div>
+  <div class="t-nav">
+    <div class="tnav on" onclick="gs('#hero')">Home</div>
+    <div class="tnav" onclick="gs('#plans-sec')">Plans</div>
+    <div class="tnav" onclick="gs('#trust-sec')">🔒 Safety</div>
+    <div class="tnav" onclick="gs('#apply-sec')">Apply</div>
+  </div>
+  <div class="t-right">
+    <!-- LANGUAGE SELECTOR -->
+    <div class="dd-wrap" id="langDd">
+      <button class="top-sel-btn" onclick="toggleDd('langDd')">
+        <span id="langFlag">🌐</span>
+        <span id="langCode">EN</span>
+        <span class="sel-arrow">▼</span>
+      </button>
+      <div class="dd-panel" id="langPanel">
+        <div class="dd-search"><input type="text" placeholder="Search language…" oninput="filterDd('langPanel',this.value)"/></div>
+        <div class="dd-section-lbl">🇮🇳 Indian Languages</div>
+        <div class="dd-item" onclick="setLang('hi','🇮🇳','HI')"><span class="di-flag">🇮🇳</span><span class="di-name">हिन्दी</span><span class="di-sub">Hindi</span></div>
+        <div class="dd-item" onclick="setLang('bn','🇧🇩','BN')"><span class="di-flag">🇮🇳</span><span class="di-name">বাংলা</span><span class="di-sub">Bengali</span></div>
+        <div class="dd-item" onclick="setLang('te','🇮🇳','TE')"><span class="di-flag">🇮🇳</span><span class="di-name">తెలుగు</span><span class="di-sub">Telugu</span></div>
+        <div class="dd-item" onclick="setLang('mr','🇮🇳','MR')"><span class="di-flag">🇮🇳</span><span class="di-name">मराठी</span><span class="di-sub">Marathi</span></div>
+        <div class="dd-item" onclick="setLang('ta','🇮🇳','TA')"><span class="di-flag">🇮🇳</span><span class="di-name">தமிழ்</span><span class="di-sub">Tamil</span></div>
+        <div class="dd-item" onclick="setLang('gu','🇮🇳','GU')"><span class="di-flag">🇮🇳</span><span class="di-name">ગુજરાતી</span><span class="di-sub">Gujarati</span></div>
+        <div class="dd-item" onclick="setLang('kn','🇮🇳','KN')"><span class="di-flag">🇮🇳</span><span class="di-name">ಕನ್ನಡ</span><span class="di-sub">Kannada</span></div>
+        <div class="dd-item" onclick="setLang('ml','🇮🇳','ML')"><span class="di-flag">🇮🇳</span><span class="di-name">മലയാളം</span><span class="di-sub">Malayalam</span></div>
+        <div class="dd-item" onclick="setLang('pa','🇮🇳','PA')"><span class="di-flag">🇮🇳</span><span class="di-name">ਪੰਜਾਬੀ</span><span class="di-sub">Punjabi</span></div>
+        <div class="dd-item" onclick="setLang('or','🇮🇳','OR')"><span class="di-flag">🇮🇳</span><span class="di-name">ଓଡ଼ିଆ</span><span class="di-sub">Odia</span></div>
+        <div class="dd-item" onclick="setLang('ur','🇮🇳','UR')"><span class="di-flag">🇮🇳</span><span class="di-name">اردو</span><span class="di-sub">Urdu</span></div>
+        <div class="dd-item" onclick="setLang('as','🇮🇳','AS')"><span class="di-flag">🇮🇳</span><span class="di-name">অসমীয়া</span><span class="di-sub">Assamese</span></div>
+        <div class="dd-section-lbl">🌍 World Languages</div>
+        <div class="dd-item sel" onclick="setLang('en','🌐','EN')"><span class="di-flag">🇬🇧</span><span class="di-name">English</span><span class="di-sub">English</span></div>
+        <div class="dd-item" onclick="setLang('ar','🌍','AR')"><span class="di-flag">🇦🇪</span><span class="di-name">العربية</span><span class="di-sub">Arabic</span></div>
+        <div class="dd-item" onclick="setLang('zh','🌍','ZH')"><span class="di-flag">🇨🇳</span><span class="di-name">中文</span><span class="di-sub">Chinese</span></div>
+        <div class="dd-item" onclick="setLang('es','🌍','ES')"><span class="di-flag">🇪🇸</span><span class="di-name">Español</span><span class="di-sub">Spanish</span></div>
+        <div class="dd-item" onclick="setLang('fr','🌍','FR')"><span class="di-flag">🇫🇷</span><span class="di-name">Français</span><span class="di-sub">French</span></div>
+        <div class="dd-item" onclick="setLang('de','🌍','DE')"><span class="di-flag">🇩🇪</span><span class="di-name">Deutsch</span><span class="di-sub">German</span></div>
+        <div class="dd-item" onclick="setLang('pt','🌍','PT')"><span class="di-flag">🇧🇷</span><span class="di-name">Português</span><span class="di-sub">Portuguese</span></div>
+        <div class="dd-item" onclick="setLang('ru','🌍','RU')"><span class="di-flag">🇷🇺</span><span class="di-name">Русский</span><span class="di-sub">Russian</span></div>
+        <div class="dd-item" onclick="setLang('ja','🌍','JA')"><span class="di-flag">🇯🇵</span><span class="di-name">日本語</span><span class="di-sub">Japanese</span></div>
+        <div class="dd-item" onclick="setLang('ko','🌍','KO')"><span class="di-flag">🇰🇷</span><span class="di-name">한국어</span><span class="di-sub">Korean</span></div>
+        <div class="dd-item" onclick="setLang('tr','🌍','TR')"><span class="di-flag">🇹🇷</span><span class="di-name">Türkçe</span><span class="di-sub">Turkish</span></div>
+        <div class="dd-item" onclick="setLang('id','🌍','ID')"><span class="di-flag">🇮🇩</span><span class="di-name">Bahasa Indonesia</span><span class="di-sub">Indonesian</span></div>
+      </div>
+    </div>
+    <!-- COUNTRY/CURRENCY SELECTOR -->
+    <div class="dd-wrap" id="cntDd">
+      <button class="top-sel-btn" onclick="toggleDd('cntDd')">
+        <span id="cntFlag">🌍</span>
+        <span id="cntCode">USD</span>
+        <span class="sel-arrow">▼</span>
+      </button>
+      <div class="dd-panel" id="cntPanel">
+        <div class="dd-search"><input type="text" placeholder="Search country…" oninput="filterDd('cntPanel',this.value)"/></div>
+        <div class="dd-section-lbl">Popular</div>
+        <div class="dd-item sel" onclick="setCnt('🇺🇸','USD','United States')"><span class="di-flag">🇺🇸</span><span class="di-name">United States</span><span class="di-sub">USD $</span></div>
+        <div class="dd-item" onclick="setCnt('🇮🇳','INR','India')"><span class="di-flag">🇮🇳</span><span class="di-name">India</span><span class="di-sub">INR ₹</span></div>
+        <div class="dd-item" onclick="setCnt('🇦🇪','AED','UAE')"><span class="di-flag">🇦🇪</span><span class="di-name">UAE</span><span class="di-sub">AED د.إ</span></div>
+        <div class="dd-item" onclick="setCnt('🇬🇧','GBP','United Kingdom')"><span class="di-flag">🇬🇧</span><span class="di-name">United Kingdom</span><span class="di-sub">GBP £</span></div>
+        <div class="dd-item" onclick="setCnt('🇵🇰','PKR','Pakistan')"><span class="di-flag">🇵🇰</span><span class="di-name">Pakistan</span><span class="di-sub">PKR ₨</span></div>
+        <div class="dd-item" onclick="setCnt('🇧🇩','BDT','Bangladesh')"><span class="di-flag">🇧🇩</span><span class="di-name">Bangladesh</span><span class="di-sub">BDT ৳</span></div>
+        <div class="dd-item" onclick="setCnt('🇸🇦','SAR','Saudi Arabia')"><span class="di-flag">🇸🇦</span><span class="di-name">Saudi Arabia</span><span class="di-sub">SAR ر.س</span></div>
+        <div class="dd-section-lbl">More Countries</div>
+        <div class="dd-item" onclick="setCnt('🇩🇪','EUR','Germany')"><span class="di-flag">🇩🇪</span><span class="di-name">Germany</span><span class="di-sub">EUR €</span></div>
+        <div class="dd-item" onclick="setCnt('🇯🇵','JPY','Japan')"><span class="di-flag">🇯🇵</span><span class="di-name">Japan</span><span class="di-sub">JPY ¥</span></div>
+        <div class="dd-item" onclick="setCnt('🇧🇷','BRL','Brazil')"><span class="di-flag">🇧🇷</span><span class="di-name">Brazil</span><span class="di-sub">BRL R$</span></div>
+        <div class="dd-item" onclick="setCnt('🇦🇺','AUD','Australia')"><span class="di-flag">🇦🇺</span><span class="di-name">Australia</span><span class="di-sub">AUD A$</span></div>
+        <div class="dd-item" onclick="setCnt('🇨🇦','CAD','Canada')"><span class="di-flag">🇨🇦</span><span class="di-name">Canada</span><span class="di-sub">CAD C$</span></div>
+        <div class="dd-item" onclick="setCnt('🇸🇬','SGD','Singapore')"><span class="di-flag">🇸🇬</span><span class="di-name">Singapore</span><span class="di-sub">SGD S$</span></div>
+        <div class="dd-item" onclick="setCnt('🇳🇬','NGN','Nigeria')"><span class="di-flag">🇳🇬</span><span class="di-name">Nigeria</span><span class="di-sub">NGN ₦</span></div>
+        <div class="dd-item" onclick="setCnt('🇿🇦','ZAR','South Africa')"><span class="di-flag">🇿🇦</span><span class="di-name">South Africa</span><span class="di-sub">ZAR R</span></div>
+        <div class="dd-item" onclick="setCnt('🇮🇩','IDR','Indonesia')"><span class="di-flag">🇮🇩</span><span class="di-name">Indonesia</span><span class="di-sub">IDR Rp</span></div>
+        <div class="dd-item" onclick="setCnt('🇲🇾','MYR','Malaysia')"><span class="di-flag">🇲🇾</span><span class="di-name">Malaysia</span><span class="di-sub">MYR RM</span></div>
+      </div>
+    </div>
+    <button class="top-sel-btn" style="background:var(--bnb);color:#000;border-color:var(--bnb);font-weight:700" onclick="gs('#apply-sec')">Get Card →</button>
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-bar"><div class="tick-inner" id="tickEl"></div></div>
+
+<!-- POPUP -->
+<div id="pop-ov">
+  <div id="pop-box">
+    <button class="px" onclick="closePop()">×</button>
+    <div class="p-ribbon">🔥 <span data-i18n="limited">LIMITED — Today Only</span></div>
+    <h2><span data-i18n="popTitle">Apply Today — Get</span><br><em>100 USDT FREE 🎁</em></h2>
+    <p class="p-sub" data-i18n="popSub">Welcome bonus for new applicants today only!</p>
+    <div class="p-bonus"><div class="p-amt">100 USDT</div><div class="p-blbl" data-i18n="popBal">Min. 100 USDT transaction → Auto-claimed to wallet</div></div>
+    <div class="p-timer">⏰ <span data-i18n="offerEnds">Offer ends in:</span> <span id="ptimer">14:59</span></div>
+    <button class="p-cta" onclick="closePopApply()" data-i18n="popCta">🚀 Apply Now — Claim 100 USDT!</button>
+    <div class="p-slots" id="pslots">⚡ Only 47 slots left today!</div>
+    <div class="p-skip" onclick="closePop()" data-i18n="popSkip">No thanks, I'll miss this</div>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div class="page">
+
+<!-- STAT ROW TOP -->
+<div class="stat-row" style="margin-bottom:14px" id="hero">
+  <div class="stat-c"><div class="n" id="s1">0</div><div class="l" data-i18n="statCards">Cards Issued</div></div>
+  <div class="stat-c"><div class="n" id="s2">0</div><div class="l" data-i18n="statCountries">Countries</div></div>
+  <div class="stat-c"><div class="n" id="s3">0</div><div class="l" data-i18n="statClaimed">USDT Claimed</div></div>
+  <div class="stat-c"><div class="n" id="s4">0</div><div class="l" data-i18n="statOnline">Online Now</div></div>
+</div>
+
+<!-- MAIN 2-COL LAYOUT -->
+<div class="main-layout" id="apply-sec">
+  <!-- ── LEFT PANEL ── -->
+  <div class="left-panel">
+
+    <!-- LIVE CARD PREVIEW -->
+    <div class="card-preview-wrap">
+      <div class="cp-title" data-i18n="cardPreview">Your Card Preview</div>
+      <div class="card-3d" id="card3d">
+        <div class="c3-badge">FREE</div>
+        <div class="c3-logo">⬡ PRO</div>
+        <div class="c3-chip"></div>
+        <div class="c3-num" id="c3num">•••• •••• •••• ••••</div>
+        <div>
+          <div class="c3-name" id="c3name" data-i18n="yourName">YOUR NAME</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.35);margin-top:2px">Valid Thru ••/••</div>
+        </div>
+        <!-- overlay before wallet connect -->
+        <div class="card-overlay" id="cardOverlay">
+          <div class="co-icon">🔗</div>
+          <div class="co-text" data-i18n="connectWallet">Please Connect Your Wallet</div>
+          <div class="co-sub" data-i18n="getCardDetails">to Get Card Details</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BALANCE DASHBOARD -->
+    <div class="bal-wrap">
+      <div class="bal-hdr"><div class="bhdot"></div><span data-i18n="balDash">Balance Dashboard</span></div>
+      <div class="bal-row">
+        <div class="bal-label"><div class="bal-dot" style="background:var(--bnb)"></div><span data-i18n="walletBal">Wallet Balance</span></div>
+        <div class="bal-val" id="balWallet">— USDT</div>
+        <div class="bal-sub" id="balWalletSub" data-i18n="connectToSee">Connect wallet to see balance</div>
+      </div>
+      <div class="bal-row">
+        <div class="bal-label"><div class="bal-dot" style="background:var(--green)"></div><span data-i18n="voucherBal">Voucher Balance</span></div>
+        <div class="bal-val" style="color:var(--green)" id="balVoucher">0.00 USDT</div>
+        <div class="bal-sub" data-i18n="welcomeBonus">Welcome Bonus · Apply to unlock</div>
+        <div class="bal-tag" id="voucherTag" data-i18n="locked">LOCKED</div>
+      </div>
+      <div class="bal-row">
+        <div class="bal-label"><div class="bal-dot" style="background:var(--blue,#3b82f6)"></div><span data-i18n="rewardBal">Reward Balance</span></div>
+        <div class="bal-val" style="color:#60a5fa" id="balReward">0.00 USDT</div>
+        <div class="bal-sub" data-i18n="cashbackEarned">Cashback earned on transactions</div>
+      </div>
+    </div>
+
+    <!-- TRUST MINI -->
+    <div class="trust-mini">
+      <div style="font-size:11.5px;font-weight:700;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:5px">🛡️ <span data-i18n="yourMoneyYours">Your Money — Always Yours</span></div>
+      <div class="tm-row"><span class="tm-ic">✅</span><span data-i18n="trust1">Fund stays in YOUR wallet — never transferred to us</span></div>
+      <div class="tm-row"><span class="tm-ic">✅</span><span data-i18n="trust2">Wallet connects with READ-ONLY permission only</span></div>
+      <div class="tm-row"><span class="tm-ic">✅</span><span data-i18n="trust3">Every transaction needs YOUR approval popup</span></div>
+      <div class="tm-row"><span class="tm-ic">✅</span><span data-i18n="trust4">We are just a Crypto → Currency exchange bridge</span></div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right-panel">
+
+    <!-- APPLY FORM -->
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <div class="sc-title" data-i18n="applyTitle">Apply for FREE CryptoCard Pro</div>
+        <div class="sc-badge" data-i18n="freeCard">FREE CARD</div>
+      </div>
+      <div class="sec-card-body">
+        <div style="background:var(--gbg);border:1px solid var(--gbd);border-radius:var(--r3);padding:8px 11px;font-size:11.5px;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:6px">
+          🛡️ <span data-i18n="secureNote">100% Secure — Fund stays in your wallet. Read-only connect. Every payment needs your approval.</span>
+        </div>
+
+        <div id="appForm">
+          <div class="f2-grid">
+            <div class="fg"><label data-i18n="firstName">First Name</label><input type="text" id="fn" placeholder="Rahul" oninput="updateCard()"/></div>
+            <div class="fg"><label data-i18n="lastName">Last Name</label><input type="text" id="ln" placeholder="Sharma" oninput="updateCard()"/></div>
+            <div class="fg"><label data-i18n="email">Email Address</label><input type="email" id="femail" placeholder="rahul@email.com"/></div>
+            <div class="fg"><label data-i18n="dob">Date of Birth</label><input type="date" id="fdob"/></div>
+            <div class="fg full">
+              <label data-i18n="phone">Phone Number</label>
+              <div class="phone-row">
+                <select class="cc-sel" id="ccSel">
+                  <option value="+91">🇮🇳 +91</option><option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option><option value="+971">🇦🇪 +971</option>
+                  <option value="+92">🇵🇰 +92</option><option value="+880">🇧🇩 +880</option>
+                  <option value="+966">🇸🇦 +966</option><option value="+49">🇩🇪 +49</option>
+                  <option value="+81">🇯🇵 +81</option><option value="+55">🇧🇷 +55</option>
+                  <option value="+61">🇦🇺 +61</option><option value="+65">🇸🇬 +65</option>
+                  <option value="+60">🇲🇾 +60</option><option value="+62">🇮🇩 +62</option>
+                  <option value="+66">🇹🇭 +66</option><option value="+7">🇷🇺 +7</option>
+                  <option value="+86">🇨🇳 +86</option><option value="+82">🇰🇷 +82</option>
+                  <option value="+27">🇿🇦 +27</option><option value="+234">🇳🇬 +234</option>
+                  <option value="+20">🇪🇬 +20</option><option value="+33">🇫🇷 +33</option>
+                  <option value="+39">🇮🇹 +39</option><option value="+34">🇪🇸 +34</option>
+                </select>
+                <input class="phone-inp" type="tel" id="fphone" placeholder="98765 43210"/>
+              </div>
+            </div>
+            <div class="fg"><label data-i18n="country">Country</label>
+              <select id="fcountry"><option value="" data-i18n="selectCountry">Select Country</option>
+                <option>India</option><option>Pakistan</option><option>Bangladesh</option>
+                <option>UAE</option><option>Saudi Arabia</option><option>United Kingdom</option>
+                <option>United States</option><option>Germany</option><option>Japan</option>
+                <option>Australia</option><option>Singapore</option><option>Other</option>
+              </select>
+            </div>
+            <div class="fg"><label data-i18n="plan">Card Plan</label>
+              <select id="fplan"><option value="" data-i18n="selectPlan">Select Plan</option>
+                <option>Mool — FREE</option><option>Pro — 19.99 USDT/mo</option><option>Premium — 49.99 USDT/mo</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="selPlanBox" style="display:none;background:var(--bnb-bg);border:1px solid var(--bnb-bd);border-radius:var(--r3);padding:7px 10px;font-size:12px;font-weight:700;color:var(--bnb);margin-bottom:10px"></div>
+
+          <div class="divlbl" data-i18n="connectWalletLbl">Connect Your Wallet</div>
+          <div class="w-grid" id="walletGrid">
+            <div class="w-btn" onclick="pickW(this,'MetaMask')"><div class="wi">🦊</div><div class="wn">MetaMask</div></div>
+            <div class="w-btn" onclick="pickW(this,'Trust Wallet')"><div class="wi">🛡️</div><div class="wn">Trust Wallet</div></div>
+            <div class="w-btn" onclick="pickW(this,'Coinbase')"><div class="wi">🔵</div><div class="wn">Coinbase</div></div>
+            <div class="w-btn" onclick="pickW(this,'Rainbow')"><div class="wi">🌈</div><div class="wn">Rainbow</div></div>
+            <div class="w-btn" onclick="pickW(this,'ZenGo')"><div class="wi">🔑</div><div class="wn">ZenGo</div></div>
+            <div class="w-btn" onclick="pickW(this,'Trezor')"><div class="wi">🔐</div><div class="wn">Trezor</div></div>
+          </div>
+
+          <div class="terms-row">
+            <input type="checkbox" id="termsChk"/>
+            <label for="termsChk"><span data-i18n="agreeTerms">I agree to the</span> <a onclick="openTerms()" data-i18n="termsLink">Terms & Conditions</a> <span data-i18n="andReward">and Reward Claim Policy</span></label>
+          </div>
+          <button class="sub-btn" onclick="submitApp()" data-i18n="applyBtn">🚀 Apply Now — Get Virtual Card + 100 USDT</button>
+          <div class="form-disc" data-i18n="formDisc">✅ Free card · 🔒 Secure · 🌍 Worldwide · No hidden fees</div>
+        </div><!-- /appForm -->
+      </div>
+    </div>
+
+    <!-- VIRTUAL CARD SCREEN -->
+    <div id="vc-screen" style="display:none">
+      <div class="sec-card">
+        <div class="sec-card-hdr">
+          <div class="sc-title">🎉 <span data-i18n="cardReady">Your CryptoCard Pro is Ready!</span></div>
+          <div class="sc-badge" style="background:var(--gbg);color:var(--green);border-color:var(--gbd)" data-i18n="active">ACTIVE</div>
+        </div>
+        <div class="sec-card-body">
+          <div class="vc-info-grid">
+            <div class="vc-ic"><div class="vl" data-i18n="cardNum">Card Number</div><div class="viv" id="vcNumCopy" onclick="copyCardNum()">•••• <span id="vcLast4">0000</span> <span class="copy-ic">📋</span></div></div>
+            <div class="vc-ic"><div class="vl">CVV <span style="font-size:9px;color:var(--t3)">(hover)</span></div><div class="viv cvv-b" id="vcCvvD" onclick="copyCVV()">--- <span class="copy-ic">📋</span></div></div>
+            <div class="vc-ic"><div class="vl" data-i18n="expiry">Expiry</div><div class="viv" id="vcExpD">--/--</div></div>
+          </div>
+          <div class="phys-box">
+            <h4>📦 <span data-i18n="orderPhysical">Order Physical Card</span> — <span style="color:var(--bnb)">10 USDT</span></h4>
+            <p data-i18n="physDesc">Get real CryptoCard Pro at your doorstep. Same card number & CVV. Standard or Custom design.</p>
+            <div class="phys-opts">
+              <div class="phys-opt" onclick="pickPhys('standard')" data-i18n="stdDesign">📋 Standard — 10 USDT</div>
+              <div class="phys-opt" onclick="pickPhys('custom')" data-i18n="custDesign">🎨 Custom Design — 10 USDT</div>
+            </div>
+            <div id="physNote"></div>
+          </div>
+          <button class="sub-btn" style="background:var(--s2);color:var(--text);border:1px solid var(--bd2);margin-top:10px" onclick="openTicket()">🎫 <span data-i18n="supportBtn">Need Help? Contact Support Team</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE FEED -->
+    <div class="sec-card">
+      <div class="sec-card-hdr">
+        <div class="live-hdr"><div class="ldot"></div><span data-i18n="liveActivity">Live Activity</span></div>
+        <span class="lcount" id="lcount">12,430 online</span>
+      </div>
+      <div class="sec-card-body" style="padding:12px 14px">
+        <div class="feed-list" id="feedEl"></div>
+      </div>
+    </div>
+
+    <!-- PLANS -->
+    <div class="sec-card" id="plans-sec">
+      <div class="sec-card-hdr"><div class="sc-title" data-i18n="cardPlans">Card Plans</div></div>
+      <div class="sec-card-body">
+        <div class="plans-grid">
+          <div class="pc"><div class="pc-icon">🥈</div><div class="pc-name" data-i18n="mool">Mool</div><div class="pc-price" style="color:var(--green)">FREE <span data-i18n="forever">/ forever</span></div><ul class="pc-feats"><li data-i18n="f1">Worldwide ATM</li><li data-i18n="f2">100 USDT Voucher</li><li>0.5% Cashback</li><li>5% Discount</li></ul><button class="pc-btn pc-btn-o" onclick="pickPlan('Mool')" data-i18n="applyFree">Apply Free</button></div>
+          <div class="pc feat"><div class="pc-pop">⭐ Popular</div><div class="pc-icon">🥇</div><div class="pc-name" style="color:var(--bnb)">Pro</div><div class="pc-price">19.99 <span>USDT/mo</span></div><ul class="pc-feats"><li data-i18n="fp1">Priority Global</li><li data-i18n="f2">100 USDT Voucher</li><li>1.0% Cashback</li><li>10% Discount</li><li data-i18n="fp4">VIP Support</li></ul><button class="pc-btn pc-btn-f" onclick="pickPlan('Pro')" data-i18n="applyPro">Apply Pro 🔥</button></div>
+          <div class="pc"><div class="pc-icon">💎</div><div class="pc-name" style="color:var(--t2)">Premium</div><div class="pc-price" style="color:var(--t2)">49.99 <span>USDT/mo</span></div><ul class="pc-feats"><li data-i18n="fpm1">Unlimited Global</li><li data-i18n="f2">100 USDT Voucher</li><li data-i18n="fpm3">Zero Trading Fees</li><li>2.0% Cashback</li></ul><button class="pc-btn pc-btn-o" onclick="pickPlan('Premium')" data-i18n="applyPrem">Apply Premium</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BENEFITS -->
+    <div class="sec-card">
+      <div class="sec-card-hdr"><div class="sc-title" data-i18n="cardBenefits">Card Benefits</div></div>
+      <div class="sec-card-body">
+        <div class="ben-grid">
+          <div class="ben-c"><div class="bi">🌍</div><h4 data-i18n="b1t">190+ Countries</h4><p data-i18n="b1p">Any Visa terminal worldwide</p></div>
+          <div class="ben-c"><div class="bi">⚡</div><h4 data-i18n="b2t">Instant Convert</h4><p data-i18n="b2p">BTC/ETH/USDT → local currency</p></div>
+          <div class="ben-c"><div class="bi">🔐</div><h4 data-i18n="b3t">Bank Security</h4><p data-i18n="b3p">256-bit SSL + biometric auth</p></div>
+          <div class="ben-c"><div class="bi">🎁</div><h4 data-i18n="b4t">100 USDT Bonus</h4><p data-i18n="b4p">Auto-claimed on 1st transaction</p></div>
+          <div class="ben-c"><div class="bi">💸</div><h4 data-i18n="b5t">Zero Monthly Fee</h4><p data-i18n="b5p">Mool card always free</p></div>
+          <div class="ben-c"><div class="bi">🤖</div><h4 data-i18n="b6t">AI Fraud Protection</h4><p data-i18n="b6p">24/7 zero fraud guarantee</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <div class="sec-card">
+      <div class="sec-card-hdr"><div class="sc-title" data-i18n="howTitle">How to Get Your Card — 4 Steps</div></div>
+      <div class="sec-card-body">
+        <div class="steps-grid">
+          <div class="step-c"><div class="step-n">1</div><div class="si">📝</div><h4 data-i18n="step1t">Fill Form</h4><p data-i18n="step1p">Name, email, phone — 2 minutes</p></div>
+          <div class="step-c"><div class="step-n">2</div><div class="si">🔗</div><h4 data-i18n="step2t">Connect Wallet</h4><p data-i18n="step2p">MetaMask/Trust — one click</p></div>
+          <div class="step-c"><div class="step-n">3</div><div class="si">💳</div><h4 data-i18n="step3t">Get Virtual Card</h4><p data-i18n="step3p">Instantly generated!</p></div>
+          <div class="step-c"><div class="step-n">4</div><div class="si">🎁</div><h4 data-i18n="step4t">Claim 100 USDT</h4><p data-i18n="step4p">100 USDT+ transaction → auto-claim</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRUST SECTION -->
+    <div class="sec-card" id="trust-sec">
+      <div class="sec-card-hdr">
+        <div class="sc-title">🔒 <span data-i18n="trustTitle">Your Money — Always Safe With You</span></div>
+        <div class="sc-badge" style="background:var(--gbg);color:var(--green);border-color:var(--gbd)" data-i18n="verified">VERIFIED</div>
+      </div>
+      <div class="sec-card-body">
+        <div class="trust-row">
+          <div class="tr-c">
+            <div class="tr-c-lbl" style="color:var(--red)">❌ <span data-i18n="doesntHappen">What DOESN'T Happen</span></div>
+            <div class="tr-item"><span>❌</span><span data-i18n="nt1">No fund transfer from your wallet</span></div>
+            <div class="tr-item"><span>❌</span><span data-i18n="nt2">We NEVER ask for seed phrase</span></div>
+            <div class="tr-item"><span>❌</span><span data-i18n="nt3">Your crypto never comes to us</span></div>
+            <div class="tr-item"><span>❌</span><span data-i18n="nt4">No hidden fees anywhere</span></div>
+          </div>
+          <div class="tr-c">
+            <div class="tr-c-lbl" style="color:var(--green)">✅ <span data-i18n="doesHappen">What DOES Happen</span></div>
+            <div class="tr-item"><span>✅</span><span data-i18n="yt1">Read-only wallet connection</span></div>
+            <div class="tr-item"><span>✅</span><span data-i18n="yt2">Your approval needed every time</span></div>
+            <div class="tr-item"><span>✅</span><span data-i18n="yt3">Fund stays in YOUR wallet</span></div>
+            <div class="tr-item"><span>✅</span><span data-i18n="yt4">We're just an exchange bridge</span></div>
+          </div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:14px;margin-bottom:10px">
+          <div style="font-size:12.5px;font-weight:700;margin-bottom:10px">🔗 <span data-i18n="howWalletWorks">How Wallet Connection Works</span></div>
+          <div class="wallet-steps">
+            <div class="ws-row"><div class="ws-num">1</div><div><h5 data-i18n="ws1t">You Choose Your Wallet</h5><p data-i18n="ws1p">MetaMask, Trust Wallet — only you decide which wallet to link.</p></div></div>
+            <div class="ws-row"><div class="ws-num">2</div><div><h5 data-i18n="ws2t">Read-Only Permission Only</h5><p data-i18n="ws2p">We can only see your address & balance. NO ability to send/receive automatically.</p></div></div>
+            <div class="ws-row"><div class="ws-num">3</div><div><h5 data-i18n="ws3t">Every Payment = Your Approval</h5><p data-i18n="ws3p">A popup appears in your wallet every time you swipe. Confirm = payment happens. Cancel = nothing.</p></div></div>
+            <div class="ws-row"><div class="ws-num ok">✓</div><div><h5 style="color:var(--green)" data-i18n="ws4t">You Are Always In Full Control</h5><p data-i18n="ws4p">Disconnect anytime, lock card, set limits — all in your hands. We are a bridge between your crypto and the real world.</p></div></div>
+          </div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r6);padding:13px;margin-bottom:10px">
+          <div style="font-size:12.5px;font-weight:700;margin-bottom:7px">🌐 <span data-i18n="whyWeExist">Why We Exist — The Digital Future</span></div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.8">
+            <span data-i18n="whyText">The world is moving to Digital Currency fast. You have crypto — but using it daily is hard. Shops don't accept it directly. That's why CryptoCard Pro exists: we convert your crypto to local currency in real-time at every transaction. <strong style="color:var(--green)">Your money stays with you — we're just the smart exchange bridge.</strong></span>
+          </div>
+        </div>
+        <div class="sec-badges">
+          <div class="sb-c"><div class="si">🔒</div><h5>256-bit SSL</h5><p data-i18n="sslDesc">Bank encryption</p></div>
+          <div class="sb-c"><div class="si">🛡️</div><h5>PCI-DSS</h5><p data-i18n="pciDesc">Card standard</p></div>
+          <div class="sb-c"><div class="si">✅</div><h5>KYC</h5><p data-i18n="kycDesc">ID verified</p></div>
+          <div class="sb-c"><div class="si">👁️</div><h5 data-i18n="nonCustodial">Non-Custodial</h5><p data-i18n="ncDesc">Your keys, your crypto</p></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right-panel -->
+</div><!-- /main-layout -->
+</div><!-- /page -->
+
+<footer>
+  <div class="f-logo">⬡ CryptoCard Pro</div>
+  <div class="f-links"><a onclick="openTerms()">Terms & Conditions</a><a>Privacy Policy</a><a onclick="openTicket()">Support</a><a>Blog</a></div>
+  <div class="f-copy">© 2026 CryptoCard Pro · Visa Licensed · PCI-DSS · KYC/AML Verified · Non-Custodial</div>
+</footer>
+
+<!-- MODALS -->
+<div id="sm-ov"><div class="sm-box"><div class="sm-ic">🎉</div><h3 data-i18n="successTitle">Application Submitted!</h3><p data-i18n="successText">Your FREE CryptoCard Pro is applied. <strong style="color:var(--bnb)">Virtual card is ready below!</strong><br><br>KYC email in 24 hrs. 100 USDT voucher will auto-claim when you do a minimum 100 USDT transaction.</p><button class="sm-close" onclick="document.getElementById('sm-ov').classList.remove('open');showVC()" data-i18n="viewCard">View Virtual Card →</button></div></div>
+
+<div id="terms-ov">
+  <div id="terms-box">
+    <div class="terms-hdr"><h3>📜 Terms & Conditions — Reward Claim Policy</h3><button class="t-x" onclick="closeTerms()" style="position:static;width:24px;height:24px">×</button></div>
+    <div class="terms-body">
+      <h4>1. Welcome Bonus — 100 USDT Voucher</h4>
+      <p>New CryptoCard Pro users get a 100 USDT welcome voucher on applying. This shows in your Voucher Balance — separate from Wallet Balance.</p>
+      <h4>2. Reward Claim Conditions</h4>
+      <ul><li>Minimum <strong>100 USDT</strong> transaction required to unlock voucher</li><li>Any transaction type counts — shopping, P2P, payment</li><li>Auto-claimed once condition met — no manual step</li><li>One welcome bonus per account only</li></ul>
+      <h4>3. Balance Types</h4>
+      <ul><li><strong>Wallet Balance:</strong> Your actual crypto from connected wallet</li><li><strong>Voucher Balance:</strong> Promotional rewards (locked until claim condition met)</li><li><strong>Reward Balance:</strong> Cashback & referral bonuses, auto-credited after transactions</li></ul>
+      <h4>4. How It Works — Non-Custodial</h4>
+      <ul><li>Your funds NEVER leave your wallet without your explicit approval</li><li>Wallet connects with read-only permission only</li><li>Every transaction triggers an approval popup in your wallet app</li><li>You can disconnect your wallet anytime</li></ul>
+      <h4>5. Physical Card</h4>
+      <ul><li>One-time 10 USDT fee for physical card order</li><li>Standard or custom design — same card number & CVV as virtual</li><li>Delivery in 7–10 business days</li></ul>
+      <h4>6. Security</h4>
+      <p>Never share card number, CVV, or PIN. CryptoCard Pro will NEVER ask for your seed phrase or private key via email or phone.</p>
+    </div>
+    <div class="terms-foot"><button class="terms-ok" onclick="closeTerms();document.getElementById('termsChk').checked=true">Accept & Continue ✅</button></div>
+  </div>
+</div>
+
+<div id="t-ov">
+  <div id="t-modal">
+    <button class="t-x" onclick="closeTicket()">×</button>
+    <h3>🎫 Support Ticket</h3>
+    <p class="t-sub">Give your Telegram or WhatsApp — team will contact in 1–2 hours.</p>
+    <div class="t-tabs"><button class="ttab on" id="ttg" onclick="ttab('tg')">📱 Telegram</button><button class="ttab" id="twa" onclick="ttab('wa')">💬 WhatsApp</button></div>
+    <div id="t-form">
+      <div class="tf"><label id="t-lbl">Telegram Username</label><input type="text" id="t-contact" placeholder="@yourname"/></div>
+      <div class="tf"><label>Describe your problem</label><textarea id="t-desc" placeholder="e.g. Error while applying, USDT not credited…"></textarea></div>
+      <button class="t-sbtn" onclick="subTicket()">Submit Ticket ✅</button>
+    </div>
+    <div id="t-ok"><div class="tok">✅</div><h4>Ticket Submitted!</h4><p>Our team will contact you in 1–2 hours. Thank you!</p></div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button id="chat-fab" onclick="toggleChat()">🤖<div class="fdot"></div></button>
+<div id="chat-win">
+  <div class="c-hdr">
+    <div class="c-av">🤖</div>
+    <div class="c-hdr-info"><h4>CryptoCard AI Support</h4><div class="c-online">Online — Available Now</div></div>
+    <button class="c-x" onclick="toggleChat()">×</button>
+  </div>
+  <div class="c-msgs" id="cmsgs"><div class="cm bot">Namaste! 👋 I'm CryptoCard Pro's AI assistant.<br><br>Ask me about card benefits, wallet safety, USDT claim, or any crypto question! 😊</div></div>
+  <div class="c-quick" id="cquick">
+    <button class="cq" onclick="cq('Card ke kya fayede hain?')">Card benefits?</button>
+    <button class="cq" onclick="cq('Is my money safe? Will it be transferred?')">Money safe?</button>
+    <button class="cq" onclick="cq('100 USDT kaise claim karein?')">100 USDT?</button>
+    <button class="cq" onclick="cq('Wallet connect kaise kaam karta hai?')">Wallet connect?</button>
+    <button class="cq" onclick="cq('Kya yeh scam hai?')">Scam check?</button>
+    <button class="cq" onclick="openTicket()">🎫 Support team</button>
+  </div>
+  <div class="c-inp-row">
+    <input id="cinp" type="text" placeholder="Ask anything…" onkeydown="if(event.key==='Enter')sendC()"/>
+    <button id="csend" onclick="sendC()">➤</button>
+  </div>
+</div>
+
+<div class="notif-pop" id="notifEl"></div>
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ── HELPERS ──
+function gs(s){document.querySelector(s)&&document.querySelector(s).scrollIntoView({behavior:'smooth'});}
+function showToast(m){const t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+
+// ── DROPDOWN TOGGLE ──
+function toggleDd(id){
+  const p=document.getElementById(id).querySelector('.dd-panel');
+  document.querySelectorAll('.dd-panel').forEach(x=>{if(x!==p)x.classList.remove('open');});
+  p.classList.toggle('open');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.dd-wrap'))document.querySelectorAll('.dd-panel').forEach(x=>x.classList.remove('open'));});
+function filterDd(panelId,q){
+  document.querySelectorAll('#'+panelId+' .dd-item').forEach(item=>{
+    const txt=item.textContent.toLowerCase();
+    item.style.display=txt.includes(q.toLowerCase())?'flex':'none';
+  });
+}
+
+// ── LANGUAGE SYSTEM ──
+const LANGS={
+  en:{limited:'LIMITED — Today Only',popTitle:'Apply Today — Get',popSub:'Welcome bonus for new applicants today only!',popBal:'Min. 100 USDT transaction → Auto-claimed',offerEnds:'Offer ends in:',popCta:'🚀 Apply Now — Claim 100 USDT!',popSkip:"No thanks, I'll miss this",statCards:'Cards Issued',statCountries:'Countries',statClaimed:'USDT Claimed',statOnline:'Online Now',cardPreview:'Your Card Preview',yourName:'YOUR NAME',connectWallet:'Please Connect Your Wallet',getCardDetails:'to Get Card Details',balDash:'Balance Dashboard',walletBal:'Wallet Balance',connectToSee:'Connect wallet to see balance',voucherBal:'Voucher Balance',welcomeBonus:'Welcome Bonus · Apply to unlock',locked:'LOCKED',rewardBal:'Reward Balance',cashbackEarned:'Cashback earned on transactions',yourMoneyYours:'Your Money — Always Yours',trust1:'Fund stays in YOUR wallet — never transferred to us',trust2:'Wallet connects with READ-ONLY permission only',trust3:'Every transaction needs YOUR approval popup',trust4:"We are just a Crypto → Currency exchange bridge",applyTitle:'Apply for FREE CryptoCard Pro',freeCard:'FREE CARD',secureNote:'100% Secure — Fund stays in your wallet. Read-only connect. Every payment needs your approval.',firstName:'First Name',lastName:'Last Name',email:'Email Address',dob:'Date of Birth',phone:'Phone Number',country:'Country',selectCountry:'Select Country',plan:'Card Plan',selectPlan:'Select Plan',connectWalletLbl:'Connect Your Wallet',agreeTerms:'I agree to the',termsLink:'Terms & Conditions',andReward:'and Reward Claim Policy',applyBtn:'🚀 Apply Now — Get Virtual Card + 100 USDT',formDisc:'✅ Free card · 🔒 Secure · 🌍 Worldwide · No hidden fees',cardReady:'Your CryptoCard Pro is Ready!',active:'ACTIVE',cardNum:'Card Number',expiry:'Expiry',orderPhysical:'Order Physical Card',physDesc:'Get real CryptoCard Pro at your doorstep. Same card number & CVV.',stdDesign:'📋 Standard — 10 USDT',custDesign:'🎨 Custom Design — 10 USDT',supportBtn:'Need Help? Contact Support Team',liveActivity:'Live Activity',cardPlans:'Card Plans',mool:'Mool',forever:'/ forever',f1:'Worldwide ATM',f2:'100 USDT Voucher',fp1:'Priority Global',fp4:'VIP Support',fpm1:'Unlimited Global',fpm3:'Zero Trading Fees',applyFree:'Apply Free',applyPro:'Apply Pro 🔥',applyPrem:'Apply Premium',cardBenefits:'Card Benefits',b1t:'190+ Countries',b1p:'Any Visa terminal worldwide',b2t:'Instant Convert',b2p:'BTC/ETH/USDT → local currency',b3t:'Bank Security',b3p:'256-bit SSL + biometric auth',b4t:'100 USDT Bonus',b4p:'Auto-claimed on 1st transaction',b5t:'Zero Monthly Fee',b5p:'Mool card always free',b6t:'AI Fraud Protection',b6p:'24/7 zero fraud guarantee',howTitle:'How to Get Your Card — 4 Steps',step1t:'Fill Form',step1p:'Name, email, phone — 2 minutes',step2t:'Connect Wallet',step2p:'MetaMask/Trust — one click',step3t:'Get Virtual Card',step3p:'Instantly generated!',step4t:'Claim 100 USDT',step4p:'100 USDT+ transaction → auto-claim',trustTitle:'Your Money — Always Safe With You',verified:'VERIFIED',doesntHappen:"What DOESN'T Happen",doesHappen:'What DOES Happen',nt1:'No fund transfer from your wallet',nt2:'We NEVER ask for seed phrase',nt3:'Your crypto never comes to us',nt4:'No hidden fees anywhere',yt1:'Read-only wallet connection',yt2:'Your approval needed every time',yt3:'Fund stays in YOUR wallet',yt4:"We're just an exchange bridge",howWalletWorks:'How Wallet Connection Works',ws1t:'You Choose Your Wallet',ws1p:'MetaMask, Trust Wallet — only you decide.',ws2t:'Read-Only Permission Only',ws2p:'We can only see your address & balance. NO auto send/receive.',ws3t:'Every Payment = Your Approval',ws3p:'A popup appears in your wallet. Confirm = payment. Cancel = nothing.',ws4t:'You Are Always In Full Control',ws4p:'Disconnect anytime, lock card, set limits — your hands only.',whyWeExist:'Why We Exist — The Digital Future',whyText:'The world is moving to Digital Currency. You have crypto but daily use is hard. CryptoCard Pro converts your crypto to local currency in real-time at every transaction. Your money stays with you — we\'re just the smart exchange bridge.',nonCustodial:'Non-Custodial',ncDesc:'Your keys, your crypto',sslDesc:'Bank encryption',pciDesc:'Card standard',kycDesc:'ID verified',successTitle:'Application Submitted!',successText:'Your FREE CryptoCard Pro is applied. Virtual card is ready!',viewCard:'View Virtual Card →'},
+
+  hi:{limited:'सीमित — केवल आज',popTitle:'आज अप्लाई करें — पाएं',popSub:'नए आवेदकों के लिए केवल आज!',popBal:'न्यूनतम 100 USDT लेनदेन → स्वतः क्लेम',offerEnds:'ऑफर खत्म होने में:',popCta:'🚀 अभी अप्लाई करें — 100 USDT पाएं!',popSkip:'नहीं चाहिए, छोड़ता हूँ',statCards:'कार्ड जारी',statCountries:'देश',statClaimed:'USDT क्लेम',statOnline:'अभी ऑनलाइन',cardPreview:'आपका कार्ड प्रीव्यू',yourName:'आपका नाम',connectWallet:'कृपया अपना वॉलेट कनेक्ट करें',getCardDetails:'कार्ड डिटेल्स पाने के लिए',balDash:'बैलेंस डैशबोर्ड',walletBal:'वॉलेट बैलेंस',connectToSee:'बैलेंस देखने के लिए वॉलेट कनेक्ट करें',voucherBal:'वाउचर बैलेंस',welcomeBonus:'स्वागत बोनस · अनलॉक करें',locked:'लॉक्ड',rewardBal:'रिवॉर्ड बैलेंस',cashbackEarned:'लेनदेन पर कैशबैक',yourMoneyYours:'आपका पैसा — हमेशा आपके पास',trust1:'फंड आपके वॉलेट में रहता है — हमारे पास नहीं आता',trust2:'वॉलेट केवल READ-ONLY परमिशन से जुड़ता है',trust3:'हर लेनदेन पर आपकी मंजूरी जरूरी',trust4:'हम सिर्फ Crypto → Currency एक्सचेंज ब्रिज हैं',applyTitle:'FREE CryptoCard Pro के लिए अप्लाई करें',freeCard:'मुफ्त कार्ड',secureNote:'100% सुरक्षित — फंड आपके वॉलेट में रहता है। हर पेमेंट पर आपकी मंजूरी जरूरी।',firstName:'पहला नाम',lastName:'अंतिम नाम',email:'ईमेल पता',dob:'जन्म तिथि',phone:'फोन नंबर',country:'देश',selectCountry:'देश चुनें',plan:'कार्ड प्लान',selectPlan:'प्लान चुनें',connectWalletLbl:'अपना वॉलेट कनेक्ट करें',agreeTerms:'मैं सहमत हूँ',termsLink:'नियम और शर्तें',andReward:'और रिवॉर्ड क्लेम पॉलिसी',applyBtn:'🚀 अभी अप्लाई करें — वर्चुअल कार्ड + 100 USDT पाएं',formDisc:'✅ मुफ्त कार्ड · 🔒 सुरक्षित · 🌍 विश्वव्यापी · कोई छिपी फीस नहीं',cardReady:'आपका CryptoCard Pro तैयार है!',active:'सक्रिय',cardNum:'कार्ड नंबर',expiry:'एक्सपायरी',orderPhysical:'फिजिकल कार्ड ऑर्डर करें',physDesc:'असली कार्ड घर पर मंगाएं। कार्ड नंबर और CVV वही रहेगा।',stdDesign:'📋 स्टैंडर्ड — 10 USDT',custDesign:'🎨 कस्टम डिजाइन — 10 USDT',supportBtn:'सहायता चाहिए? टीम से संपर्क करें',liveActivity:'लाइव गतिविधि',cardPlans:'कार्ड प्लान',mool:'मूल',forever:'/ हमेशा',f1:'विश्वव्यापी ATM',f2:'100 USDT वाउचर',fp1:'प्राथमिकता वैश्विक',fp4:'VIP सपोर्ट',fpm1:'असीमित वैश्विक',fpm3:'शून्य ट्रेडिंग फीस',applyFree:'मुफ्त अप्लाई करें',applyPro:'Pro अप्लाई करें 🔥',applyPrem:'Premium अप्लाई करें',cardBenefits:'कार्ड के फायदे',b1t:'190+ देश',b1p:'दुनियाभर में Visa टर्मिनल',b2t:'तत्काल रूपांतरण',b2p:'BTC/ETH/USDT → स्थानीय मुद्रा',b3t:'बैंक सुरक्षा',b3p:'256-bit SSL + बायोमेट्रिक',b4t:'100 USDT बोनस',b4p:'पहले लेनदेन पर स्वतः क्लेम',b5t:'शून्य मासिक शुल्क',b5p:'मूल कार्ड हमेशा मुफ्त',b6t:'AI धोखाधड़ी सुरक्षा',b6p:'24/7 शून्य धोखाधड़ी गारंटी',howTitle:'सिर्फ 4 Steps में कार्ड पाएं',step1t:'फॉर्म भरें',step1p:'नाम, ईमेल, फोन — 2 मिनट',step2t:'वॉलेट कनेक्ट',step2p:'MetaMask/Trust — एक क्लिक',step3t:'वर्चुअल कार्ड पाएं',step3p:'तुरंत जनरेट!',step4t:'100 USDT क्लेम',step4p:'100 USDT+ लेनदेन → स्वतः क्लेम',trustTitle:'आपका पैसा — हमेशा आपके साथ सुरक्षित',verified:'सत्यापित',doesntHappen:'जो नहीं होता',doesHappen:'जो होता है',nt1:'आपके वॉलेट से कोई फंड ट्रांसफर नहीं',nt2:'हम कभी seed phrase नहीं मांगते',nt3:'आपका crypto हमारे पास नहीं आता',nt4:'कोई छिपी फीस नहीं',yt1:'Read-only वॉलेट कनेक्शन',yt2:'हर बार आपकी मंजूरी जरूरी',yt3:'फंड आपके वॉलेट में रहता है',yt4:'हम सिर्फ एक एक्सचेंज ब्रिज हैं',howWalletWorks:'वॉलेट कनेक्शन कैसे काम करता है',ws1t:'आप अपना वॉलेट चुनते हैं',ws1p:'MetaMask, Trust Wallet — सिर्फ आप तय करते हैं।',ws2t:'केवल Read-Only परमिशन',ws2p:'हम सिर्फ आपका address और balance देख सकते हैं। अपने आप कुछ नहीं होता।',ws3t:'हर पेमेंट = आपकी मंजूरी',ws3p:'वॉलेट में popup आता है। Confirm = पेमेंट। Cancel = कुछ नहीं।',ws4t:'आप हमेशा पूरे नियंत्रण में हैं',ws4p:'कभी भी वॉलेट disconnect करें, कार्ड लॉक करें — सब आपके हाथ में।',whyWeExist:'हम क्यों हैं — डिजिटल भविष्य',whyText:'दुनिया डिजिटल करेंसी की ओर जा रही है। आपके पास crypto है लेकिन रोज़ाना इस्तेमाल मुश्किल है। CryptoCard Pro हर लेनदेन पर real-time में crypto को local currency में बदलता है। आपका पैसा आपके पास — हम सिर्फ स्मार्ट ब्रिज हैं।',nonCustodial:'नॉन-कस्टोडियल',ncDesc:'आपकी चाबी, आपका crypto',sslDesc:'बैंक एन्क्रिप्शन',pciDesc:'कार्ड मानक',kycDesc:'पहचान सत्यापित',successTitle:'आवेदन सफल!',successText:'आपका FREE CryptoCard Pro अप्लाई हो गया। वर्चुअल कार्ड नीचे तैयार है!',viewCard:'वर्चुअल कार्ड देखें →'},
+
+  ur:{limited:'محدود — صرف آج',popTitle:'آج اپلائی کریں — پائیں',popSub:'صرف آج کے نئے درخواست دہندگان کے لیے!',popBal:'کم از کم 100 USDT لین دین → خودکار کلیم',offerEnds:'آفر ختم ہونے میں:',popCta:'🚀 ابھی اپلائی کریں!',popSkip:'نہیں چاہیے',statCards:'کارڈ جاری',statCountries:'ممالک',statClaimed:'USDT کلیم',statOnline:'ابھی آن لائن',cardPreview:'آپ کا کارڈ پریویو',yourName:'آپ کا نام',connectWallet:'براہ کرم اپنا ولیٹ کنیکٹ کریں',getCardDetails:'کارڈ ڈیٹیلز حاصل کرنے کے لیے',balDash:'بیلنس ڈیش بورڈ',walletBal:'ولیٹ بیلنس',connectToSee:'بیلنس دیکھنے کے لیے ولیٹ کنیکٹ کریں',voucherBal:'واؤچر بیلنس',welcomeBonus:'خوش آمدید بونس',locked:'مقفل',rewardBal:'ریوارڈ بیلنس',cashbackEarned:'لین دین پر کیش بیک',yourMoneyYours:'آپ کا پیسہ — ہمیشہ آپ کے پاس',trust1:'فنڈ آپ کے ولیٹ میں رہتا ہے',trust2:'ولیٹ صرف READ-ONLY اجازت سے جڑتا ہے',trust3:'ہر لین دین پر آپ کی منظوری ضروری',trust4:'ہم صرف Crypto → Currency ایکسچینج برج ہیں',applyTitle:'مفت CryptoCard Pro کے لیے اپلائی کریں',freeCard:'مفت کارڈ',secureNote:'100% محفوظ — فنڈ آپ کے ولیٹ میں رہتا ہے۔',firstName:'پہلا نام',lastName:'آخری نام',email:'ای میل پتہ',dob:'تاریخ پیدائش',phone:'فون نمبر',country:'ملک',selectCountry:'ملک منتخب کریں',plan:'کارڈ پلان',selectPlan:'پلان منتخب کریں',connectWalletLbl:'اپنا ولیٹ کنیکٹ کریں',agreeTerms:'میں متفق ہوں',termsLink:'شرائط و ضوابط',andReward:'اور ریوارڈ کلیم پالیسی',applyBtn:'🚀 ابھی اپلائی کریں',formDisc:'✅ مفت · 🔒 محفوظ · 🌍 عالمی · کوئی چھپی فیس نہیں',cardReady:'آپ کا CryptoCard Pro تیار ہے!',active:'فعال',cardNum:'کارڈ نمبر',expiry:'میعاد',orderPhysical:'فزیکل کارڈ آرڈر کریں',physDesc:'اصلی کارڈ گھر منگوائیں۔',stdDesign:'📋 معیاری — 10 USDT',custDesign:'🎨 کسٹم ڈیزائن — 10 USDT',supportBtn:'مدد چاہیے؟ ٹیم سے رابطہ کریں',liveActivity:'لائیو سرگرمی',cardPlans:'کارڈ پلانز',mool:'بنیادی',forever:'/ ہمیشہ',f1:'عالمی ATM',f2:'100 USDT واؤچر',fp1:'ترجیحی عالمی',fp4:'VIP سپورٹ',fpm1:'لامحدود عالمی',fpm3:'صفر ٹریڈنگ فیس',applyFree:'مفت اپلائی',applyPro:'Pro اپلائی 🔥',applyPrem:'Premium اپلائی',cardBenefits:'کارڈ کے فوائد',b1t:'190+ ممالک',b1p:'دنیا بھر میں Visa ٹرمینل',b2t:'فوری تبادلہ',b2p:'BTC/ETH/USDT → مقامی کرنسی',b3t:'بینک سیکیورٹی',b3p:'256-bit SSL',b4t:'100 USDT بونس',b4p:'پہلے لین دین پر خودکار',b5t:'صفر ماہانہ فیس',b5p:'بنیادی کارڈ ہمیشہ مفت',b6t:'AI فراڈ پروٹیکشن',b6p:'24/7 صفر فراڈ گارنٹی',howTitle:'صرف 4 Steps میں کارڈ پائیں',step1t:'فارم بھریں',step1p:'نام، ای میل، فون — 2 منٹ',step2t:'ولیٹ کنیکٹ',step2p:'MetaMask/Trust — ایک کلک',step3t:'ورچوئل کارڈ پائیں',step3p:'فوری جنریٹ!',step4t:'100 USDT کلیم',step4p:'100 USDT+ لین دین → خودکار',trustTitle:'آپ کا پیسہ — ہمیشہ محفوظ',verified:'تصدیق شدہ',doesntHappen:'جو نہیں ہوتا',doesHappen:'جو ہوتا ہے',nt1:'آپ کے ولیٹ سے کوئی فنڈ ٹرانسفر نہیں',nt2:'ہم کبھی seed phrase نہیں مانگتے',nt3:'آپ کا crypto ہمارے پاس نہیں آتا',nt4:'کوئی چھپی فیس نہیں',yt1:'Read-only ولیٹ کنکشن',yt2:'ہر بار آپ کی منظوری',yt3:'فنڈ آپ کے ولیٹ میں رہتا ہے',yt4:'ہم صرف ایک ایکسچینج برج ہیں',howWalletWorks:'ولیٹ کنکشن کیسے کام کرتا ہے',ws1t:'آپ اپنا ولیٹ چنتے ہیں',ws1p:'صرف آپ فیصلہ کرتے ہیں۔',ws2t:'صرف Read-Only اجازت',ws2p:'ہم صرف address اور balance دیکھ سکتے ہیں۔',ws3t:'ہر پیمنٹ = آپ کی منظوری',ws3p:'ولیٹ میں popup آتا ہے۔ Confirm = پیمنٹ۔ Cancel = کچھ نہیں۔',ws4t:'آپ ہمیشہ پورے کنٹرول میں ہیں',ws4p:'کسی بھی وقت disconnect کریں — سب آپ کے ہاتھ میں۔',whyWeExist:'ہم کیوں ہیں',whyText:'دنیا ڈیجیٹل کرنسی کی طرف جا رہی ہے۔ آپ کے پاس crypto ہے لیکن روزمرہ استعمال مشکل ہے۔ CryptoCard Pro ہر لین دین پر crypto کو مقامی کرنسی میں بدلتا ہے۔',nonCustodial:'نان کسٹوڈیل',ncDesc:'آپ کی چابی، آپ کا crypto',sslDesc:'بینک انکرپشن',pciDesc:'کارڈ معیار',kycDesc:'شناخت تصدیق',successTitle:'درخواست کامیاب!',successText:'آپ کا FREE CryptoCard Pro اپلائی ہو گیا!',viewCard:'ورچوئل کارڈ دیکھیں →'},
+};
+
+// Add stubs for other languages (will use English fallback)
+['bn','te','mr','ta','gu','kn','ml','pa','or','as','ar','zh','es','fr','de','pt','ru','ja','ko','tr','id'].forEach(l=>{LANGS[l]=Object.assign({},LANGS.en);});
+// Override a few key strings for Arabic RTL
+LANGS.ar.yourMoneyYours='أموالك — دائماً معك';LANGS.ar.trust1='الأموال تبقى في محفظتك';LANGS.ar.trust2='الاتصال للقراءة فقط';LANGS.ar.trust3='كل معاملة تحتاج موافقتك';LANGS.ar.trust4='نحن مجرد جسر صرف';
+
+let curLang='en';
+function setLang(code,flag,abbr){
+  curLang=code;
+  document.getElementById('langFlag').textContent=flag;
+  document.getElementById('langCode').textContent=abbr;
+  document.querySelectorAll('#langPanel .dd-item').forEach(x=>x.classList.remove('sel'));
+  event&&event.target.closest('.dd-item')&&event.target.closest('.dd-item').classList.add('sel');
+  applyLang(code);
+  // RTL for Arabic/Urdu
+  document.documentElement.dir=(code==='ar'||code==='ur')?'rtl':'ltr';
+  document.getElementById('langDd').querySelector('.dd-panel').classList.remove('open');
+}
+function applyLang(code){
+  const L=LANGS[code]||LANGS.en;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    if(L[key])el.textContent=L[key];
+  });
+}
+
+// ── COUNTRY/CURRENCY ──
+function setCnt(flag,currency,name){
+  document.getElementById('cntFlag').textContent=flag;
+  document.getElementById('cntCode').textContent=currency;
+  document.querySelectorAll('#cntPanel .dd-item').forEach(x=>x.classList.remove('sel'));
+  event&&event.target.closest('.dd-item')&&event.target.closest('.dd-item').classList.add('sel');
+  document.getElementById('cntDd').querySelector('.dd-panel').classList.remove('open');
+  showToast('Region set to '+name+' ('+currency+')');
+  // Auto-set phone country code based on country
+  const cmap={India:'+91',Pakistan:'+92',Bangladesh:'+880',UAE:'+971','Saudi Arabia':'+966','United Kingdom':'+44','United States':'+1',Germany:'+49',Japan:'+81',Brazil:'+55',Australia:'+61',Singapore:'+65'};
+  if(cmap[name]){const sel=document.getElementById('ccSel');if(sel){for(let o of sel.options){if(o.value===cmap[name]){sel.value=cmap[name];break;}}}}
+}
+
+// ── TICKER ──
+const tD=[{s:'BTC',p:'67,420',c:'+2.4%',u:1},{s:'ETH',p:'3,840',c:'+1.8%',u:1},{s:'BNB',p:'612',c:'+3.1%',u:1},{s:'USDT',p:'1.00',c:'0.0%',u:1},{s:'SOL',p:'178',c:'-0.9%',u:0},{s:'XRP',p:'0.62',c:'+1.2%',u:1},{s:'ADA',p:'0.48',c:'-1.4%',u:0},{s:'DOGE',p:'0.14',c:'+5.2%',u:1},{s:'MATIC',p:'0.89',c:'+2.7%',u:1}];
+document.getElementById('tickEl').innerHTML=[...tD,...tD].map(t=>`<div class="tick"><strong>${t.s}</strong>&nbsp;$${t.p}&nbsp;<span class="${t.u?'up':'dn'}">${t.c}</span></div>`).join('');
+
+// ── STATS ──
+function animN(id,target,sfx=''){const el=document.getElementById(id);let c=0;const step=Math.ceil(target/60);const t=setInterval(()=>{c=Math.min(c+step,target);el.textContent=c.toLocaleString()+sfx;if(c>=target)clearInterval(t);},18);}
+setTimeout(()=>{animN('s1',2847000);animN('s2',190,'+');animN('s3',94200);animN('s4',12430);},400);
+let lc=12430+Math.floor(Math.random()*400);
+setInterval(()=>{lc+=Math.floor(Math.random()*5)-2;document.getElementById('lcount').textContent=lc.toLocaleString()+' online';},3000);
+
+// ── LIVE CARD UPDATE ──
+function updateCard(){
+  const fn=document.getElementById('fn').value.trim();
+  const ln=document.getElementById('ln').value.trim();
+  const nameEl=document.getElementById('c3name');
+  if(fn||ln){
+    const name=(fn+' '+ln).trim().toUpperCase();
+    nameEl.textContent=name;
+    nameEl.classList.add('filled');
+  } else {
+    nameEl.textContent='YOUR NAME';
+    nameEl.classList.remove('filled');
+  }
+}
+
+// ── WALLET CONNECT ──
+let chosenWallet='';
+function pickW(el,name){
+  document.querySelectorAll('.w-btn').forEach(b=>{b.classList.remove('sel','connected');});
+  el.classList.add('sel');
+  chosenWallet=name;
+  // Simulate wallet connecting
+  setTimeout(()=>{
+    el.classList.remove('sel');
+    el.classList.add('connected');
+    el.querySelector('.wn').textContent='Connected ✓';
+    // Show balance + hide card overlay
+    const bal=(245+Math.floor(Math.random()*300)).toFixed(2)+' USDT';
+    document.getElementById('balWallet').textContent=bal;
+    document.getElementById('balWalletSub').textContent='Connected: '+name;
+    document.getElementById('balVoucher').textContent='100.00 USDT';
+    document.getElementById('voucherTag').textContent='PENDING';
+    document.getElementById('voucherTag').classList.add('active');
+    // Update card overlay text
+    document.getElementById('cardOverlay').innerHTML='<div class="co-icon">✅</div><div class="co-text" style="color:var(--green)">'+name+' Connected!</div><div class="co-sub">Apply to reveal card details</div>';
+    showToast(name+' connected successfully!');
+  },800);
+}
+
+// ── PLAN SELECT ──
+let chosenPlan='';
+function pickPlan(p){
+  chosenPlan=p;
+  const el=document.getElementById('selPlanBox');
+  el.style.display='block';el.textContent='✅ '+p+' Plan Selected!';
+  document.getElementById('fplan').value=p==='Mool'?'Mool — FREE':p==='Pro'?'Pro — 19.99 USDT/mo':'Premium — 49.99 USDT/mo';
+  gs('#apply-sec');
+}
+
+// ── CARD GENERATOR ──
+let genCard={num:'',cvv:'',exp:'',holder:''};
+function genCardData(){
+  genCard.num=[4729,Math.floor(1000+Math.random()*9000),Math.floor(1000+Math.random()*9000),Math.floor(1000+Math.random()*9000)].join(' ');
+  genCard.cvv=String(Math.floor(100+Math.random()*900));
+  const y=(new Date().getFullYear()+4)%100;
+  genCard.exp='0'+(Math.floor(Math.random()*12)+1)+'/'+y;
+  const fn=document.getElementById('fn').value.trim();
+  const ln=document.getElementById('ln').value.trim();
+  genCard.holder=(fn+' '+ln).trim().toUpperCase()||'CARD HOLDER';
+}
+
+// ── SUBMIT ──
+function submitApp(){
+  const fn=document.getElementById('fn').value.trim();
+  const ln=document.getElementById('ln').value.trim();
+  const em=document.getElementById('femail').value.trim();
+  const ph=document.getElementById('fphone').value.trim();
+  const co=document.getElementById('fcountry').value;
+  const pl=document.getElementById('fplan').value;
+  const tc=document.getElementById('termsChk').checked;
+  if(!fn||!ln||!em||!ph||!co||!pl){alert('Please fill all required fields!');return;}
+  if(!chosenWallet){alert('Please select and connect a wallet!');return;}
+  if(!tc){alert('Please accept Terms & Conditions.');return;}
+  genCardData();
+  document.getElementById('sm-ov').classList.add('open');
+}
+
+function showVC(){
+  document.getElementById('appForm').style.display='none';
+  document.getElementById('vc-screen').style.display='block';
+  // Update live card
+  document.getElementById('c3num').textContent=genCard.num;
+  document.getElementById('c3name').textContent=genCard.holder;
+  document.getElementById('c3name').classList.add('filled');
+  document.getElementById('cardOverlay').classList.add('hidden');
+  // Update vc info
+  const last4=genCard.num.slice(-4);
+  document.getElementById('vcLast4').textContent=last4;
+  document.getElementById('vcCvvD').innerHTML=genCard.cvv+' <span class="copy-ic">📋</span>';
+  document.getElementById('vcExpD').textContent=genCard.exp;
+  // Update balance
+  document.getElementById('balVoucher').textContent='100.00 USDT';
+  document.getElementById('voucherTag').textContent='ACTIVE';
+  document.getElementById('voucherTag').classList.add('active');
+  gs('#apply-sec');
+}
+
+function copyCardNum(){navigator.clipboard.writeText(genCard.num).catch(()=>{});showToast('Card number copied!');}
+function copyCVV(){navigator.clipboard.writeText(genCard.cvv).catch(()=>{});showToast('CVV copied!');}
+
+// ── PHYSICAL CARD ──
+function pickPhys(type){
+  document.querySelectorAll('.phys-opt').forEach(o=>o.classList.remove('sel'));
+  event.target.classList.add('sel');
+  const n=document.getElementById('physNote');n.style.display='block';
+  n.textContent=type==='standard'?'✅ Standard Design selected! 10 USDT fee. Delivery 7-10 days. Card number & CVV same as virtual.':'✅ Custom Design selected! 10 USDT fee. Our team will contact you for design. Card number & CVV unchanged.';
+}
+
+// ── LIVE FEED ──
+const fN=['Rahul K.','Priya S.','Amir H.','Sofia L.','Raj M.','Fatima A.','Carlos R.','Meera P.'];
+const fA=[{t:'Card Applied',b:'fb-a',e:'🃏'},{t:'100 USDT Claimed',b:'fb-c',e:'🎁'},{t:'Wallet Connected',b:'fb-c',e:'🔗'},{t:'Pro Plan Selected',b:'fb-a',e:'⭐'}];
+const fF=['🇮🇳','🇺🇸','🇬🇧','🇦🇪','🇩🇪','🇯🇵','🇵🇰','🇧🇩'];
+const fCl=['#F0B90B','#0ECB81','#a78bfa','#60a5fa'];
+function getTs(){const n=new Date();return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0');}
+function addFeed(){
+  const nm=fN[Math.floor(Math.random()*fN.length)],ac=fA[Math.floor(Math.random()*fA.length)],fl=fF[Math.floor(Math.random()*fF.length)],cl=fCl[Math.floor(Math.random()*fCl.length)];
+  const html=`<div class="f-row"><div class="fav" style="background:${cl}18;color:${cl}">👤</div><div class="fi"><div class="fn">${nm} ${fl}</div><div class="fa">${ac.e} ${ac.t}</div></div><span class="fb ${ac.b}">${ac.t.split(' ')[0]}</span><span class="ft">${getTs()}</span></div>`;
+  const fl2=document.getElementById('feedEl');fl2.insertAdjacentHTML('afterbegin',html);
+  const rows=fl2.querySelectorAll('.f-row');if(rows.length>8)rows[rows.length-1].remove();
+  showNotif(nm,fl,ac,cl);
+}
+function showNotif(nm,fl,ac,cl){
+  const n=document.getElementById('notifEl');n.style.display='flex';n.style.opacity='1';
+  n.innerHTML=`<div class="nav" style="background:${cl}18;color:${cl}">👤</div><div><strong>${nm} ${fl}</strong><span>${ac.e} ${ac.t}</span></div>`;
+  setTimeout(()=>{n.style.opacity='0';setTimeout(()=>{n.style.display='none';},400);},3000);
+}
+for(let i=0;i<4;i++)addFeed();
+setInterval(addFeed,2800);
+
+// ── POPUP ──
+let pS=899;const pTE=document.getElementById('ptimer');
+const pIv=setInterval(()=>{pS--;if(pS<=0){clearInterval(pIv);pTE.textContent='00:00';return;}pTE.textContent=String(Math.floor(pS/60)).padStart(2,'0')+':'+String(pS%60).padStart(2,'0');},1000);
+let pSlots=47;setInterval(()=>{if(pSlots>14&&Math.random()<.12){pSlots--;document.getElementById('pslots').textContent='⚡ Only '+pSlots+' slots left today!';}},4500);
+function closePop(){document.getElementById('pop-ov').style.display='none';}
+function closePopApply(){closePop();setTimeout(()=>gs('#apply-sec'),100);}
+
+// ── CHATBOT ──
+function toggleChat(){document.getElementById('chat-win').classList.toggle('open');document.querySelector('.fdot').style.display='none';}
+const CSYS=`You are CryptoCard Pro's expert AI support assistant. You answer in the same language the user writes in (English, Hindi/Hinglish, Urdu, or any language).
+
+MOST IMPORTANT — Trust & Safety (answer these clearly when asked):
+CryptoCard Pro is NON-CUSTODIAL:
+- User's fund NEVER leaves their wallet without explicit approval
+- Wallet connects with READ-ONLY permission only — we can only see balance
+- EVERY transaction triggers an approval popup in the user's wallet app
+- User presses "Confirm" → payment happens. Cancel → nothing happens
+- We NEVER ask for seed phrase or private key — anyone asking is a SCAMMER
+- We are just a Crypto → Local Currency EXCHANGE BRIDGE
+- This is NOT a scam — it's a legitimate service for the new digital economy
+
+Card Details:
+- Plans: Mool (FREE), Pro (19.99 USDT/mo), Premium (49.99 USDT/mo)
+- All plans: 100 USDT welcome voucher
+- Apply → wallet connect → virtual card generated instantly
+- Physical card: 10 USDT, 7-10 days, standard or custom design, same card number & CVV
+- Worldwide Visa, 190+ countries
+
+Balance System:
+- Wallet Balance: your actual crypto (shown separately)
+- Voucher Balance: 100 USDT welcome bonus (locked until claim condition met)
+- Reward Balance: cashback from transactions
+- To claim voucher: do any 100 USDT+ transaction → auto-claimed to wallet balance
+
+Crypto Knowledge:
+- BTC: Bitcoin, store of value, 21M supply limit
+- ETH: Ethereum, smart contracts, DeFi/NFT
+- USDT: Stablecoin, 1:1 USD peg
+- BNB: Binance native token, low fees
+- Gas fees: blockchain transaction fees
+- Seed phrase: 12/24 words — NEVER share with anyone
+- Non-custodial: your private key stays with you
+
+Rules:
+- Reply in the SAME language the user writes in
+- Keep answers to 2-4 sentences
+- Be warm, helpful, clear
+- Always reassure about safety when relevant`;
+
+async function getBR(msg){
+  try{const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:CSYS,messages:[{role:"user",content:msg}]})});const d=await r.json();return d.content?.[0]?.text||"Technical issue. Please submit a support ticket!";}
+  catch{return "Connection issue. Please try again or submit a support ticket! 🙏";}
+}
+function addCM(txt,type){const d=document.createElement('div');d.className='cm '+type;d.innerHTML=txt.replace(/\n/g,'<br>');document.getElementById('cmsgs').appendChild(d);document.getElementById('cmsgs').scrollTop=99999;}
+function showCT(){const d=document.createElement('div');d.className='ctyp';d.id='ctypEl';d.innerHTML='<span></span><span></span><span></span>';document.getElementById('cmsgs').appendChild(d);document.getElementById('cmsgs').scrollTop=99999;}
+function remCT(){const t=document.getElementById('ctypEl');if(t)t.remove();}
+async function sendC(){
+  const inp=document.getElementById('cinp'),txt=inp.value.trim();if(!txt)return;inp.value='';
+  addCM(txt,'user');document.getElementById('cquick').style.display='none';showCT();
+  const rep=await getBR(txt);remCT();addCM(rep,'bot');
+  if(/problem|issue|error|help|support/i.test(txt)){setTimeout(()=>addCM('Need more help? <strong style="color:var(--bnb);cursor:pointer;text-decoration:underline" onclick="openTicket()">Click here for support ticket</strong> — team will contact you directly! 🎫','bot'),700);}
+}
+function cq(q){document.getElementById('cinp').value=q;sendC();}
+
+// ── TICKET ──
+function openTicket(){document.getElementById('t-ov').classList.add('open');document.getElementById('t-form').style.display='block';document.getElementById('t-ok').style.display='none';}
+function closeTicket(){document.getElementById('t-ov').classList.remove('open');}
+function ttab(tab){document.getElementById('ttg').classList.toggle('on',tab==='tg');document.getElementById('twa').classList.toggle('on',tab==='wa');document.getElementById('t-lbl').textContent=tab==='tg'?'Telegram Username':'WhatsApp Number (+91...)';document.getElementById('t-contact').placeholder=tab==='tg'?'@yourname':'+91 98765 43210';}
+function subTicket(){const c=document.getElementById('t-contact').value.trim(),d=document.getElementById('t-desc').value.trim();if(!c||!d){alert('Please fill both fields.');return;}document.getElementById('t-form').style.display='none';document.getElementById('t-ok').style.display='block';}
+
+// ── TERMS ──
+function openTerms(){document.getElementById('terms-ov').classList.add('open');}
+function closeTerms(){document.getElementById('terms-ov').classList.remove('open');}
+
+// Nav active
+document.querySelectorAll('.tnav').forEach(el=>el.addEventListener('click',function(){document.querySelectorAll('.tnav').forEach(x=>x.classList.remove('on'));this.classList.add('on');}));
+</script>
+</body>
+</html>

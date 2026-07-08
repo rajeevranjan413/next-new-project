@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { CreditCard, FileText, Headphones, ShieldCheck, Globe, Zap, Gift, Wallet, Lock, Bot, Link, CheckCircle, ChevronRight } from 'lucide-react';
+import { CreditCard, FileText, Headphones, ShieldCheck, Globe, Zap, Gift, Wallet, Lock, Bot, Link, CheckCircle, ChevronRight, User } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
 import { TICKER_DATA, BENEFITS, PLANS, LANGS, CARD_THEMES } from '../../data';
 import { CryptoIcon } from '../icons/CryptoIcon';
@@ -14,6 +14,18 @@ const LUCIDE_MAP = { Globe, Zap, Gift, Wallet, Lock, Bot, Link, CheckCircle };
 /* All cards user can get — 6 virtual themes + 1 physical */
 const PHYSICAL_SLOT = { id: 'physical', name: 'Matte Black', sub: 'Physical · Premium Matte' };
 const DEMO_CARDS = [...CARD_THEMES, PHYSICAL_SLOT];
+
+/* ── Live Activity feed data ── */
+const FEED_NAMES = ['Rahul K.', 'Priya S.', 'Amir H.', 'Sofia L.', 'Raj M.', 'Fatima A.', 'Carlos R.', 'Meera P.'];
+const FEED_ACTIONS = [
+  { t: 'Card Applied', tag: 'a', e: '🃏' },
+  { t: '100 USDT Claimed', tag: 'c', e: '🎁' },
+  { t: 'Wallet Connected', tag: 'c', e: '🔗' },
+  { t: 'Pro Plan Selected', tag: 'a', e: '⭐' },
+];
+const FEED_FLAGS = ['🇮🇳', '🇺🇸', '🇬🇧', '🇦🇪', '🇩🇪', '🇯🇵', '🇵🇰', '🇧🇩'];
+const FEED_COLORS = ['#F0B90B', '#0ECB81', '#a78bfa', '#60a5fa'];
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export default function HomeScreen({ active }) {
   const { goScreen, openSheet, stats, animateStats, hBal, hWallet, hWTag, hWTagStyle, hVouch, hVTag, hVTagStyle, lang, screenFlash } = useCryptoCard();
@@ -49,6 +61,20 @@ export default function HomeScreen({ active }) {
   useEffect(() => {
     if (active) animateStats();
   }, [active, animateStats]);
+
+  /* ── Live Activity feed ── */
+  const [feed, setFeed] = useState([]);
+  useEffect(() => {
+    let id = 0;
+    const make = () => {
+      const d = new Date();
+      const ts = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, '0')).join(':');
+      return { id: id++, nm: pick(FEED_NAMES), ac: pick(FEED_ACTIONS), fl: pick(FEED_FLAGS), cl: pick(FEED_COLORS), ts };
+    };
+    setFeed(Array.from({ length: 4 }, make));
+    const iv = setInterval(() => setFeed(prev => [make(), ...prev].slice(0, 8)), 2800);
+    return () => clearInterval(iv);
+  }, []);
 
   const doubled = [...TICKER_DATA, ...TICKER_DATA];
 
@@ -180,6 +206,30 @@ export default function HomeScreen({ active }) {
             </div>
           );
         })}
+      </div>
+
+      {/* Live Activity */}
+      <div className={s['sec-h']}>
+        <div className={s['live-hdr']}>
+          <span className={s['live-dot']} />
+          <div className={s['sec-ht']}>{t.liveActivity || 'Live Activity'}</div>
+        </div>
+        <span className={s['live-count']}>{stats.s4.toLocaleString()} {t.onlineNow || 'online'}</span>
+      </div>
+      <div className={s['feed-card']}>
+        {feed.map(f => (
+          <div key={f.id} className={s['feed-row']}>
+            <div className={s['feed-av']} style={{ background: `${f.cl}18`, color: f.cl }}>
+              <User size={14} strokeWidth={2} />
+            </div>
+            <div className={s['feed-info']}>
+              <div className={s['feed-name']}>{f.nm} {f.fl}</div>
+              <div className={s['feed-act']}>{f.ac.e} {f.ac.t}</div>
+            </div>
+            <span className={`${s['feed-badge']} ${f.ac.tag === 'c' ? s['fb-c'] : s['fb-a']}`}>{f.ac.t.split(' ')[0]}</span>
+            <span className={s['feed-ts']}>{f.ts}</span>
+          </div>
+        ))}
       </div>
 
       {/* Plans Preview */}

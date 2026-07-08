@@ -1,23 +1,22 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, HelpCircle, Wallet, Phone, Mail, ChevronLeft, Eye, EyeOff } from 'lucide-react';
+import { X, HelpCircle, Wallet, Phone, Mail, ChevronLeft, Eye, EyeOff, Search } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
 import { loginWithPassword, signupUser, authWithWallet } from '../../services/api';
-import { WALLETS } from '../../data';
+import { WALLETS, PHONE_CODES } from '../../data';
 import s from '../../cryptocard.module.css';
 
-const COUNTRY_CODES = [
-  { code: '+91',  flag: '🇮🇳', name: 'India' },
-  { code: '+1',   flag: '🇺🇸', name: 'USA' },
-  { code: '+44',  flag: '🇬🇧', name: 'UK' },
-  { code: '+971', flag: '🇦🇪', name: 'UAE' },
-  { code: '+65',  flag: '🇸🇬', name: 'Singapore' },
-  { code: '+61',  flag: '🇦🇺', name: 'Australia' },
-];
+// Full world list (popular markets first) — see config/content.js.
+const COUNTRY_CODES = PHONE_CODES;
+
+// Resolve the default dial-code entry from an IP-detected country, falling back
+// to the first entry (India) when geo is unknown.
+const ccForGeo = (geo) =>
+  (geo && COUNTRY_CODES.find(c => c.id === geo.iso)) || COUNTRY_CODES[0];
 
 export default function AuthSheet() {
-  const { authSheetOpen, setAuthSheetOpen, onAuthSuccess, showToast, appConfig } = useCryptoCard();
+  const { authSheetOpen, setAuthSheetOpen, onAuthSuccess, showToast, appConfig, geo } = useCryptoCard();
 
   // mode: 'login' | 'signup'
   // step: 'input' | 'password' | 'wallet'
@@ -28,8 +27,9 @@ export default function AuthSheet() {
 
   // Input step
   const [value, setValue]       = useState('');
-  const [cc, setCc]             = useState(COUNTRY_CODES[0]);
+  const [cc, setCc]             = useState(() => ccForGeo(geo));
   const [ccOpen, setCcOpen]     = useState(false);
+  const [ccSearch, setCcSearch] = useState('');
 
   // Password step
   const [name, setName]         = useState('');
@@ -47,8 +47,9 @@ export default function AuthSheet() {
       setMode('login'); setTab('phone'); setStep('input');
       setValue(''); setName(''); setPassword(''); setConfirm('');
       setShowPw(false); setShowCf(false); setLoading(false); setCcOpen(false);
+      setCcSearch(''); setCc(ccForGeo(geo));
     }
-  }, [authSheetOpen]);
+  }, [authSheetOpen, geo]);
 
   const close = () => setAuthSheetOpen(false);
 
@@ -203,11 +204,28 @@ export default function AuthSheet() {
                   </button>
                   {ccOpen && (
                     <div className={s['as-cc-menu']}>
-                      {COUNTRY_CODES.map(c => (
-                        <button key={c.code} className={s['as-cc-item']} onClick={() => { setCc(c); setCcOpen(false); }}>
-                          {c.flag} {c.name} <span>{c.code}</span>
-                        </button>
-                      ))}
+                      <div className={s['as-cc-search']}>
+                        <Search size={13} strokeWidth={2} />
+                        <input
+                          type="text"
+                          placeholder="Search country…"
+                          value={ccSearch}
+                          onChange={e => setCcSearch(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      <div className={s['as-cc-scroll']}>
+                        {COUNTRY_CODES
+                          .filter(c => {
+                            const q = ccSearch.trim().toLowerCase();
+                            return !q || c.name.toLowerCase().includes(q) || c.code.includes(q);
+                          })
+                          .map(c => (
+                            <button key={c.id} className={s['as-cc-item']} onClick={() => { setCc(c); setCcOpen(false); setCcSearch(''); }}>
+                              {c.flag} {c.name} <span>{c.code}</span>
+                            </button>
+                          ))}
+                      </div>
                     </div>
                   )}
                 </div>

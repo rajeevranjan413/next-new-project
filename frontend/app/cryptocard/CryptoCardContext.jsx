@@ -1,7 +1,11 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { connectWallet as apiConnectWallet, sendChatMessage, authWithWallet, getMe } from './services/api';
+import { connectWallet as apiConnectWallet, authWithWallet, getMe } from './services/api';
+import { getBotReply } from './services/chatbot';
+import { detectCountry } from './services/geo';
+import { WORLD_COUNTRIES } from './config/content';
+import { COUNTRIES } from './config/languages';
 import { ACTIVE_THEME, getThemeVars } from './config/theme';
 
 const DEFAULT_CONFIG = {
@@ -9,6 +13,10 @@ const DEFAULT_CONFIG = {
   tagline: 'Pay with Crypto, Anywhere in the World',
   logoUrl: '', supportEmail: '', supportPhone: '', websiteUrl: '',
   activeTheme: ACTIVE_THEME,
+  voucher: {
+    enabled: true, limitedText: '', title: '', highlight: '', subtitle: '',
+    amount: '', bonusNote: '', offerMinutes: 15, ctaText: '', slots: 47, skipText: '',
+  },
 };
 
 const CryptoCardContext = createContext(null);
@@ -17,6 +25,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const [screen, setScreen] = useState('home');
   const [prevScreen, setPrevScreen] = useState(null);
   const [sheet, setSheet] = useState(null);
+  const [voucherOpen, setVoucherOpen] = useState(false);
 
   // ── Auth ────────────────────────────────────────────────────────────────────
   const [user, setUser] = useState(() => {
@@ -50,9 +59,15 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const [profName, setProfName] = useState('Guest User');
   const [profEmail, setProfEmail] = useState('Apply to create your account');
   const [profInitial, setProfInitial] = useState('G');
+  // Personal details captured from the apply-form Step 1, surfaced on the Profile tab.
+  const [profileDetails, setProfileDetails] = useState(null);
   const [lang, setLangCode] = useState('EN');
   const [dir, setDir] = useState('ltr');
   const [selectedCountry, setSelectedCountry] = useState('India');
+
+  // Geo — country auto-detected from the visitor's IP (see services/geo.js).
+  const [geo, setGeo] = useState(null);
+  const geoAppliedRef = useRef(false);
 
   // ── App config — server-provided, no client fetching needed
   const [appConfig, setAppConfig] = useState(initialConfig ?? DEFAULT_CONFIG);
@@ -72,9 +87,11 @@ export function CryptoCardProvider({ children, initialConfig }) {
 
   // Chat
   const [chatMessages, setChatMessages] = useState([
-    { type: 'bot', text: 'Namaste! 👋 Main CryptoCard Pro ka AI expert assistant hoon.\n\nAap mujhse Card ke fayde, Wallet safety, 10% cashback ya $100 USDT welcome bonus ke baare me kuch bhi Hinglish ya Hindi me pooch sakte hain! 😊' },
+    { type: 'bot', text: "Hi there! 👋 I'm CryptoCard Pro's AI assistant.\n\nAsk me anything about card benefits, wallet safety, 10% cashback or the $100 USDT welcome bonus — I'm here to help! 😊" },
   ]);
   const [chatTyping, setChatTyping] = useState(false);
+  const [chatBusy, setChatBusy] = useState(false);
+  const chatBusyRef = useRef(false);
 
   // Demo animation
   const [demoStep, setDemoStep] = useState(0);
@@ -147,6 +164,36 @@ export function CryptoCardProvider({ children, initialConfig }) {
     }));
   }, [user]);
 
+  // ── Auto-detect country + phone code from the visitor's IP (once, on mount) ──
+  useEffect(() => {
+    detectCountry().then((iso) => {
+      if (!iso) return;
+      const match = WORLD_COUNTRIES.find((c) => c.iso === iso);
+      if (match) setGeo(match);
+    });
+  }, []);
+
+  // Apply the detected country everywhere it's used as a default — but never
+  // clobber a value the user (or their saved profile) has already provided.
+  // '+91'/'India' are the app's hardcoded defaults, so they count as "unset".
+  useEffect(() => {
+    if (!geo || geoAppliedRef.current) return;
+    geoAppliedRef.current = true;
+
+    // The Profile region picker uses the COUNTRIES dataset, whose names differ
+    // slightly (e.g. "UAE" vs "United Arab Emirates"); match on flag so its
+    // highlighted selection + chip line up. The apply form uses WORLD_COUNTRIES
+    // names, so it keeps geo.name.
+    const regionName = (COUNTRIES.find((c) => c.flag === geo.flag) || {}).name || geo.name;
+
+    setSelectedCountry((prev) => (!prev || prev === 'India' ? regionName : prev));
+    setForm((f) => ({
+      ...f,
+      countryCode: !f.countryCode || f.countryCode === '+91' ? geo.dial : f.countryCode,
+      country:     f.country || geo.name,
+    }));
+  }, [geo]);
+
   const showToast = useCallback((msg) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ visible: true, msg });
@@ -187,6 +234,9 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const openSheet = useCallback((name) => setSheet(name), []);
   const closeSheet = useCallback(() => setSheet(null), []);
 
+  const openVoucher = useCallback(() => setVoucherOpen(true), []);
+  const closeVoucher = useCallback(() => setVoucherOpen(false), []);
+
   const onAuthSuccess = useCallback((userData, token) => {
     setUser(userData);
     try {
@@ -202,6 +252,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
 
   const logout = useCallback(() => {
     setUser(null);
+    setProfileDetails(null);
     try { localStorage.removeItem('cc_user'); localStorage.removeItem('cc_token'); } catch {}
   }, []);
 
@@ -282,6 +333,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
       setProfName(`${firstName} ${lastName}`);
       setProfEmail(email);
       setProfInitial(firstName[0].toUpperCase());
+      setProfileDetails({ ...form });
     }
     if (from === 2 && !chosenPlan) {
       showToast('Please select a plan!');
@@ -296,24 +348,47 @@ export function CryptoCardProvider({ children, initialConfig }) {
 
   const prevStep = useCallback(() => setStep(s => Math.max(s - 1, 1)), []);
 
+  // Local, static AI support. getBotReply() picks a business-accurate answer from
+  // services/chatbot.js; here we add the human feel — a short "thinking" pause with
+  // the typing dots, then the reply streamed in word-by-word like a live agent.
+  // chatBusyRef guards against overlapping sends (rapid taps / quick-reply spam).
   const sendChat = useCallback(async (msg) => {
-    if (!msg.trim()) return;
-    setChatMessages(m => [...m, { type: 'user', text: msg }]);
+    const text = msg.trim();
+    if (!text || chatBusyRef.current) return;
+    chatBusyRef.current = true;
+    setChatBusy(true);
+    setChatMessages(m => [...m, { type: 'user', text }]);
     setChatTyping(true);
-    try {
-      const data = await sendChatMessage(msg);
-      setChatMessages(m => [...m, { type: 'bot', text: data.reply || 'Connection issue. Try again or submit a support ticket! 🙏' }]);
-    } catch {
-      setChatMessages(m => [...m, { type: 'bot', text: 'Connection issue. Try again or submit a support ticket! 🙏' }]);
-    } finally {
-      setChatTyping(false);
+
+    const reply = getBotReply(text);
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // "Thinking" pause scales a little with answer length, capped so it never drags.
+    await sleep(500 + Math.min(1500, reply.length * 9));
+    setChatTyping(false);
+
+    // Stream the answer word-by-word into a single growing bot bubble.
+    setChatMessages(m => [...m, { type: 'bot', text: '' }]);
+    const words = reply.split(' ');
+    for (let i = 0; i < words.length; i++) {
+      await sleep(22 + Math.random() * 34);
+      const partial = words.slice(0, i + 1).join(' ');
+      setChatMessages(m => {
+        const copy = m.slice();
+        copy[copy.length - 1] = { type: 'bot', text: partial };
+        return copy;
+      });
     }
+
+    chatBusyRef.current = false;
+    setChatBusy(false);
   }, []);
 
   const value = {
     screen, goScreen, prevScreen, screenFlash,
     connectingWalletId,
     sheet, openSheet, closeSheet,
+    voucherOpen, openVoucher, closeVoucher,
     user, authSheetOpen, setAuthSheetOpen, onAuthSuccess, logout,
     time, toast, showToast,
     applied, genCard, walletBalance, chosenWallet,
@@ -322,13 +397,13 @@ export function CryptoCardProvider({ children, initialConfig }) {
     connectedWalletId, pickWallet,
     termsChecked, setTermsChecked,
     form, setForm,
-    profName, profEmail, profInitial,
+    profName, profEmail, profInitial, profileDetails,
     lang, setLangCode, dir, setDir,
-    selectedCountry, setSelectedCountry,
+    selectedCountry, setSelectedCountry, geo,
     supportTab, setSupportTab,
     ticketSubmitted, setTicketSubmitted,
     physType, setPhysType,
-    chatMessages, chatTyping, sendChat,
+    chatMessages, chatTyping, chatBusy, sendChat,
     demoStep, setDemoStep,
     stats, animateStats,
     hBal, hWallet, hWTag, hWTagStyle, hVouch, hVTag, hVTagStyle,

@@ -11,14 +11,25 @@ import authRouter   from './routes/auth.js';
 import walletRouter from './routes/wallet.js';
 import adminRouter  from './routes/admin.js';
 import configRouter from './routes/config.js';
+import ticketsRouter from './routes/tickets.js';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
 
 // ── Security ─────────────────────────────────────────────────────────────────
+// Allow the configured frontend URL plus common local dev ports. Next.js falls
+// back to 3001 when 3000 is taken, so both are whitelisted in development.
+// NOTE: `cors` origin needs a single string, an array, or a function — a
+// `||` chain silently only ever picks the first truthy value.
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+].filter(Boolean);
+
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: ALLOWED_ORIGINS,
   credentials: true,
 }));
 app.use(rateLimit({
@@ -44,6 +55,7 @@ app.use('/api/auth',              authRouter);
 app.use('/api/cryptocard/wallet', walletRouter);
 app.use('/api/admin',             adminRouter);
 app.use('/api/config',            configRouter);
+app.use('/api/tickets',           ticketsRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) =>

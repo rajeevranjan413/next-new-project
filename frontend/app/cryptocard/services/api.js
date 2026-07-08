@@ -1,7 +1,5 @@
 // All backend calls go through here. Set NEXT_PUBLIC_BACKEND_URL in .env.local
 
-import { CHATBOT_SYSTEM } from '../config/i18n';
-
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -61,14 +59,31 @@ export async function connectWallet(wallet) {
   return data;
 }
 
-// ── Chat ──────────────────────────────────────────────────────────────────────
+// ── Support tickets ─────────────────────────────────────────────────────────────
 
-export async function sendChatMessage(message) {
-  const res = await fetch('/api/cryptocard-chat', {
+// Submits a support ticket. Works for guests and logged-in users alike — if a
+// cc_token is stored, it's sent so the backend can link the ticket to the account.
+export async function submitTicket({ channel, contact, description }) {
+  let token = null;
+  if (typeof window !== 'undefined') {
+    try { token = localStorage.getItem('cc_token'); } catch {}
+  }
+
+  const res = await fetch(`${BACKEND}/api/tickets`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, system: CHATBOT_SYSTEM }),
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ channel, contact, description }),
   });
-  if (!res.ok) throw new Error('Chat API error');
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Ticket submission failed');
+  return data;
 }
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+// AI support now runs fully client-side via services/chatbot.js (getBotReply) — no
+// network call, no API key, deterministic & business-accurate. The optional
+// /api/cryptocard-chat LLM route is left in place for teams that want to wire a
+// live model back in later.

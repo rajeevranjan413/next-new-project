@@ -16,6 +16,7 @@ import TermsSheet        from '../sheets/TermsSheet';
 import PhysicalCardSheet from '../sheets/PhysicalCardSheet';
 import ChatSheet         from '../sheets/ChatSheet';
 import AuthSheet         from '../sheets/AuthSheet';
+import VoucherSheet      from '../sheets/VoucherSheet';
 import WebNav        from './WebNav';
 import HeroPanel     from './HeroPanel';
 import FeaturesPanel from './FeaturesPanel';
@@ -41,6 +42,7 @@ function CryptoCardApp() {
       <PhysicalCardSheet />
       <ChatSheet />
       <AuthSheet />
+      <VoucherSheet />
       <Toast />
     </div>
   );

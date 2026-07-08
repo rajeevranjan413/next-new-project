@@ -2,6 +2,11 @@
 import { CryptoCardProvider } from './CryptoCardContext';
 import WebLayout from './components/layout/WebLayout';
 
+const DEFAULT_VOUCHER = {
+  enabled: true, limitedText: '', title: '', highlight: '', subtitle: '',
+  amount: '', bonusNote: '', offerMinutes: 15, ctaText: '', slots: 47, skipText: '',
+};
+
 const DEFAULT_CONFIG = {
   brandName: 'CryptoCard Pro',
   tagline: 'Pay with Crypto, Anywhere in the World',
@@ -10,6 +15,7 @@ const DEFAULT_CONFIG = {
   supportPhone: '',
   websiteUrl: '',
   activeTheme: 'light',
+  voucher: DEFAULT_VOUCHER,
 };
 
 async function getConfig() {
@@ -20,7 +26,8 @@ async function getConfig() {
     );
     if (!res.ok) return DEFAULT_CONFIG;
     const { config } = await res.json();
-    return { ...DEFAULT_CONFIG, ...config };
+    // Deep-merge voucher so a partial/legacy record can't drop fields.
+    return { ...DEFAULT_CONFIG, ...config, voucher: { ...DEFAULT_VOUCHER, ...(config?.voucher || {}) } };
   } catch {
     return DEFAULT_CONFIG;
   }

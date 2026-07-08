@@ -351,3 +351,22 @@
 
   .mobileHeaderBrand span { display: none; } /* hide text, show only logo on very small screens */
 }
+
+/* ─── Tickets ────────────────────────────────────────────────────────────────*/
+.filterRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.filterChip { padding: 7px 14px; background: #fff; border: 1.5px solid #e5e7eb; border-radius: 20px; font-size: 12.5px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all .15s; white-space: nowrap; }
+.filterChip:hover { background: #f3f4f6; }
+.filterChipActive { background: #111827; color: #fff; border-color: #111827; }
+.filterCount { font-weight: 700; opacity: .7; margin-left: 4px; }
+
+.chChip { display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+.chDot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.descCell { max-width: 320px; white-space: normal; line-height: 1.5; color: #374151; }
+.refCell { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; font-weight: 600; color: #6366f1; white-space: nowrap; }
+
+.bBlue   { background: #dbeafe; color: #2563eb; }
+.bAmber  { background: #fef3c7; color: #b45309; }
+
+.statusSelect { padding: 6px 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: #111827; background: #fff; cursor: pointer; outline: none; transition: border-color .15s; }
+.statusSelect:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
+.statusSelect:disabled { opacity: .5; cursor: not-allowed; }

@@ -43,13 +43,41 @@ router.get('/', async (_req, res) => {
   res.json({ success: true, config: cfg });
 });
 
+// Whitelist + sanitize the voucher payload so the admin can't persist junk.
+function cleanVoucher(v) {
+  if (!v || typeof v !== 'object') return undefined;
+  const str = (x, max = 300) => (typeof x === 'string' ? x.trim().slice(0, max) : '');
+  const num = (x, def, min, max) => {
+    const n = Number(x);
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : def;
+  };
+  return {
+    enabled:      v.enabled !== false,
+    limitedText:  str(v.limitedText, 80),
+    title:        str(v.title, 120),
+    highlight:    str(v.highlight, 120),
+    subtitle:     str(v.subtitle),
+    amount:       str(v.amount, 40),
+    bonusNote:    str(v.bonusNote),
+    offerMinutes: num(v.offerMinutes, 15, 1, 240),
+    ctaText:      str(v.ctaText, 120),
+    slots:        num(v.slots, 47, 0, 100000),
+    skipText:     str(v.skipText, 120),
+  };
+}
+
 // ── PUT /api/config — update text fields (admin) ──────────────────────────────
 router.put('/', adminAuth, async (req, res) => {
-  const { brandName, tagline, supportEmail, supportPhone, websiteUrl, activeTheme } = req.body;
+  const { brandName, tagline, supportEmail, supportPhone, websiteUrl, activeTheme, voucher } = req.body;
+  const cleanedVoucher = cleanVoucher(voucher);
 
   const cfg = await Config.findByIdAndUpdate(
     'singleton',
-    { $set: { brandName, tagline, supportEmail, supportPhone, websiteUrl, ...(activeTheme && { activeTheme }) } },
+    { $set: {
+        brandName, tagline, supportEmail, supportPhone, websiteUrl,
+        ...(activeTheme && { activeTheme }),
+        ...(cleanedVoucher && { voucher: cleanedVoucher }),
+    } },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   ).lean();
 

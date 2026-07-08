@@ -52,7 +52,7 @@ export default function Step1Details({ t }) {
         <div className={s['phone-row']}>
           <select className={s['cc-sel']} value={form.countryCode}
             onChange={e => setForm(f => ({ ...f, countryCode: e.target.value }))}>
-            {PHONE_CODES.map(pc => <option key={pc.code} value={pc.code}>{pc.label}</option>)}
+            {PHONE_CODES.map(pc => <option key={pc.id} value={pc.code} title={`${pc.name} (${pc.code})`}>{pc.label}</option>)}
           </select>
           <input className={s['ph-inp']} type="tel" placeholder=""
             value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
