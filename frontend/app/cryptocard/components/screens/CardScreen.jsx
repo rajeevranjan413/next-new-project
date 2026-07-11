@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Package, Headphones, Copy, CreditCard, Wallet, Gift, Star, ShieldCheck, Check, Truck } from 'lucide-react';
+import { Package, Headphones, Copy, CreditCard, Wallet, Gift, Star, ShieldCheck, Check } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
 import { LANGS, CARD_THEMES } from '../../data';
 import { VirtualCard, PhysicalCard } from '../CardPreview';
@@ -229,13 +229,6 @@ export default function CardScreen({ active }) {
                 </div>
               </button>
             </div>
-
-            {/* Track an existing physical-card order */}
-            <button className={s['ca-track']} onClick={() => openSheet('track')}>
-              <Truck size={16} strokeWidth={2} />
-              <span>{t.trackOrder || 'Track Order'}</span>
-              <span className={s['ca-track-sub']}>{t.trackOrderSub || 'Physical card delivery status'}</span>
-            </button>
 
             {/* Balance tiles */}
             <div className={s['bal-tiles']}>

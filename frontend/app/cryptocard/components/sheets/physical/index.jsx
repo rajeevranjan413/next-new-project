@@ -1,19 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Package, ArrowLeft } from 'lucide-react';
+import { Package, ArrowLeft, Loader2 } from 'lucide-react';
 import { useCryptoCard } from '../../../CryptoCardContext';
-import { createCardOrder } from '../../../services/api';
+import { createCardOrder, getMyOrders } from '../../../services/api';
 import { ORDER_AMOUNT_USDT } from '../../../config/physicalCard';
 import OrderDesign from './OrderDesign';
 import OrderShipping from './OrderShipping';
 import OrderPayment from './OrderPayment';
 import OrderDone from './OrderDone';
 import OrderTracking from './OrderTracking';
+import OrderList from './OrderList';
 import s from '../../../cryptocard.module.css';
 
 const STEPS = ['design', 'shipping', 'payment'];
 const TITLES = {
+  loading:  'Physical Card',
+  orders:   'Your Physical Cards',
   design:   'Order Physical Card',
   shipping: 'Shipping Address',
   payment:  'Payment',
@@ -21,6 +24,8 @@ const TITLES = {
   track:    'Track Order',
 };
 const SUBS = {
+  loading:  '',
+  orders:   'Tap an order to see its live delivery status, or order another card.',
   design:   'One-time 10 USDT fee · 7–10 business days delivery · Same card number & CVV as your virtual card.',
   shipping: 'Where should we deliver your physical card? All fields are required unless marked optional.',
   payment:  'Review your order and choose how you\'d like to pay.',
@@ -42,18 +47,20 @@ export default function PhysicalCardSheet() {
   const [payMethod, setPayMethod] = useState(null);   // 'crypto' | 'cod'
   const [placing, setPlacing]   = useState(false);
   const [order, setOrder]       = useState(null);     // { ref, status }
+  const [orders, setOrders]     = useState([]);       // the user's placed orders
+  const [trackRef, setTrackRef] = useState(null);     // which order the tracker shows
 
-  const isOpen = sheet === 'physical' || sheet === 'track';
+  const isOpen = sheet === 'physical';
 
-  // Reset the flow each time the sheet opens. 'track' opens straight into the
-  // tracker (from the Card screen); 'physical' starts the order wizard.
+  // Each time the sheet opens, reset the order flow and decide the landing view: users
+  // who already have physical-card orders see their list (with tracking + "order
+  // another"); everyone else drops straight into the order wizard.
   useEffect(() => {
     if (!isOpen) return;
-    if (sheet === 'track') { setStep('track'); return; }
-    setStep('design');
     setPayMethod(null);
     setOrder(null);
     setPlacing(false);
+    setTrackRef(null);
     setShipping({
       ...emptyShipping(),
       fullName:    `${form.firstName} ${form.lastName}`.trim(),
@@ -61,6 +68,26 @@ export default function PhysicalCardSheet() {
       phone:       form.phone || '',
       country:     form.country || '',
     });
+
+    let token = null;
+    try { token = localStorage.getItem('cc_token'); } catch {}
+    if (!token) { setOrders([]); setStep('design'); return; }
+
+    let cancelled = false;
+    setStep('loading');
+    getMyOrders(token)
+      .then((list) => {
+        if (cancelled) return;
+        const arr = Array.isArray(list) ? list : [];
+        setOrders(arr);
+        setStep(arr.length ? 'orders' : 'design');
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setOrders([]);
+        setStep('design');
+      });
+    return () => { cancelled = true; };
   }, [sheet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const goShipping = () => {
@@ -102,7 +129,16 @@ export default function PhysicalCardSheet() {
   };
 
   const stepIdx = STEPS.indexOf(step);
-  const showBack = step === 'shipping' || step === 'payment';
+
+  // Where the header back-arrow returns to (null = hide it). 'design' and 'track' only
+  // have a back target when the user reached them from their orders list.
+  const backTarget = {
+    shipping: 'design',
+    payment:  'shipping',
+    design:   orders.length ? 'orders' : null,
+    track:    orders.length ? 'orders' : null,
+  }[step] || null;
+  const showBack = !!backTarget;
 
   return (
     <div
@@ -116,7 +152,7 @@ export default function PhysicalCardSheet() {
           {showBack && (
             <button
               className={s['ord-back']}
-              onClick={() => setStep(step === 'payment' ? 'shipping' : 'design')}
+              onClick={() => setStep(backTarget)}
               aria-label="Back"
             >
               <ArrowLeft size={17} strokeWidth={2} />
@@ -142,6 +178,18 @@ export default function PhysicalCardSheet() {
 
         {SUBS[step] && <div className={s['sh-sub']}>{SUBS[step]}</div>}
 
+        {step === 'loading' && (
+          <div className={s['trk-loading']}>
+            <Loader2 size={16} className={s['cp-spin']} /> Loading your orders…
+          </div>
+        )}
+        {step === 'orders' && (
+          <OrderList
+            orders={orders}
+            onTrack={(ref) => { setTrackRef(ref); setStep('track'); }}
+            onOrderAnother={() => setStep('design')}
+          />
+        )}
         {step === 'design' && (
           <OrderDesign physType={physType} setPhysType={setPhysType} onNext={goShipping} />
         )}
@@ -157,11 +205,16 @@ export default function PhysicalCardSheet() {
           />
         )}
         {step === 'done' && (
-          <OrderDone order={order} payMethod={payMethod} onClose={closeSheet} onTrack={() => setStep('track')} />
+          <OrderDone
+            order={order}
+            payMethod={payMethod}
+            onClose={closeSheet}
+            onTrack={() => { setTrackRef(order?.ref); setStep('track'); }}
+          />
         )}
         {step === 'track' && (
           <>
-            <OrderTracking initialRef={order?.ref} />
+            <OrderTracking initialRef={trackRef || order?.ref} />
             <button
               className={s['btn-primary']}
               style={{ width: '100%', padding: 13, fontSize: 14, marginTop: 16 }}

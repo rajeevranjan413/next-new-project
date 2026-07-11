@@ -2019,6 +2019,40 @@
 }
 .ord-done-close:hover { border-color: var(--bnb); color: var(--bnb); }
 
+/* Orders list — the user's placed physical-card orders */
+.ord-list { display: flex; flex-direction: column; gap: 10px; }
+.ord-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  background: var(--s2); border: 1px solid var(--bd2); border-radius: 12px;
+  padding: 12px 13px; cursor: pointer; transition: all .15s;
+}
+.ord-item:hover { border-color: var(--bnb); }
+.ord-item-ic {
+  flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bnbg); color: var(--bnb);
+}
+.ord-item-body { flex: 1; min-width: 0; }
+.ord-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.ord-item-ref { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: .3px; }
+.ord-item-badge {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .3px;
+  padding: 2px 7px; border-radius: 6px; white-space: nowrap;
+}
+.ord-badge-active { background: var(--bnbg); color: var(--bnb); }
+.ord-badge-done   { background: var(--gbg); color: var(--green); }
+.ord-badge-cancel { background: rgba(246,70,93,.12); color: #F6465D; }
+.ord-item-sub  { font-size: 11px; color: var(--t3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ord-item-date { font-size: 10px; color: var(--t3); margin-top: 2px; opacity: .8; }
+.ord-item-chev { flex-shrink: 0; color: var(--t3); }
+.ord-order-another {
+  width: 100%; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: transparent; border: 1px dashed var(--bd2); border-radius: 12px;
+  padding: 13px; color: var(--bnb); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.ord-order-another:hover { border-color: var(--bnb); background: var(--bnbg); }
+
 /* Card-screen "Track Order" entry */
 .ca-track {
   width: 100%; margin-top: 10px; display: flex; align-items: center; gap: 9px;

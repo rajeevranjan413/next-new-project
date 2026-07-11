@@ -11,7 +11,7 @@ import s from '../../cryptocard.module.css';
    All copy/numbers are admin-editable via appConfig.voucher — an empty admin
    field falls back to the localized (i18n) string, then a hardcoded default. */
 export default function VoucherSheet() {
-  const { goScreen, lang, appConfig, voucherOpen, openVoucher, closeVoucher } = useCryptoCard();
+  const { user, goScreen, lang, appConfig, voucherOpen, openVoucher, closeVoucher } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
   const v = appConfig?.voucher || {};
   const enabled = v.enabled !== false;
@@ -24,14 +24,15 @@ export default function VoucherSheet() {
   const [slots, setSlots] = useState(() => (Number.isFinite(v.slots) ? v.slots : 47));
   const autoShown = useRef(false);
 
-  // Auto-pop shortly after load — on every new session (each fresh app load).
+  // Auto-pop shortly after load — only for logged-out visitors (it's a new-applicant
+  // welcome offer). Once the user is logged in we never auto-show it.
   // The ref just stops it re-firing on internal re-renders within the same load.
   useEffect(() => {
-    if (!enabled || autoShown.current) return;
+    if (!enabled || user || autoShown.current) return;
     autoShown.current = true;
     const id = setTimeout(() => openVoucher(), 1200);
     return () => clearTimeout(id);
-  }, [enabled, openVoucher]);
+  }, [enabled, user, openVoucher]);
 
   // Countdown + slot drain only run while the popup is on screen.
   useEffect(() => {

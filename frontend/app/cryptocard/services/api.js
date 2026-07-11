@@ -146,6 +146,17 @@ export async function createCardOrder(order) {
   return { ref, status: order.payMethod === 'cod' ? 'pending_cod' : 'awaiting_payment' };
 }
 
+// Fetches the logged-in user's physical-card orders (most recent first). Requires a
+// user token; returns [] shapes handled by the caller.
+export async function getMyOrders(token) {
+  const res = await fetch(`${BACKEND}/api/cryptocard/orders/mine`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not load orders');
+  return data.orders;
+}
+
 // Fetches an order's tracking state by its public reference (works for guests).
 export async function trackOrder(ref) {
   const res = await fetch(`${BACKEND}/api/cryptocard/orders/track/${encodeURIComponent(ref)}`);
