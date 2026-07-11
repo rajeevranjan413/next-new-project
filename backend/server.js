@@ -16,6 +16,8 @@ import ticketsRouter from './routes/tickets.js';
 const app  = express();
 const PORT = process.env.PORT || 4000;
 
+app.set('trust proxy', 1);
+
 // ── Security ─────────────────────────────────────────────────────────────────
 // Allow the configured frontend URL plus common local dev ports. Next.js falls
 // back to 3001 when 3000 is taken, so both are whitelisted in development.
