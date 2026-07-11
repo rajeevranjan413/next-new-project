@@ -28,7 +28,7 @@ const FEED_COLORS = ['#F0B90B', '#0ECB81', '#a78bfa', '#60a5fa'];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export default function HomeScreen({ active }) {
-  const { goScreen, openSheet, stats, animateStats, hBal, hWallet, hWTag, hWTagStyle, hVouch, hVTag, hVTagStyle, lang, screenFlash } = useCryptoCard();
+  const { goScreen, openSheet, openInfo, stats, animateStats, hBal, hWallet, hWTag, hWTagStyle, hVouch, hVTag, hVTagStyle, lang, screenFlash } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
   const flashing = screenFlash === 'home';
 
@@ -94,7 +94,7 @@ export default function HomeScreen({ active }) {
             <div className={s['bc-val']}>{hWallet}</div>
             <div className={s['bc-badge']} style={{ background: 'var(--bnb)', color: 'var(--bnb-txt)' }}>{hWTag}</div>
           </button>
-          <button className={s['bh-col']} onClick={() => goScreen('apply')}>
+          <button className={s['bh-col']} onClick={() => openInfo('voucher')}>
             <div className={s['bc-head']}>
               <span className={s['bc-dot']} style={{ background: 'var(--green)' }} />
               <span className={s['bc-lbl']}>{t.voucherLbl}</span>
@@ -103,7 +103,7 @@ export default function HomeScreen({ active }) {
             <div className={s['bc-val']} style={{ color: 'var(--green)' }}>{hVouch}</div>
             <div className={s['bc-badge']} style={hVTagStyle}>{hVTag}</div>
           </button>
-          <button className={s['bh-col']} onClick={() => goScreen('apply')}>
+          <button className={s['bh-col']} onClick={() => openInfo('rewards')}>
             <div className={s['bc-head']}>
               <span className={s['bc-dot']} style={{ background: 'var(--blue)' }} />
               <span className={s['bc-lbl']}>{t.rewardsLbl}</span>

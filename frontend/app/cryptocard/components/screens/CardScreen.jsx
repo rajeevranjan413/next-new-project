@@ -120,7 +120,7 @@ function CardShowcase() {
 }
 
 export default function CardScreen({ active }) {
-  const { applied, genCard, goScreen, openSheet, copyVal, chosenWallet, walletBalance, lang, screenFlash, cardTheme, cardType } = useCryptoCard();
+  const { applied, genCard, goScreen, openSheet, openInfo, copyVal, chosenWallet, walletBalance, lang, screenFlash, cardTheme, cardType } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
   const flashing = screenFlash === 'card';
   const theme = CARD_THEMES.find(th => th.id === cardTheme) || CARD_THEMES[0];
@@ -240,7 +240,7 @@ export default function CardScreen({ active }) {
                 </div>
                 <div className={s['bt-right']}><Wallet size={22} strokeWidth={1.5} style={{ color: 'var(--bnb)' }} /></div>
               </div>
-              <div className={s['bt-row']}>
+              <div className={`${s['bt-row']} ${s['bt-tap']}`} onClick={() => openInfo('voucher')} role="button" tabIndex={0}>
                 <div className={s['bt-left']}>
                   <div className={s.btl}><Gift size={13} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: 5 }} />{t.voucherBalance || 'Voucher Balance'}</div>
                   <div className={s.btv} style={{ color: 'var(--green)' }}>100.00 USDT</div>
@@ -249,7 +249,7 @@ export default function CardScreen({ active }) {
                 </div>
                 <div className={s['bt-right']}><Gift size={22} strokeWidth={1.5} style={{ color: 'var(--green)' }} /></div>
               </div>
-              <div className={s['bt-row']}>
+              <div className={`${s['bt-row']} ${s['bt-tap']}`} onClick={() => openInfo('rewards')} role="button" tabIndex={0}>
                 <div className={s['bt-left']}>
                   <div className={s.btl}><Star size={13} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: 5 }} />{t.rewardBalance || 'Reward Balance'}</div>
                   <div className={s.btv} style={{ color: '#60a5fa' }}>0.00 USDT</div>

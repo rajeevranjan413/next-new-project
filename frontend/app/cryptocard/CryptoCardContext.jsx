@@ -26,6 +26,9 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const [prevScreen, setPrevScreen] = useState(null);
   const [sheet, setSheet] = useState(null);
   const [voucherOpen, setVoucherOpen] = useState(false);
+  // Info popup shown when the user taps a Voucher/Reward balance or button.
+  // null | 'voucher' | 'rewards'
+  const [infoOpen, setInfoOpen] = useState(null);
 
   // ── Auth ────────────────────────────────────────────────────────────────────
   const [user, setUser] = useState(() => {
@@ -237,6 +240,9 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const openVoucher = useCallback(() => setVoucherOpen(true), []);
   const closeVoucher = useCallback(() => setVoucherOpen(false), []);
 
+  const openInfo = useCallback((type) => setInfoOpen(type), []);
+  const closeInfo = useCallback(() => setInfoOpen(null), []);
+
   const onAuthSuccess = useCallback((userData, token) => {
     setUser(userData);
     try {
@@ -389,6 +395,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
     connectingWalletId,
     sheet, openSheet, closeSheet,
     voucherOpen, openVoucher, closeVoucher,
+    infoOpen, openInfo, closeInfo,
     user, authSheetOpen, setAuthSheetOpen, onAuthSuccess, logout,
     time, toast, showToast,
     applied, genCard, walletBalance, chosenWallet,
