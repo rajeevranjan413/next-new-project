@@ -295,7 +295,7 @@ export default function AuthSheet() {
                 <input
                   className={`${s['as-input']} ${s['as-input-full']}`}
                   type="text"
-                  placeholder="e.g. Rahul Sharma"
+                  placeholder=""
                   value={name}
                   onChange={e => setName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && pwRef.current?.focus()}

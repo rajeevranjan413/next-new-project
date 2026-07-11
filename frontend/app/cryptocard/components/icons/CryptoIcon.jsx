@@ -48,6 +48,15 @@ function BNB({ size }) {
   );
 }
 
+/* ── Tron ── */
+function TRX({ size }) {
+  return (
+    <Coin size={size} bg="#EF0027">
+      <path d="M9 9.5l14 2.5-8 13-1.5-9.5L9 9.5zm2.4 1.7l3.1 4 3.4-2.9-6.5-1.1zm7.9 1.7l-3.1 2.7 4.6-.8-1.5-1.9zm-4.2 3.4l-2.4-3.1-1.9 3.7.9 5.8 3.4-6.4z" fill="white" />
+    </Coin>
+  );
+}
+
 /* ── Tether ── */
 function USDT({ size }) {
   return (
@@ -123,7 +132,7 @@ function DefaultCoin({ size, symbol }) {
   );
 }
 
-const MAP = { BTC, ETH, BNB, USDT, SOL, XRP, ADA, DOGE };
+const MAP = { BTC, ETH, BNB, TRX, USDT, SOL, XRP, ADA, DOGE };
 
 export function CryptoIcon({ symbol, size = 28 }) {
   const Icon = MAP[symbol];

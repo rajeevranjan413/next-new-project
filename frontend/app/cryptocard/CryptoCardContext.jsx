@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { connectWallet as apiConnectWallet, authWithWallet, getMe } from './services/api';
+import { connectWallet as apiConnectWallet, authWithWallet, getMe, applyForCard, getMyCards } from './services/api';
 import { getBotReply } from './services/chatbot';
 import { detectCountry } from './services/geo';
 import { WORLD_COUNTRIES } from './config/content';
@@ -44,6 +44,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
 
   // Card state
   const [applied, setApplied] = useState(false);
+  const [applying, setApplying] = useState(false);
   const [genCard, setGenCard] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
   const [chosenWallet, setChosenWallet] = useState('');
@@ -52,6 +53,8 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const [step, setStep] = useState(1);
   const [chosenPlan, setChosenPlan] = useState('');
   const [connectedWalletId, setConnectedWalletId] = useState('');
+  // Blockchain network the card settles on (see config/chains.js). Picked on Step 4.
+  const [selectedChain, setSelectedChain] = useState('');
   const [termsChecked, setTermsChecked] = useState(false);
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', dob: '',
@@ -221,18 +224,30 @@ export function CryptoCardProvider({ children, initialConfig }) {
       setStep(1);
       setChosenPlan('');
       setConnectedWalletId('');
+      setSelectedChain('');
       setTermsChecked(false);
     }
   }, [screen]);
 
   const goScreen = useCallback((name) => {
-    if (['apply'].includes(name) && !user) {
-      postAuthScreen.current = name;
-      setAuthSheetOpen(true);
-      return;
+    if (name === 'apply') {
+      // Applying requires an account…
+      if (!user) {
+        postAuthScreen.current = name;
+        setAuthSheetOpen(true);
+        return;
+      }
+      // …and only once. A user who already holds a card is sent to it instead of
+      // re-running the wizard (the backend reuses the card, but the UX shouldn't
+      // invite re-applying).
+      if (applied) {
+        showToast('You already have a CryptoCard!');
+        navigateToScreen('card');
+        return;
+      }
     }
     navigateToScreen(name);
-  }, [screen, user, navigateToScreen]);
+  }, [user, applied, navigateToScreen, showToast]);
 
   const openSheet = useCallback((name) => setSheet(name), []);
   const closeSheet = useCallback(() => setSheet(null), []);
@@ -259,7 +274,24 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const logout = useCallback(() => {
     setUser(null);
     setProfileDetails(null);
-    try { localStorage.removeItem('cc_user'); localStorage.removeItem('cc_token'); } catch {}
+    // Clear the issued-card state so the next account starts fresh — otherwise the
+    // apply gate would wrongly treat a new user as already holding a card.
+    setApplied(false);
+    setGenCard(null);
+    // Clear the wallet/balance display so the next account doesn't inherit it.
+    setConnectedWalletId('');
+    setWalletBalance(null);
+    setChosenWallet('');
+    setHBal('— USDT');
+    setHWallet('—');
+    setHWTag('CONNECT');
+    setHWTagStyle({ background: 'var(--bnbg)', color: 'var(--bnb)' });
+    setHVouch('100 USDT');
+    setHVTag('LOCKED');
+    try {
+      localStorage.removeItem('cc_user'); localStorage.removeItem('cc_token');
+      localStorage.removeItem('cc_last_order'); localStorage.removeItem('cc_wallet');
+    } catch {}
   }, []);
 
   const animateStats = useCallback(() => {
@@ -281,25 +313,33 @@ export function CryptoCardProvider({ children, initialConfig }) {
     }, 18);
   }, []);
 
+  // Pushes a connected wallet's balance into every place it's displayed (home tiles,
+  // card balance). Shared by a live connect and by the reload-restore path below.
+  const applyWalletDisplay = useCallback((walletId, walletName, bal) => {
+    setConnectedWalletId(walletId);
+    setHBal(`${bal} USDT`);
+    setHWallet(bal);
+    setHWTag('LIVE');
+    setHWTagStyle({ background: 'var(--gbg)', color: 'var(--green)' });
+    setHVouch('100 USDT');
+    setHVTag('PENDING');
+    setHVTagStyle({ background: 'var(--bnbg)', color: 'var(--bnb)' });
+    setWalletBalance(bal);
+    setChosenWallet(walletName);
+  }, []);
+
   const pickWallet = useCallback(async (wallet) => {
     setConnectingWalletId(wallet.id);
     try {
       const { balance: bal } = await apiConnectWallet(wallet);
-      setConnectedWalletId(wallet.id);
-      setHBal(`${bal} USDT`);
-      setHWallet(bal);
-      setHWTag('LIVE');
-      setHWTagStyle({ background: 'var(--gbg)', color: 'var(--green)' });
-      setHVouch('100 USDT');
-      setHVTag('PENDING');
-      setHVTagStyle({ background: 'var(--bnbg)', color: 'var(--bnb)' });
-      setWalletBalance(bal);
-      setChosenWallet(wallet.name);
+      applyWalletDisplay(wallet.id, wallet.name, bal);
+      // Persist so the balance survives a page reload (see restore effect below).
+      try { localStorage.setItem('cc_wallet', JSON.stringify({ id: wallet.id, name: wallet.name, balance: bal })); } catch {}
       showToast(`${wallet.name} connected!`);
     } finally {
       setConnectingWalletId(null);
     }
-  }, [showToast]);
+  }, [showToast, applyWalletDisplay]);
 
   const genCardData = useCallback(() => {
     const num = [
@@ -315,14 +355,105 @@ export function CryptoCardProvider({ children, initialConfig }) {
     return { num, cvv, exp, holder };
   }, [form.firstName, form.lastName]);
 
-  const showCard = useCallback(() => {
-    const card = genCardData();
-    setGenCard(card);
+  // Issues (or refreshes) the user's card and stashes it in `genCard` so its real
+  // number/holder can be shown. The backend `/apply` is idempotent, so calling this at
+  // the Done step (to preview the card) and again on "View Card" returns the same card.
+  // Falls back to a locally generated card if the API is down so the flow never dead-ends.
+  // It deliberately does NOT flip `applied` — that flag redirects away from the wizard
+  // (see ApplyScreen), so we only set it once the user taps through to their card.
+  const issueCard = useCallback(async () => {
+    // Already generated (e.g. previewed on the Done step) — reuse it so the number the
+    // user saw doesn't change, and skip a redundant backend round-trip.
+    if (genCard) return genCard;
+    const token = typeof window !== 'undefined' && localStorage.getItem('cc_token');
+    const holder = `${form.firstName} ${form.lastName}`.trim().toUpperCase() || 'CARD HOLDER';
+    setApplying(true);
+    try {
+      let card = null;
+      if (token) {
+        card = await applyForCard(
+          { plan: chosenPlan || 'Mool', theme: cardTheme, cardType, holder },
+          token
+        );
+      }
+      const data = card
+        ? { num: card.num, cvv: card.cvv, exp: card.exp, holder: card.holder }
+        : genCardData();
+      setGenCard(data);
+      return data;
+    } catch {
+      const data = genCardData(); // backend unreachable — local fallback
+      setGenCard(data);
+      return data;
+    } finally {
+      setApplying(false);
+    }
+  }, [genCard, genCardData, chosenPlan, cardTheme, cardType, form.firstName, form.lastName]);
+
+  // Completes the apply flow: ensures the card is issued, then reveals it on the Card
+  // screen. Marks the application complete so the wizard can't be re-run.
+  const showCard = useCallback(async () => {
+    await issueCard();
     setApplied(true);
     const bal = walletBalance || (200 + Math.floor(Math.random() * 400)).toFixed(2);
     setHBal(`${bal} USDT`);
     goScreen('card');
-  }, [genCardData, walletBalance, goScreen]);
+  }, [issueCard, walletBalance, goScreen]);
+
+  // Restore an already-issued card whenever we have a logged-in session, so the card
+  // survives page reloads instead of being lost with the client-only state.
+  useEffect(() => {
+    const token = typeof window !== 'undefined' && localStorage.getItem('cc_token');
+    if (!token || !user) return;
+    let cancelled = false;
+    getMyCards(token)
+      .then((cards) => {
+        if (cancelled || !cards?.length) return;
+        const c = cards[0];
+        setGenCard({ num: c.num, cvv: c.cvv, exp: c.exp, holder: c.holder });
+        setApplied(true);
+        if (c.theme) setCardTheme(c.theme);
+        if (c.type) setCardType(c.type);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // Restore a previously connected wallet's balance on reload so the Home & Card
+  // balance displays aren't blank after a refresh.
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const w = JSON.parse(localStorage.getItem('cc_wallet') || 'null');
+      if (w?.id) applyWalletDisplay(w.id, w.name, w.balance);
+    } catch {}
+  }, [user, applyWalletDisplay]);
+
+  // ── Persist & restore language / region so the Profile selection survives reload ──
+  useEffect(() => {
+    try {
+      const l = localStorage.getItem('cc_lang');
+      const d = localStorage.getItem('cc_dir');
+      const c = localStorage.getItem('cc_country');
+      if (l) setLangCode(l);
+      if (d) setDir(d);
+      if (c) setSelectedCountry(c);
+    } catch {}
+  }, []);
+
+  // Skip the first run (default state) so we never clobber a saved value before the
+  // restore effect above has applied it.
+  const langHydrated = useRef(false);
+  useEffect(() => {
+    if (!langHydrated.current) { langHydrated.current = true; return; }
+    try { localStorage.setItem('cc_lang', lang); localStorage.setItem('cc_dir', dir); } catch {}
+  }, [lang, dir]);
+
+  const countryHydrated = useRef(false);
+  useEffect(() => {
+    if (!countryHydrated.current) { countryHydrated.current = true; return; }
+    try { localStorage.setItem('cc_country', selectedCountry); } catch {}
+  }, [selectedCountry]);
 
   const copyVal = useCallback((val, msg) => {
     navigator.clipboard.writeText(val).catch(() => {});
@@ -346,11 +477,11 @@ export function CryptoCardProvider({ children, initialConfig }) {
       return;
     }
     if (from === 4) {
-      if (!connectedWalletId) { showToast('Please connect a wallet!'); return; }
+      if (!selectedChain) { showToast('Please select a network!'); return; }
       if (!termsChecked) { showToast('Please accept Terms & Conditions!'); return; }
     }
     setStep(s => Math.min(s + 1, 5));
-  }, [form, chosenPlan, connectedWalletId, termsChecked, showToast]);
+  }, [form, chosenPlan, selectedChain, termsChecked, showToast]);
 
   const prevStep = useCallback(() => setStep(s => Math.max(s - 1, 1)), []);
 
@@ -398,10 +529,11 @@ export function CryptoCardProvider({ children, initialConfig }) {
     infoOpen, openInfo, closeInfo,
     user, authSheetOpen, setAuthSheetOpen, onAuthSuccess, logout,
     time, toast, showToast,
-    applied, genCard, walletBalance, chosenWallet,
+    applied, applying, genCard, walletBalance, chosenWallet,
     step, setStep, chosenPlan, setChosenPlan,
     cardType, setCardType, cardTheme, setCardTheme,
     connectedWalletId, pickWallet,
+    selectedChain, setSelectedChain,
     termsChecked, setTermsChecked,
     form, setForm,
     profName, profEmail, profInitial, profileDetails,
@@ -414,7 +546,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
     demoStep, setDemoStep,
     stats, animateStats,
     hBal, hWallet, hWTag, hWTagStyle, hVouch, hVTag, hVTagStyle,
-    nextStep, prevStep, showCard, copyVal,
+    nextStep, prevStep, issueCard, showCard, copyVal,
     activeTheme, setActiveTheme, cssVars, appConfig,
   };
 

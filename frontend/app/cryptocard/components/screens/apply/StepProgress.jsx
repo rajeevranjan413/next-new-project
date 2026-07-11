@@ -3,7 +3,7 @@
 import { Check } from 'lucide-react';
 import s from '../../../cryptocard.module.css';
 
-const LABELS = ['Details', 'Plan', 'Design', 'Wallet', 'Done'];
+const LABELS = ['Details', 'Plan', 'Design', 'Network', 'Done'];
 
 export default function StepProgress({ step }) {
   return (

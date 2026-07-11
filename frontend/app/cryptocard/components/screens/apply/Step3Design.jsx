@@ -8,12 +8,26 @@ import { VirtualCard, PhysicalCard } from '../../cards';
 import s from '../../../cryptocard.module.css';
 
 export default function Step3Design({ t }) {
-  const { cardType, setCardType, cardTheme, setCardTheme, nextStep, prevStep, form } = useCryptoCard();
+  const { cardType, setCardType, cardTheme, setCardTheme, nextStep, prevStep, form, showToast } = useCryptoCard();
   const [idx, setIdx] = useState(() => Math.max(0, CARD_THEMES.findIndex(th => th.id === cardTheme)));
+  const [connecting, setConnecting] = useState(false);
   const theme      = CARD_THEMES[idx];
   const holderName = `${form.firstName} ${form.lastName}`.trim().toUpperCase();
 
   const pick = (i) => { setIdx(i); setCardTheme(CARD_THEMES[i].id); };
+
+  // Placeholder for the third-party wallet-connect SDK. For now we simulate a brief
+  // handshake and, on success, advance to Step 4 (choose network). Swap the timeout
+  // for the real provider call when the integration lands.
+  const connectWallet = () => {
+    if (connecting) return;
+    setConnecting(true);
+    setTimeout(() => {
+      setConnecting(false);
+      showToast('Wallet connected!');
+      nextStep(3);
+    }, 1100);
+  };
 
   return (
     <div className={`${s['step-panel']} ${s.active}`}>
@@ -74,8 +88,10 @@ export default function Step3Design({ t }) {
       )}
 
       <div className={s['step-nav']}>
-        <button className={s['btn-back']} onClick={prevStep}>{t.btnBack}</button>
-        <button className={s['btn-next']} onClick={() => nextStep(3)}>Connect Wallet →</button>
+        <button className={s['btn-back']} onClick={prevStep} disabled={connecting}>{t.btnBack}</button>
+        <button className={s['btn-next']} onClick={connectWallet} disabled={connecting}>
+          {connecting ? 'Connecting…' : 'Connect Wallet →'}
+        </button>
       </div>
     </div>
   );

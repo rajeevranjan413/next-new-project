@@ -12,6 +12,8 @@ import walletRouter from './routes/wallet.js';
 import adminRouter  from './routes/admin.js';
 import configRouter from './routes/config.js';
 import ticketsRouter from './routes/tickets.js';
+import ordersRouter  from './routes/orders.js';
+import cardsRouter   from './routes/cards.js';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -58,6 +60,8 @@ app.use('/api/cryptocard/wallet', walletRouter);
 app.use('/api/admin',             adminRouter);
 app.use('/api/config',            configRouter);
 app.use('/api/tickets',           ticketsRouter);
+app.use('/api/cryptocard/orders', ordersRouter);
+app.use('/api/cryptocard/cards',  cardsRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) =>

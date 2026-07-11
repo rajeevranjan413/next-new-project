@@ -2,13 +2,13 @@
 
 import { Check, ShieldCheck } from 'lucide-react';
 import { useCryptoCard } from '../../../CryptoCardContext';
-import { WALLETS } from '../../../config/wallets';
-import { WalletIcon } from '../../icons/WalletIcon';
+import { CHAINS } from '../../../config/chains';
+import { CryptoIcon } from '../../icons/CryptoIcon';
 import s from '../../../cryptocard.module.css';
 
 export default function Step4Wallet({ t }) {
   const {
-    connectedWalletId, connectingWalletId, pickWallet,
+    selectedChain, setSelectedChain,
     termsChecked, setTermsChecked,
     nextStep, prevStep, openSheet,
   } = useCryptoCard();
@@ -20,27 +20,27 @@ export default function Step4Wallet({ t }) {
 
       <div className={`${s['step-note']} ${s['step-note-green']}`}>
         <ShieldCheck size={13} strokeWidth={2} style={{ flexShrink: 0, marginTop: 1, color: 'var(--green)' }} />
-        <span><strong>Your money never leaves your wallet.</strong> Read-only — we only see your balance. Every payment needs your explicit approval.</span>
+        <span><strong>Wallet connected.</strong> Choose the blockchain network your card will settle on — this is where you'll top up and spend USDT.</span>
       </div>
 
       <div className={s['w-section-lbl']}>{t.selectWallet}</div>
-      <div className={s.wgrid}>
-        {WALLETS.map(w => {
-          const isConn       = connectedWalletId === w.id;
-          const isConnecting = connectingWalletId === w.id;
+      <div className={s.chgrid}>
+        {CHAINS.map(c => {
+          const sel = selectedChain === c.id;
           return (
             <div
-              key={w.id}
-              className={`${s.wb} ${isConn ? s.conn : ''} ${isConnecting ? s.connecting : ''}`}
-              onClick={() => !connectedWalletId && !connectingWalletId && pickWallet(w)}
+              key={c.id}
+              className={`${s.chb} ${sel ? s.sel : ''}`}
+              onClick={() => setSelectedChain(c.id)}
             >
-              <div className={s['wb-ic']}><WalletIcon id={w.id} size={40} /></div>
-              <div className={s['wb-nm']}>
-                {isConn
-                  ? <><Check size={11} strokeWidth={3} style={{ verticalAlign: 'middle', marginRight: 3 }} />Connected</>
-                  : isConnecting
-                    ? <span className={s['wb-securing']}>Securing…</span>
-                    : w.name}
+              <div className={s['chb-ic']}><CryptoIcon symbol={c.symbol} size={36} /></div>
+              <div className={s['chb-body']}>
+                <div className={s['chb-nm']}>{c.name}</div>
+                <div className={s['chb-desc']}>{c.desc}</div>
+              </div>
+              <span className={s['chb-tag']}>{c.network}</span>
+              <div className={s['chb-radio']}>
+                {sel && <Check size={11} strokeWidth={3} />}
               </div>
             </div>
           );
