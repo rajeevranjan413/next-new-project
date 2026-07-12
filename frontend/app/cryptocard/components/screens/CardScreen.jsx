@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Package, Headphones, Copy, CreditCard, Wallet, Gift, Star, ShieldCheck, Check } from 'lucide-react';
+import { Package, Headphones, Copy, CreditCard, Wallet, Gift, Star, ShieldCheck, Check, Plus } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
 import { LANGS, CARD_THEMES } from '../../data';
 import { VirtualCard, PhysicalCard } from '../CardPreview';
@@ -120,7 +120,7 @@ function CardShowcase() {
 }
 
 export default function CardScreen({ active }) {
-  const { applied, genCard, goScreen, openSheet, openInfo, copyVal, chosenWallet, walletBalance, lang, screenFlash, cardTheme, cardType } = useCryptoCard();
+  const { applied, genCard, goScreen, openSheet, openInfo, copyVal, walletFunds, lang, screenFlash, cardTheme, cardType } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
   const flashing = screenFlash === 'card';
   const theme = CARD_THEMES.find(th => th.id === cardTheme) || CARD_THEMES[0];
@@ -235,10 +235,12 @@ export default function CardScreen({ active }) {
               <div className={s['bt-row']}>
                 <div className={s['bt-left']}>
                   <div className={s.btl}><Wallet size={13} strokeWidth={2} style={{ verticalAlign: 'middle', marginRight: 5 }} />{t.walletBalance || 'Wallet Balance'}</div>
-                  <div className={s.btv}>{walletBalance || '245.32'} USDT</div>
-                  <div className={s.bts}>{t.yourWallet || 'Connected:'} {chosenWallet || 'wallet'}</div>
+                  <div className={s.btv}>{Number(walletFunds).toFixed(2)} USDT</div>
+                  <div className={s.bts}>{t.spendableBalance || 'Spendable balance'}</div>
                 </div>
-                <div className={s['bt-right']}><Wallet size={22} strokeWidth={1.5} style={{ color: 'var(--bnb)' }} /></div>
+                <button className={s['bt-addfund']} onClick={() => openSheet('addfunds')}>
+                  <Plus size={14} strokeWidth={2.5} /> {t.addFund || 'Add Fund'}
+                </button>
               </div>
               <div className={`${s['bt-row']} ${s['bt-tap']}`} onClick={() => openInfo('voucher')} role="button" tabIndex={0}>
                 <div className={s['bt-left']}>

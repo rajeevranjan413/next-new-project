@@ -3,7 +3,7 @@ const EN = {
   totalPortfolio: 'Total Portfolio', walletLbl: 'Wallet', voucherLbl: 'Voucher', rewardsLbl: 'Rewards',
   tagConnect: 'CONNECT', tagLocked: 'LOCKED', tagCashback: 'CASHBACK',
   qaCard: 'My Card', qaApply: 'Apply', qaSupport: 'Support', qaSafety: 'Safety',
-  demoLbl: 'Card Apply Demo', ourNumbers: 'Our Numbers', cardBenefits: 'Card Benefits',
+  demoLbl: 'Apply Card', ourNumbers: 'Our Numbers', cardBenefits: 'Card Benefits',
   choosePlan: 'Choose Plan', applyNow: 'Apply Now →',
   liveActivity: 'Live Activity', onlineNow: 'online',
   popLimited: 'Limited — Today Only', popTitle: 'Apply Today & Get', popFree: '100 USDT FREE',

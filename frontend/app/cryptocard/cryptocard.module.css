@@ -495,6 +495,7 @@
   width: 150px;
   height: 150px;
   background: radial-gradient(circle, var(--blob1) 0%, transparent 65%);
+  pointer-events: none;
 }
 .bal-hero::after {
   content: '';
@@ -504,6 +505,7 @@
   width: 100px;
   height: 100px;
   background: radial-gradient(circle, var(--blob2) 0%, transparent 65%);
+  pointer-events: none;
 }
 .bh-eyebrow { font-size: 11.5px; color: var(--hero-t2); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
 .bh-val { font-size: 30px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 14px; color: var(--hero-text); }
@@ -602,7 +604,7 @@
   font-size: 11.5px;
   font-weight: 600;
   color: var(--t3);
-  margin-bottom: 10px;
+  margin-bottom: 16px;
   text-align: center;
   display: flex;
   align-items: center;
@@ -995,6 +997,18 @@
 .bt-left .btn-note { font-size: 10.5px; color: var(--bnb); margin-top: 3px; }
 .bt-right { font-size: 26px; }
 
+/* "Add Fund" pill on the Card-screen wallet-balance tile */
+.bt-addfund {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px;
+  padding: 9px 14px; border-radius: 10px;
+  background: var(--bnb); color: var(--bnb-txt);
+  border: none; font-family: inherit; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: filter .15s, transform .12s;
+  filter: drop-shadow(0 2px 6px var(--shadow-sm));
+}
+.bt-addfund:hover { filter: drop-shadow(0 4px 10px var(--shadow-card)); }
+.bt-addfund:active { transform: scale(.96); }
+
 /* connect prompt */
 .conn-prompt {
   background: var(--s1);
@@ -1010,6 +1024,7 @@
 .btn-primary {
   background: var(--bnb);
   color: var(--bnb-txt);
+  -webkit-text-fill-color: var(--bnb-txt);
   border: none;
   border-radius: 10px;
   padding: 12px 22px;
@@ -1017,9 +1032,19 @@
   font-weight: 700;
   cursor: pointer;
   transition: background .15s;
+  /* Kill the red/blue subpixel (ClearType) fringing on light text over a dark
+     button. font-smoothing covers macOS; on Windows/Chrome subpixel text is used
+     on any opaque surface, so the `filter` below forces the button to render to a
+     NON-opaque offscreen surface, which makes Chrome fall back to clean grayscale
+     antialiasing. The drop-shadow is a real (subtle) shadow, not a no-op. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 6px var(--shadow-sm));
 }
 .btn-primary:hover { background: var(--bnb2); }
 .btn-primary:active { transform: scale(.97); }
+.btn-primary:disabled { opacity: .5; filter: none; }
 
 /* ── APPLY SCREEN — STEP WIZARD ── */
 .step-progress { padding: 14px 16px 0; flex-shrink: 0; }
@@ -1911,68 +1936,145 @@
 .ord-sum-total { font-size: 15px; font-weight: 800; color: var(--bnb); }
 
 /* crypto pay panel */
-.cp-wrap { margin-top: 12px; }
+.cp-wrap {
+  margin-top: 12px; padding: 16px 15px 15px;
+  background: var(--s1); border: 1px solid var(--bd);
+  border-radius: 18px; box-shadow: 0 8px 30px var(--shadow-card);
+}
 .cp-net-lbl,
 .cp-field-lbl {
   font-size: 11px; color: var(--t3); font-weight: 600;
   text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px;
   display: flex; align-items: center; gap: 8px;
 }
-.cp-nets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-.cp-net {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
-  background: var(--s2); border: 1.5px solid var(--bd2);
-  border-radius: 12px; padding: 11px 12px; cursor: pointer;
-  transition: all .15s; text-align: left;
-}
-.cp-net:disabled { cursor: default; }
-.cp-net-dot { width: 9px; height: 9px; border-radius: 50%; margin-bottom: 2px; }
-.cp-net-nm { font-size: 12.5px; font-weight: 700; color: var(--text); }
-.cp-net-std { font-size: 10.5px; color: var(--t3); font-weight: 600; }
 
-.cp-field { margin-bottom: 14px; }
+/* ── Premium checkout header ── */
+.cp-head {
+  display: flex; align-items: center; gap: 11px;
+  padding-bottom: 14px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--bd);
+}
+.cp-head-token {
+  flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, #2ec4a0, #26A17B);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 21px; font-weight: 700; line-height: 1;
+  box-shadow: 0 4px 12px rgba(38,161,123,.4);
+}
+.cp-head-txt { flex: 1; min-width: 0; }
+.cp-head-title { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -.2px; }
+.cp-head-sub { font-size: 11.5px; color: var(--t3); font-weight: 500; margin-top: 1px; }
+.cp-head-secure {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .2px;
+  color: var(--green); background: var(--gbg);
+  border: 1px solid var(--gbd); border-radius: 20px; padding: 4px 9px;
+}
+
+/* ── Network selector ── */
+.cp-nets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.cp-net {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  background: var(--s2); border: 1.5px solid var(--bd2);
+  border-radius: 13px; padding: 12px 13px; cursor: pointer;
+  transition: transform .12s, border-color .15s, background .15s; text-align: left;
+}
+.cp-net:hover:not(:disabled) { transform: translateY(-1px); }
+.cp-net.sel { box-shadow: 0 3px 12px var(--shadow-sm); }
+.cp-net:disabled { cursor: default; }
+.cp-net-chk {
+  position: absolute; top: 9px; right: 9px;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: #fff;
+}
+.cp-net-top { display: flex; align-items: center; gap: 7px; }
+.cp-net-dot { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 0%, transparent); }
+.cp-net-nm { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.cp-net-std { font-size: 10.5px; color: var(--t3); font-weight: 600; letter-spacing: .3px; }
+
+/* ── Amount hero ── */
+.cp-amt-card {
+  margin-bottom: 16px; padding: 15px 16px; border-radius: 15px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, var(--glass), transparent 60%),
+    linear-gradient(160deg, var(--s2), var(--s1));
+  border: 1px solid var(--bd2);
+  box-shadow: inset 0 1px 0 var(--glass-bd);
+}
+.cp-amt-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cp-amt-lbl {
+  font-size: 11px; color: var(--t3); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .4px;
+}
+.cp-amt-copy {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  font-size: 11px; font-weight: 700; color: var(--bnb); padding: 2px 4px;
+  transition: opacity .15s;
+}
+.cp-amt-copy:hover { opacity: .7; }
+.cp-amt-main { display: flex; align-items: baseline; gap: 8px; }
+.cp-amt-token {
+  align-self: center; flex-shrink: 0;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #26A17B; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; line-height: 1;
+}
+.cp-amt-val { font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1; }
+.cp-amt-cur { font-size: 14px; font-weight: 700; color: var(--t2); }
+.cp-amt-fiat { font-size: 11.5px; color: var(--t3); font-weight: 500; margin-top: 6px; }
+
+.cp-field { margin-bottom: 16px; }
 .cp-badge {
   font-size: 9.5px; font-weight: 700; letter-spacing: .3px;
   text-transform: none; color: var(--bnb);
   background: var(--bnbg); border: 1px solid var(--bnbd);
   border-radius: 20px; padding: 2px 8px;
 }
-.cp-amt-row,
 .cp-addr-row {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 10px;
   background: var(--s2); border: 1px solid var(--bd2);
-  border-radius: 10px; padding: 12px 13px;
+  border-radius: 12px; padding: 13px 14px;
 }
-.cp-amt { font-size: 17px; font-weight: 800; color: var(--text); flex: 1; letter-spacing: .3px; }
+.cp-addr-row-loading { justify-content: flex-start; }
 .cp-addr {
-  flex: 1; min-width: 0; font-size: 13px; font-weight: 600;
-  color: var(--text); font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; min-width: 0; font-size: 13.5px; line-height: 1.5;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  word-break: break-all; letter-spacing: .2px;
 }
+.cp-addr-hl { color: var(--text); font-weight: 700; }
+.cp-addr-mid { color: var(--t3); font-weight: 500; }
 .cp-addr-loading { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--t3); }
+.cp-addr-warn {
+  display: flex; align-items: center; gap: 7px; margin-top: 9px;
+  font-size: 11px; color: var(--t3); font-weight: 500;
+}
+.cp-addr-warn strong { color: var(--t2); font-weight: 700; }
+.cp-warn-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .cp-copy {
-  flex-shrink: 0; width: 32px; height: 32px;
-  border-radius: 8px; border: 1px solid var(--bd2);
+  flex-shrink: 0; width: 34px; height: 34px; align-self: flex-start;
+  border-radius: 9px; border: 1px solid var(--bd2);
   background: var(--s1); color: var(--t2);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; transition: all .15s;
 }
-.cp-copy:hover { border-color: var(--bnb); color: var(--bnb); }
+.cp-copy:hover { border-color: var(--bnb); color: var(--bnb); background: var(--glass); }
 .cp-copy:disabled { opacity: .4; cursor: default; }
 .cp-spin { animation: cpspin 1s linear infinite; }
 @keyframes cpspin { to { transform: rotate(360deg); } }
 
 .cp-qr-toggle {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
-  background: var(--s2); border: 1px solid var(--bd2); border-radius: 10px;
-  padding: 11px; font-size: 12.5px; font-weight: 600; color: var(--t2);
+  background: var(--s2); border: 1px solid var(--bd2); border-radius: 12px;
+  padding: 12px; font-size: 12.5px; font-weight: 600; color: var(--t2);
   cursor: pointer; transition: all .15s;
 }
 .cp-qr-toggle:hover { border-color: var(--bnb); color: var(--bnb); }
 .cp-qr-toggle:disabled { opacity: .5; cursor: default; }
 
 .cp-qr-box { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 12px; }
-.cp-qr-img { position: relative; width: 200px; height: 200px; padding: 10px; background: #fff; border-radius: 14px; box-shadow: 0 4px 18px var(--shadow-card); }
+.cp-qr-img { position: relative; width: 200px; height: 200px; padding: 12px; background: #fff; border-radius: 16px; box-shadow: 0 6px 22px var(--shadow-card); }
 .cp-qr-img img { display: block; width: 100%; height: 100%; }
 .cp-qr-logo {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -1987,7 +2089,155 @@
   border: 1px solid; border-radius: 20px; padding: 4px 12px;
 }
 
-.cp-timer { display: flex; align-items: center; gap: 10px; margin-top: 14px; justify-content: center; }
+/* ── "or pay in one tap" divider ── */
+.cp-or {
+  display: flex; align-items: center; gap: 12px;
+  margin: 18px 0 12px; color: var(--t3);
+}
+.cp-or::before, .cp-or::after {
+  content: ''; flex: 1; height: 1px; background: var(--bd);
+}
+.cp-or span { font-size: 11px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase; }
+
+/* ── Connect wallet — premium CTA ── */
+.cp-connect {
+  width: 100%; display: flex; align-items: center; gap: 11px;
+  padding: 13px 14px; border-radius: 14px;
+  background: linear-gradient(180deg, var(--s2), var(--s1));
+  color: var(--text); border: 1.5px solid var(--bd2);
+  font-size: 14px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: transform .12s, border-color .15s, box-shadow .15s, opacity .15s;
+  box-shadow: 0 2px 10px var(--shadow-sm);
+}
+.cp-connect:hover:not(:disabled) { border-color: var(--bnb); transform: translateY(-1px); box-shadow: 0 6px 18px var(--shadow-card); }
+.cp-connect:active:not(:disabled) { transform: scale(.99); }
+.cp-connect:disabled { opacity: .5; cursor: default; box-shadow: none; }
+.cp-connect-ic {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px;
+  background: var(--bnb); color: var(--bnb-txt);
+  display: flex; align-items: center; justify-content: center;
+}
+.cp-connect-txt { flex: 1; text-align: left; }
+.cp-connect-arw { color: var(--t3); transition: transform .2s; }
+.cp-connect-arw.open { transform: rotate(90deg); }
+
+/* ── Wallet-connect placeholder interface (third-party widget mounts here) ── */
+.cp-wc {
+  margin-top: 10px; border-radius: 14px;
+  background: var(--s2); border: 1px solid var(--bd2);
+  overflow: hidden; animation: cpWcIn .18s ease;
+}
+@keyframes cpWcIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.cp-wc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 14px; border-bottom: 1px solid var(--bd);
+}
+.cp-wc-title { font-size: 12.5px; font-weight: 700; color: var(--text); }
+.cp-wc-close {
+  width: 26px; height: 26px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; color: var(--t3);
+  cursor: pointer; transition: background .15s, color .15s;
+}
+.cp-wc-close:hover { background: var(--glass); color: var(--text); }
+.cp-wc-body {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 8px; padding: 22px 18px;
+}
+.cp-wc-ic {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--glass); color: var(--t2);
+}
+.cp-wc-msg { font-size: 13px; font-weight: 700; color: var(--text); }
+.cp-wc-sub { font-size: 11.5px; color: var(--t3); line-height: 1.6; max-width: 260px; }
+
+.cp-wallet-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.cp-wallet-item {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 11px 14px; border-radius: 13px;
+  background: var(--s2); border: 1px solid var(--bd2);
+  font-family: inherit; cursor: pointer; transition: transform .12s, border-color .15s, background .15s;
+}
+.cp-wallet-item:hover:not(:disabled) { border-color: var(--bnb); background: var(--glass); transform: translateY(-1px); }
+.cp-wallet-item:disabled { opacity: .6; cursor: default; }
+.cp-wallet-nm { flex: 1; text-align: left; font-size: 13.5px; font-weight: 700; color: var(--text); }
+.cp-wallet-arw { color: var(--t3); flex-shrink: 0; }
+
+.cp-connected {
+  display: flex; align-items: center; gap: 12px; margin-top: 4px;
+  padding: 13px 15px; border-radius: 14px;
+  background: var(--gbg); border: 1px solid var(--gbd);
+  box-shadow: 0 3px 14px color-mix(in srgb, var(--green) 14%, transparent);
+}
+.cp-connected-ic { flex-shrink: 0; line-height: 0; }
+.cp-connected-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.cp-connected-txt strong { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.cp-connected-txt span { font-size: 11.5px; color: var(--t3); }
+.cp-connected-chk {
+  color: #fff; background: var(--green); border-radius: 50%; padding: 3px;
+  flex-shrink: 0; box-sizing: content-box;
+}
+
+/* ── Trust footer ── */
+.cp-trust {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 14px; font-size: 10.5px; color: var(--t3); font-weight: 500;
+  letter-spacing: .1px;
+}
+
+/* ── Add Funds sheet ── */
+.af-bal {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 15px; border-radius: 13px; margin-bottom: 16px;
+  background: radial-gradient(120% 140% at 100% 0%, var(--glass), transparent 60%), linear-gradient(160deg, var(--s2), var(--s1));
+  border: 1px solid var(--bd2);
+}
+.af-bal-lbl { font-size: 12px; color: var(--t3); font-weight: 600; }
+.af-bal-val { font-size: 16px; font-weight: 800; color: var(--text); }
+.af-grid-lbl {
+  font-size: 11px; color: var(--t3); font-weight: 600;
+  text-transform: uppercase; letter-spacing: .4px; margin-bottom: 9px;
+}
+.af-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.af-chip {
+  display: flex; align-items: center; justify-content: center; gap: 2px;
+  padding: 14px 8px; border-radius: 12px;
+  background: var(--s2); border: 1.5px solid var(--bd2);
+  font-family: inherit; font-size: 15px; font-weight: 800; color: var(--text);
+  cursor: pointer; transition: transform .12s, border-color .15s, background .15s;
+}
+.af-chip:hover { transform: translateY(-1px); }
+.af-chip.sel { border-color: var(--bnb); background: var(--bnbg); color: var(--bnb); }
+.af-chip-tok { font-size: 12px; opacity: .7; margin-right: 1px; }
+.af-custom {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--s2); border: 1.5px solid var(--bd2); border-radius: 12px;
+  padding: 4px 14px;
+}
+.af-custom:focus-within { border-color: var(--bnb); }
+.af-custom-tok { font-size: 18px; font-weight: 700; color: var(--t3); }
+.af-input {
+  flex: 1; min-width: 0; background: none; border: none; outline: none;
+  font-family: inherit; font-size: 18px; font-weight: 800; color: var(--text);
+  padding: 12px 0;
+}
+.af-input::-webkit-outer-spin-button, .af-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.af-input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+.af-custom-cur { font-size: 12.5px; font-weight: 700; color: var(--t3); }
+
+.af-done { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 6px 4px; }
+.af-done-ic {
+  width: 74px; height: 74px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gbg); color: var(--green); margin-bottom: 14px;
+}
+.af-done-title { font-size: 16px; font-weight: 800; color: var(--text); }
+.af-done-amt { font-size: 28px; font-weight: 800; color: var(--green); margin: 8px 0 6px; letter-spacing: -.5px; }
+.af-done-sub { font-size: 12.5px; color: var(--t3); line-height: 1.6; max-width: 280px; }
+.af-done-sub strong { color: var(--text); font-weight: 700; }
+
+.cp-timer { display: flex; align-items: center; gap: 10px; margin-top: 16px; justify-content: center; }
 .cp-ring-wrap { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
 .cp-ring-ic { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--t2); }
 .cp-timer-txt { font-size: 12.5px; color: var(--t2); }

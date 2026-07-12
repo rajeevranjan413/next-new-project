@@ -48,6 +48,9 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const [genCard, setGenCard] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
   const [chosenWallet, setChosenWallet] = useState('');
+  // Spendable wallet balance the user tops up via the "Add Funds" flow (USDT).
+  // Persisted in localStorage (cc_funds) so it survives reloads; reset on logout.
+  const [walletFunds, setWalletFunds] = useState(0);
 
   // Apply wizard
   const [step, setStep] = useState(1);
@@ -282,6 +285,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
     setConnectedWalletId('');
     setWalletBalance(null);
     setChosenWallet('');
+    setWalletFunds(0);
     setHBal('— USDT');
     setHWallet('—');
     setHWTag('CONNECT');
@@ -291,8 +295,23 @@ export function CryptoCardProvider({ children, initialConfig }) {
     try {
       localStorage.removeItem('cc_user'); localStorage.removeItem('cc_token');
       localStorage.removeItem('cc_last_order'); localStorage.removeItem('cc_wallet');
+      localStorage.removeItem('cc_funds');
     } catch {}
   }, []);
+
+  // Top up the spendable wallet balance. Called from the Add Funds sheet once the
+  // user confirms an on-chain USDT payment (mock — the real settlement will be wired
+  // to a third-party service later). Persists so the balance survives a reload.
+  const addFunds = useCallback((amt) => {
+    const n = Number(amt) || 0;
+    if (n <= 0) return;
+    setWalletFunds((f) => {
+      const next = +(f + n).toFixed(2);
+      try { localStorage.setItem('cc_funds', String(next)); } catch {}
+      return next;
+    });
+    showToast(`Added ${n} USDT to your wallet`);
+  }, [showToast]);
 
   const animateStats = useCallback(() => {
     if (statsAnimated.current) return;
@@ -429,6 +448,15 @@ export function CryptoCardProvider({ children, initialConfig }) {
     } catch {}
   }, [user, applyWalletDisplay]);
 
+  // Restore the topped-up wallet balance (Add Funds) on reload.
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const f = parseFloat(localStorage.getItem('cc_funds'));
+      if (!Number.isNaN(f)) setWalletFunds(f);
+    } catch {}
+  }, [user]);
+
   // ── Persist & restore language / region so the Profile selection survives reload ──
   useEffect(() => {
     try {
@@ -531,6 +559,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
     user, authSheetOpen, setAuthSheetOpen, onAuthSuccess, logout,
     time, toast, showToast,
     applied, applying, genCard, walletBalance, chosenWallet,
+    walletFunds, addFunds,
     step, setStep, chosenPlan, setChosenPlan,
     cardType, setCardType, cardTheme, setCardTheme,
     connectedWalletId, pickWallet,

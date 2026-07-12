@@ -28,9 +28,16 @@ const FEED_COLORS = ['#F0B90B', '#0ECB81', '#a78bfa', '#60a5fa'];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export default function HomeScreen({ active }) {
-  const { goScreen, openSheet, openInfo, stats, animateStats, hBal, hWallet, hWTag, hWTagStyle, hVouch, hVTag, hVTagStyle, lang, screenFlash } = useCryptoCard();
+  const { goScreen, openSheet, openInfo, stats, animateStats, applied, walletFunds, hBal, hWallet, hWTag, hVouch, hVTag, hVTagStyle, lang, screenFlash } = useCryptoCard();
   const t = LANGS[lang] || LANGS.EN;
   const flashing = screenFlash === 'home';
+
+  // Once the user holds a card, the wallet tile becomes a live, top-up-able balance:
+  // it shows the funded amount and an "Add Fund" action instead of "Connect".
+  const fundsStr = `${Number(walletFunds).toFixed(2)}`;
+  const walletVal = applied ? `${fundsStr} USDT` : hWallet;
+  const walletTag = applied ? 'ADD FUND' : hWTag;
+  const heroBal   = applied ? `${fundsStr} USDT` : hBal;
 
   /* ── Card carousel ── */
   const [cardIdx, setCardIdx] = useState(0);
@@ -83,16 +90,16 @@ export default function HomeScreen({ active }) {
       {/* Balance Hero */}
       <div className={s['bal-hero']}>
         <div className={s['bh-eyebrow']}>{t.totalPortfolio}</div>
-        <div className={s['bh-val']}>{hBal}</div>
+        <div className={s['bh-val']}>{heroBal}</div>
         <div className={s['bh-cols']}>
-          <button className={s['bh-col']} onClick={() => goScreen('apply')}>
+          <button className={s['bh-col']} onClick={() => applied ? openSheet('addfunds') : goScreen('apply')}>
             <div className={s['bc-head']}>
               <span className={s['bc-dot']} style={{ background: 'var(--bnb)' }} />
               <span className={s['bc-lbl']}>{t.walletLbl}</span>
               <ChevronRight size={9} className={s['bc-arrow']} />
             </div>
-            <div className={s['bc-val']}>{hWallet}</div>
-            <div className={s['bc-badge']} style={{ background: 'var(--bnb)', color: 'var(--bnb-txt)' }}>{hWTag}</div>
+            <div className={s['bc-val']}>{walletVal}</div>
+            <div className={s['bc-badge']} style={applied ? { background: 'var(--gbg)', color: 'var(--green)' } : { background: 'var(--bnb)', color: 'var(--bnb-txt)' }}>{walletTag}</div>
           </button>
           <button className={s['bh-col']} onClick={() => openInfo('voucher')}>
             <div className={s['bc-head']}>

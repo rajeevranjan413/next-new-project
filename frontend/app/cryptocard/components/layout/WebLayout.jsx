@@ -18,6 +18,7 @@ import ChatSheet         from '../sheets/ChatSheet';
 import AuthSheet         from '../sheets/AuthSheet';
 import VoucherSheet      from '../sheets/VoucherSheet';
 import InfoSheet         from '../sheets/InfoSheet';
+import AddFundsSheet     from '../sheets/AddFundsSheet';
 import WebNav        from './WebNav';
 import HeroPanel     from './HeroPanel';
 import FeaturesPanel from './FeaturesPanel';
@@ -45,6 +46,7 @@ function CryptoCardApp() {
       <AuthSheet />
       <VoucherSheet />
       <InfoSheet />
+      <AddFundsSheet />
       <Toast />
     </div>
   );
