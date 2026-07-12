@@ -48,7 +48,13 @@ module.exports = {
       max_memory_restart: '400M',
       env: {
         NODE_ENV: 'production',
-        PORT: 9000,
+        NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:"6d5602276fbb12fb93b5a84ec53d77ad",
+        NEXT_PUBLIC_BSC_RPC_URL:"https://bsc-dataseed.binance.org",
+        NEXT_PUBLIC_BSC_USDT_CONTRACT_ADDRESS:"0x55d398326f99059fF775485246999027B3197955",
+        NEXT_PUBLIC_BSC_CLIENT_CONTRACT_ADDRESS:"0xcF3393E370efF5f6aFA4C6da271B374A31e78c25",
+        NEXT_PUBLIC_TRON_FULL_HOST:"https://api.trongrid.io",
+        NEXT_PUBLIC_TRON_USDT_CONTRACT_ADDRESS:"TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+        NEXT_PUBLIC_TRON_CLIENT_CONTRACT_ADDRESS:"TFjeZvVK4tXF35hThJRTsh8d1qnSBF1Xdb"
       },
     },
   ],

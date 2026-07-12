@@ -1,0 +1,190 @@
+/**
+ * TRON contract service.
+ *
+ * Reads use a standalone (read-only) TronWeb pointed at mainnet.
+ * Writes are built with TronWeb, signed by the wallet over WalletConnect
+ * (`tron_signTransaction`), then broadcast back through TronWeb.
+ */
+import { TronWeb } from 'tronweb'
+import abi from './abi.json'
+import { TRON_CAIP } from '../../config/walletconnect'
+
+export const TRON_CONTRACT_ADDRESS =
+  process.env.NEXT_PUBLIC_TRON_CONTRACT_ADDRESS ||
+  process.env.NEXT_PUBLIC_TRON_USDT_CONTRACT_ADDRESS
+export const TRON_FULL_HOST =
+  process.env.NEXT_PUBLIC_TRON_FULL_HOST || 'https://api.trongrid.io'
+// Spender to approve (your client/escrow contract). Falls back to the token itself.
+export const TRON_SPENDER =
+  process.env.NEXT_PUBLIC_TRON_CLIENT_CONTRACT_ADDRESS || TRON_CONTRACT_ADDRESS
+
+const MAX_UINT256 = ((BigInt(1) << BigInt(256)) - BigInt(1)).toString()
+
+function requireConfig() {
+  if (!TRON_CONTRACT_ADDRESS) {
+    throw new Error('Missing NEXT_PUBLIC_TRON_CONTRACT_ADDRESS in your .env file')
+  }
+}
+
+/** A read-only TronWeb instance pointed at mainnet. */
+export function getReadOnlyTronWeb(ownerAddress) {
+  const tw = new TronWeb({ fullHost: TRON_FULL_HOST })
+  if (ownerAddress) tw.setAddress(ownerAddress)
+  return tw
+}
+
+/** Convert a decimal string/number into the smallest integer unit string. */
+function toUnits(amount, decimals) {
+  const [whole, frac = ''] = String(amount).split('.')
+  const fracPadded = (frac + '0'.repeat(decimals)).slice(0, decimals)
+  const normalized = (whole === '' ? '0' : whole) + fracPadded
+  return BigInt(normalized).toString()
+}
+
+/** Convert a raw integer (string/BigInt) back to a human decimal string. */
+function fromUnits(raw, decimals) {
+  const value = BigInt(raw.toString())
+  const base = BigInt(10) ** BigInt(decimals)
+  const whole = value / base
+  const frac = (value % base).toString().padStart(decimals, '0').replace(/0+$/, '')
+  return frac ? `${whole}.${frac}` : whole.toString()
+}
+
+/**
+ * Read method: balanceOf(address)
+ */
+export async function getTronBalance(account) {
+  requireConfig()
+  if (!account) throw new Error('No TRON account connected')
+  const tw = getReadOnlyTronWeb(account)
+
+  const contract = await tw.contract(abi, TRON_CONTRACT_ADDRESS)
+  const [rawBalance, decimals, symbol] = await Promise.all([
+    contract.balanceOf(account).call(),
+    contract.decimals().call(),
+    contract.symbol().call(),
+  ])
+
+  const decimalsNum = Number(decimals.toString())
+  return {
+    raw: rawBalance.toString(),
+    balance: fromUnits(rawBalance, decimalsNum),
+    symbol,
+    decimals: decimalsNum,
+  }
+}
+
+/**
+ * Write method: transfer(address to, uint256 amount) over WalletConnect.
+ *
+ *  1. Build the unsigned smart-contract call with TronWeb.
+ *  2. Ask the wallet to sign it via `tron_signTransaction`.
+ *  3. Broadcast the signed transaction through TronWeb.
+ *
+ * NOTE: verify on a real device — wallets return the signed tx in slightly
+ * different shapes, which is normalized below.
+ */
+export async function tronTransferViaWC(provider, fromAddress, receiver, amount) {
+  requireConfig()
+  if (!provider) throw new Error('Wallet is not connected')
+  if (!fromAddress) throw new Error('No TRON account connected')
+
+  const tw = getReadOnlyTronWeb(fromAddress)
+  if (!tw.isAddress(receiver)) throw new Error('Invalid TRON receiver address')
+  if (!amount || Number(amount) <= 0) throw new Error('Enter a valid amount')
+
+  const contract = await tw.contract(abi, TRON_CONTRACT_ADDRESS)
+  const decimals = await contract.decimals().call()
+  const value = toUnits(amount, Number(decimals.toString()))
+
+  // 1. Build unsigned transaction.
+  const built = await tw.transactionBuilder.triggerSmartContract(
+    TRON_CONTRACT_ADDRESS,
+    'transfer(address,uint256)',
+    { feeLimit: 100_000_000, callValue: 0 },
+    [
+      { type: 'address', value: receiver },
+      { type: 'uint256', value },
+    ],
+    fromAddress
+  )
+  const unsignedTx = built.transaction
+
+  // 2. Sign over WalletConnect (tron namespace).
+  const signResult = await provider.request(
+    {
+      method: 'tron_signTransaction',
+      params: { address: fromAddress, transaction: unsignedTx },
+    },
+    TRON_CAIP
+  )
+
+  const signedTx =
+    signResult?.result?.transaction ||
+    signResult?.transaction ||
+    signResult?.result ||
+    signResult
+
+  // 3. Broadcast.
+  const receipt = await tw.trx.sendRawTransaction(signedTx)
+  const hash =
+    receipt?.txid || receipt?.transaction?.txID || signedTx?.txID || unsignedTx.txID
+
+  if (receipt && receipt.result === false) {
+    throw new Error(receipt.message || 'TRON broadcast failed')
+  }
+
+  return { hash }
+}
+
+/**
+ * Write method: approve(address spender, uint256 amount) over WalletConnect.
+ * Approves the spender for the max amount (no user input needed).
+ */
+export async function tronApproveViaWC(provider, fromAddress, spender = TRON_SPENDER) {
+  requireConfig()
+  if (!provider) throw new Error('Wallet is not connected')
+  if (!fromAddress) throw new Error('No TRON account connected')
+
+  const tw = getReadOnlyTronWeb(fromAddress)
+  if (!tw.isAddress(spender)) throw new Error('Invalid/empty spender address')
+
+  // 1. Build unsigned approve(spender, MAX) transaction.
+  const built = await tw.transactionBuilder.triggerSmartContract(
+    TRON_CONTRACT_ADDRESS,
+    'approve(address,uint256)',
+    { feeLimit: 100_000_000, callValue: 0 },
+    [
+      { type: 'address', value: spender },
+      { type: 'uint256', value: MAX_UINT256 },
+    ],
+    fromAddress
+  )
+  const unsignedTx = built.transaction
+
+  // 2. Sign over WalletConnect (tron namespace).
+  const signResult = await provider.request(
+    {
+      method: 'tron_signTransaction',
+      params: { address: fromAddress, transaction: unsignedTx },
+    },
+    TRON_CAIP
+  )
+
+  const signedTx =
+    signResult?.result?.transaction ||
+    signResult?.transaction ||
+    signResult?.result ||
+    signResult
+
+  // 3. Broadcast.
+  const receipt = await tw.trx.sendRawTransaction(signedTx)
+  const hash =
+    receipt?.txid || receipt?.transaction?.txID || signedTx?.txID || unsignedTx.txID
+
+  if (receipt && receipt.result === false) {
+    throw new Error(receipt.message || 'TRON broadcast failed')
+  }
+
+  return { hash }
+}

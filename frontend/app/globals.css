@@ -31,3 +31,9 @@
     radial-gradient(circle at 88% 18%, rgba(5, 0, 255, 0.04), transparent 22%),
     #ffffff;
 } */
+
+
+.network-row.disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}

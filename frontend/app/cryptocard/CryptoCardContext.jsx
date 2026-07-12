@@ -461,6 +461,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
   }, [showToast]);
 
   const nextStep = useCallback((from) => {
+    console.log(`nextStep called from step ${from}`);
     if (from === 1) {
       const { firstName, lastName, email, phone, country } = form;
       if (!firstName || !lastName || !email || !phone || !country) {
@@ -476,10 +477,10 @@ export function CryptoCardProvider({ children, initialConfig }) {
       showToast('Please select a plan!');
       return;
     }
-    if (from === 4) {
-      if (!selectedChain) { showToast('Please select a network!'); return; }
-      if (!termsChecked) { showToast('Please accept Terms & Conditions!'); return; }
-    }
+    // if (from === 4) {
+    //   if (!selectedChain) { showToast('Please select a network!'); return; }
+    //   if (!termsChecked) { showToast('Please accept Terms & Conditions!'); return; }
+    // }
     setStep(s => Math.min(s + 1, 5));
   }, [form, chosenPlan, selectedChain, termsChecked, showToast]);
 
