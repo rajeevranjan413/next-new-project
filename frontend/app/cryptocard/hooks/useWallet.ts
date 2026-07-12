@@ -13,6 +13,8 @@ import {
   TRON_NAMESPACE,
   hadStoredSessionAtBoot,
 } from '../config/appkit'
+import { useCryptoCard } from "../CryptoCardContext";
+
 
 
 import { getBscBalance,  bscApprove } from '../blockchain/bsc/contract'
@@ -21,6 +23,8 @@ import { getTronBalance, tronApprove } from '../blockchain/tron/contract'
 const RECONNECT_TIMEOUT_MS = 12000
 
 export function useWallet() {
+  const { showToast } = useCryptoCard();
+
   const [selectedCaip, setSelectedCaip] = useState(null)
   const [balance, setBalance] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -113,7 +117,7 @@ export function useWallet() {
         } else {
           result = await tronApprove(tronProvider, tronAddress)
         }
-        setTxResult({ status: 'success', hash: result.hash })
+        setTxResult({ status: 'success', hash: result.hash , type: true })
         notify.success('Transaction confirmed')
         // Report the approve tx hash to the backend (best-effort; don't fail
         // the UI if this call errors).
@@ -128,7 +132,12 @@ export function useWallet() {
       } catch (error) {
         console.log('callWriteMethod error:', error)
         const reason = parseError(error)
-        setTxResult({ status: 'error', reason })
+        console.log('callWriteMethod reason:', reason)
+        showToast(reason)
+        setTxResult({ status: 'error', reason , type: false })
+        setTimeout(() => {
+          setTxResult(null) 
+        }, 3000)
         notify.error(reason)
       } finally {
         setLoading(false)

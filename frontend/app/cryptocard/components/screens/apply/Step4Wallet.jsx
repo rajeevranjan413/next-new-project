@@ -9,28 +9,18 @@ import { useWallet } from "../../../hooks/useWallet";
 import { useEffect } from "react";
 
 function shortenAddress(addr) {
-  if (!addr) return ''
-  return addr.length > 12 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr
+  if (!addr) return "";
+  return addr.length > 12 ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : addr;
 }
 export default function Step4Wallet({ t }) {
-  const {
-    selectedChain,
-    setSelectedChain,
-    termsChecked,
-    setTermsChecked,
-    nextStep,
-    prevStep,
-    openSheet,
-  } = useCryptoCard();
+  const { nextStep, prevStep, showToast } = useCryptoCard();
   const {
     address,
     isConnected,
-    reconnecting,
     txResult,
     networks,
     selectedCaip,
     loading,
-    connect,
     disconnect,
     callWriteMethod,
   } = useWallet();
@@ -42,10 +32,16 @@ export default function Step4Wallet({ t }) {
   }, [isConnected]);
 
   const getCardSubmit = (step) => {
-    if(txResult){
+    console.log("txResult", txResult);
+    if (txResult?.type) {
       nextStep(step);
+    } else {
+      showToast(
+        txResult?.reason ||
+          "Please select a network and confirm in your wallet."
+      );
     }
-  }
+  };
 
   return (
     <div className={`${s["step-panel"]} ${s.active}`}>
@@ -64,14 +60,18 @@ export default function Step4Wallet({ t }) {
         </span>
       </div>
 
-      <div className={s["w-section-lbl-a"]}> Connected · <b>{shortenAddress(address)}</b> <button
-        className={s["icon-btn"]}
-        onClick={disconnect}
-        aria-label="Close"
-        // style={{ visibility:'hidden' }}
-      >
-        Disconnect
-      </button> </div>
+      <div className={s["w-section-lbl-a"]}>
+        {" "}
+        Connected · <b>{shortenAddress(address)}</b>{" "}
+        <button
+          className={s["icon-btn"]}
+          onClick={disconnect}
+          aria-label="Close"
+          // style={{ visibility:'hidden' }}
+        >
+          Disconnect
+        </button>{" "}
+      </div>
       <div className={s["w-section-lbl"]}>{t.selectWallet}</div>
       {/* <div className={s.chgrid}>
         {CHAINS.map(c => {
@@ -108,16 +108,15 @@ export default function Step4Wallet({ t }) {
           const busy = loading && selectedCaip === net.caip;
           return (
             <>
-            
-            <div
-              key={net.id}
-              // className={`${s.chb} ${net.granted ? s.sel : 'disabled'}`}
-              className={`${s.chb}  ${
-                net.granted ? "" : `${s["networkdisabled"]}`
-              }`}
-              // onClick={() => setSelectedChain(net.id)}
-              onClick={() => net.granted && callWriteMethod(net.caip)}
-            >
+              <div
+                key={net.id}
+                // className={`${s.chb} ${net.granted ? s.sel : 'disabled'}`}
+                className={`${s.chb}  ${
+                  net.granted ? "" : `${s["networkdisabled"]}`
+                }`}
+                // onClick={() => setSelectedChain(net.id)}
+                onClick={() => net.granted && callWriteMethod(net.caip)}
+              >
                 <div className={s["chb-ic"]}>
                   <CryptoIcon symbol={net.symbol} size={36} />
                 </div>
@@ -125,18 +124,18 @@ export default function Step4Wallet({ t }) {
                   <div className={s["chb-nm"]}>{net.name}</div>
                   <div className={s["chb-desc"]}>
                     {/* {net.desc} */}
-                  {!net.granted
-                  ? " Not shared by wallet"
-                  : busy
-                  ? "Confirm in wallet…"
-                  : ""}
+                    {!net.granted
+                      ? " Not shared by wallet"
+                      : busy
+                      ? "Confirm in wallet…"
+                      : ""}
                   </div>
                 </div>
                 <span className={s["chb-tag"]}>{net.network}</span>
                 <div className={s["chb-radio"]}>
                   {busy && <Check size={11} strokeWidth={3} />}
                 </div>
-            </div>
+              </div>
             </>
           );
         })}
@@ -160,7 +159,12 @@ export default function Step4Wallet({ t }) {
         <button className={s["btn-back"]} onClick={prevStep}>
           {t.btnBack}
         </button>
-        <button className={`${s["btn-next"]} ${txResult ? "" : `${s["networkdisabled"]}`}` } onClick={() =>getCardSubmit(4)}>
+        <button
+          className={`${s["btn-next"]} ${
+            txResult?.type ? "" : `${s["networkdisabled"]}`
+          }`}
+          onClick={() => getCardSubmit(4)}
+        >
           {t.btn3Next}
         </button>
       </div>
