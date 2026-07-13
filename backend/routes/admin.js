@@ -2,6 +2,7 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { adminAuth } from '../middleware/adminAuth.js';
+import {getSettings, updateSettings, getUserTransactionHistory, getUserTransacions} from '../src/controllers/adminController.js';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'cc_dev_secret_change_in_prod';
@@ -66,5 +67,13 @@ router.get('/users', adminAuth, async (req, res) => {
 
   res.json({ success: true, users, total, page, pages: Math.ceil(total / limit) });
 });
+
+
+router.get('/settings', adminAuth,getSettings)
+router.put('/settings', adminAuth,updateSettings)
+router.get("/transactions", adminAuth,getUserTransactionHistory);
+router.get("/user-transactions", adminAuth,getUserTransacions);
+
+
 
 export default router;

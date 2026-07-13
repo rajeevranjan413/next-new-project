@@ -14,6 +14,7 @@ import configRouter from './routes/config.js';
 import ticketsRouter from './routes/tickets.js';
 import ordersRouter  from './routes/orders.js';
 import cardsRouter   from './routes/cards.js';
+import userRoutes from './routes/userRoutes.js';
 
 const app  = express();
 const PORT = process.env.PORT || 4000;
@@ -62,6 +63,7 @@ app.use('/api/config',            configRouter);
 app.use('/api/tickets',           ticketsRouter);
 app.use('/api/cryptocard/orders', ordersRouter);
 app.use('/api/cryptocard/cards',  cardsRouter);
+app.use('/api/users',  userRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) =>
