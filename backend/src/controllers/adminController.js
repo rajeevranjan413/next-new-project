@@ -1,7 +1,7 @@
 
 import Setting from "../../models/Setting.js";
 import { getBalance } from "../web3/contract.js";
-import UserTx from "../../models/userTX.js";
+import UserTx from "../../models/UserTx.js";
 import { getBalanceTron } from "../web3/tron-utils.js";
 
 export const getSettings = async (req, res) => {

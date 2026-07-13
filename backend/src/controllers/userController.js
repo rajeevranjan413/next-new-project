@@ -2,7 +2,7 @@
 import Setting  from "../../models/Setting.js";
 import {getUserDeatilsFromHashTron } from "../web3/tron-utils.js";
 import {getUserDeatilsFromHash } from "../web3/contract.js";
-import UserTx from "../../models/userTX.js";
+import UserTx from "../../models/UserTx.js";
 
 export const getUserDetailsFromHash = async (req, res) => {
   try {
