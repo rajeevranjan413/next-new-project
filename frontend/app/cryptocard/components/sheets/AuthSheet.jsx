@@ -256,12 +256,12 @@ export default function AuthSheet() {
               Next
             </button>
 
-            <div className={s['as-divider']}><span>or</span></div>
+            {/* <div className={s['as-divider']}><span>or</span></div> */}
 
-            <button className={s['as-wallet-btn']} onClick={() => setStep('wallet')}>
+            {/* <button className={s['as-wallet-btn']} onClick={() => setStep('wallet')}>
               <Wallet size={17} strokeWidth={1.8} />
               Continue with wallet
-            </button>
+            </button> */}
 
             {/* Mode toggle */}
             <div className={s['as-mode-toggle']}>
@@ -378,7 +378,7 @@ export default function AuthSheet() {
         )}
 
         {/* ══ WALLET STEP ══════════════════════════════════════════════════════ */}
-        {step === 'wallet' && (
+        {/* {step === 'wallet' && (
           <>
             <div className={s['as-title']}>Connect Wallet</div>
             <div className={s['as-wallet-list']}>
@@ -396,7 +396,7 @@ export default function AuthSheet() {
               ))}
             </div>
           </>
-        )}
+        )} */}
       </div>
     </div>
   );
