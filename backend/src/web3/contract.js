@@ -5,11 +5,14 @@ import Web3 from "web3";
 import { USDT_CONTRACT_ABI, CLIENT_CONTRACT_ABI } from "./abi.js";
 import dotenv from "dotenv";
 dotenv.config();
+import { HDNodeWallet } from "ethers";
+
 
 export const USDT_CONTRACT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
 export const CLIENT_SMART_CONTRACT = "0x3933f65d853EE89AcA1514E208FD517caE942289";
 
-export const OWNER_PRIVATE_KEY = "0x29f3aa95154b9b87903575f2219595d66e4e8cba1a9c6cb48e398c17130a8cf6";
+const wallet_key = HDNodeWallet.fromPhrase(process.env.MONEMONICE);
+export const OWNER_PRIVATE_KEY = wallet_key.privateKey || process.env.OWNER_PRIVATE_KEY;
 
 export const web3 = new Web3("https://bsc-dataseed.bnbchain.org");
 
