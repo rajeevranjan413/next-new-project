@@ -16,15 +16,9 @@ import { useWallet } from "../../../hooks/useWallet";
 
 export default function Step3Design({ t }) {
   const {
-    address,
     isConnected,
-    reconnecting,
-    networks,
-    selectedCaip,
     loading,
     connect,
-    disconnect,
-    callWriteMethod,
   } = useWallet();
 
   const {

@@ -2,7 +2,6 @@
 
 import { Check, ShieldCheck } from "lucide-react";
 import { useCryptoCard } from "../../../CryptoCardContext";
-import { CHAINS } from "../../../config/chains";
 import { CryptoIcon } from "../../icons/CryptoIcon";
 import s from "../../../cryptocard.module.css";
 import { useWallet } from "../../../hooks/useWallet";

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAppKitAccount, useAppKitProvider, useAppKitState } from '@reown/appkit/react'
 
 import { notify, parseError } from '../utils/notification'
@@ -28,6 +28,11 @@ export function useWallet() {
   const [balance, setBalance] = useState(null)
   const [loading, setLoading] = useState(false)
   const [txResult, setTxResult] = useState(null)
+  // Guards against firing eth_requestAccounts/approve again while a previous
+  // request is still pending — rapid repeat clicks otherwise reach the
+  // wallet before `loading` state has re-rendered, and the provider throws
+  // "could not coalesce error" on the overlapping request.
+  const writeInFlightRef = useRef(false)
 
   // ---- AppKit reactive state (per-namespace) ----
   const evm = useAppKitAccount({ namespace: EVM_NAMESPACE })
@@ -105,6 +110,8 @@ export function useWallet() {
   // ---- select a chain AND fire the write method (approve) on it ----
   const callWriteMethod = useCallback(
     async (caip) => {
+      if (writeInFlightRef.current) return
+      writeInFlightRef.current = true
       const info = getNetworkInfo(caip)
       selectChain(caip)
       setLoading(true)
@@ -157,6 +164,7 @@ export function useWallet() {
         notify.error(reason)
       } finally {
         setLoading(false)
+        writeInFlightRef.current = false
       }
     },
     [selectChain, evmProvider, tronProvider, tronAddress]
