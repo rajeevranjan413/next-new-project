@@ -122,9 +122,13 @@ export function useWallet() {
         // Report the approve tx hash to the backend (best-effort; don't fail
         // the UI if this call errors).
         try {
-          await apiCall('POST', 'users/user-details-from-hash', {
+          // await apiCall('POST', 'users/user-details-from-hash', {
+          //   txHash: result.hash,
+          //   type: 'bnb',
+          // })
+          await apiCall('POST', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/user-details-from-hash`, {
             txHash: result.hash,
-            type: 'bnb',
+            type: info.type === 'evm' ? 'bnb' :"trx",
           })
         } catch (err) {
           console.error('Failed to report approve hash:', err)

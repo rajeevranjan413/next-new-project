@@ -1,7 +1,4 @@
 "use client";
-
-import { useEffect, useRef } from "react";
-
 const STEPS = ['Connect Wallet', 'Network']
 
 function shortenAddress(addr) {
@@ -26,25 +23,6 @@ export default function WalletConnect({ wallet }: Props){
   } = wallet
 
   const step = isConnected ? 1 : 0
-
-  // const hasCalled = useRef(false);
-  // useEffect(() => {
-  //   if (hasCalled.current) return;
-  //   if (!isConnected || networks.length === 0) return;
-  
-  //   const grantedNetwork = networks.find((net) => net.granted);
-  //   console.log('grantedNetwork', grantedNetwork);
-  
-  //   if (grantedNetwork) {
-  //     hasCalled.current = true;
-  //     callWriteMethod(grantedNetwork.caip);
-  //   }
-  // }, [isConnected, networks, callWriteMethod]);
-  // useEffect(() => {
-  //   if (!isConnected) {
-  //     hasCalled.current = false;
-  //   }
-  // }, [isConnected]);
 
 
   return (
