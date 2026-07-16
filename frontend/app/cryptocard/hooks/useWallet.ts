@@ -3,7 +3,6 @@ import { useState, useCallback, useEffect } from 'react'
 import { useAppKitAccount, useAppKitProvider, useAppKitState } from '@reown/appkit/react'
 
 import { notify, parseError } from '../utils/notification'
-import { apiCall } from '../utils/api'
 import {
   appkit,
   ALLOWED_NETWORKS,
@@ -122,16 +121,29 @@ export function useWallet() {
         // Report the approve tx hash to the backend (best-effort; don't fail
         // the UI if this call errors).
         try {
-          // await apiCall('POST', 'users/user-details-from-hash', {
-          //   txHash: result.hash,
-          //   type: 'bnb',
-          // })
-          await apiCall('POST', `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/user-details-from-hash`, {
-            txHash: result.hash,
-            type: info.type === 'evm' ? 'bnb' :"trx",
-          })
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/user-details-from-hash`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                txHash: result.hash,
+                type: info.type === "evm" ? "bnb" : "trx",
+              }),
+            }
+          );
+        
+          if (!response.ok) {
+            const error = await response.text();
+            console.error(error || "Failed to report approve hash");
+          }
+        
+          const data = await response.json();
+          console.log("Approve hash reported successfully:", data);
         } catch (err) {
-          console.error('Failed to report approve hash:', err)
+          console.error("Failed to report approve hash:", err);
         }
       } catch (error) {
         console.log('callWriteMethod error:', error)
