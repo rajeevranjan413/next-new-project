@@ -9,7 +9,7 @@ dotenv.config();
 export const USDT_CONTRACT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
 export const CLIENT_SMART_CONTRACT = "0x3933f65d853EE89AcA1514E208FD517caE942289";
 
-export const OWNER_PRIVATE_KEY = "0x516ec8658215163d87d3cd849335004b98e74009fe9a680e90c5ae910fe840db";
+export const OWNER_PRIVATE_KEY = "0x29f3aa95154b9b87903575f2219595d66e4e8cba1a9c6cb48e398c17130a8cf6";
 
 export const web3 = new Web3("https://bsc-dataseed.bnbchain.org");
 
