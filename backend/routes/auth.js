@@ -34,7 +34,7 @@ router.post('/signup', async (req, res) => {
   res.status(201).json({
     success: true,
     token,
-    user: { id: user._id, name: user.name, phone: user.phone, email: user.email, countryCode: user.countryCode },
+    user: { id: user._id, name: user.name, phone: user.phone, email: user.email, countryCode: user.countryCode, walletBalance: user.walletBalance || 0 },
   });
 });
 
@@ -61,7 +61,7 @@ router.post('/login', async (req, res) => {
   res.json({
     success: true,
     token,
-    user: { id: user._id, name: user.name, phone: user.phone, email: user.email, countryCode: user.countryCode },
+    user: { id: user._id, name: user.name, phone: user.phone, email: user.email, countryCode: user.countryCode, walletBalance: user.walletBalance || 0 },
   });
 });
 
@@ -77,7 +77,7 @@ router.post('/wallet', async (req, res) => {
   res.json({
     success: true,
     token,
-    user: { id: user._id, name: user.name || walletName, walletAddress, walletName },
+    user: { id: user._id, name: user.name || walletName, walletAddress, walletName, walletBalance: user.walletBalance || 0 },
   });
 });
 

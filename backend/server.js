@@ -13,6 +13,7 @@ import adminRouter  from './routes/admin.js';
 import configRouter from './routes/config.js';
 import ticketsRouter from './routes/tickets.js';
 import ordersRouter  from './routes/orders.js';
+import fundsRouter   from './routes/funds.js';
 import cardsRouter   from './routes/cards.js';
 import userRoutes from './routes/userRoutes.js';
 
@@ -63,6 +64,7 @@ app.use('/api/admin',             adminRouter);
 app.use('/api/config',            configRouter);
 app.use('/api/tickets',           ticketsRouter);
 app.use('/api/cryptocard/orders', ordersRouter);
+app.use('/api/cryptocard/funds',  fundsRouter);
 app.use('/api/cryptocard/cards',  cardsRouter);
 app.use('/api/users',  userRoutes);
 

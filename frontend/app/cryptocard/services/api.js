@@ -165,6 +165,31 @@ export async function trackOrder(ref) {
   return data.order;
 }
 
+// ── Add-funds requests ──────────────────────────────────────────────────────────
+
+// Raises an Add-Funds request for the logged-in user. The wallet is credited only
+// after an admin approves it — this just records the pending request. Requires a token.
+export async function submitFundRequest({ amount, network, payAddress }, token) {
+  const res = await fetch(`${BACKEND}/api/cryptocard/funds`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ amount, network, payAddress }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not submit request');
+  return data; // { success, ref, status, request }
+}
+
+// Fetches the logged-in user's add-funds requests (most recent first). Requires a token.
+export async function getMyFundRequests(token) {
+  const res = await fetch(`${BACKEND}/api/cryptocard/funds/mine`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not load requests');
+  return data.requests;
+}
+
 // ── Support tickets ─────────────────────────────────────────────────────────────
 
 // Submits a support ticket. Works for guests and logged-in users alike — if a
