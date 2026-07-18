@@ -2488,7 +2488,9 @@
 /* Full-page dark canvas */
 .webPage {
   min-height: 100vh;
+  min-height: 100dvh;   /* dvh tracks the visible viewport (mobile address bar) */
   height: 100vh;
+  height: 100dvh;       /* falls back to 100vh where dvh is unsupported */
   background: var(--page-bg);
   position: relative;
   overflow: hidden;
@@ -2904,7 +2906,7 @@
 @media (max-width: 900px) {
   .webMain { grid-template-columns: 1fr; }
   .leftCol { display: none; }
-  .centerCol { height: calc(100vh - 64px); }
+  .centerCol { height: calc(100vh - 64px); height: calc(100dvh - 64px); }
   .centerCol::before, .centerCol::after { display: none; }
 }
 
@@ -2926,11 +2928,13 @@
   .webNav { display: none; }
   .webMain {
     grid-template-columns: 1fr;
-    height: 100vh;
+    height: 100vh;      /* fallback for browsers without dvh */
+    height: 100dvh;     /* tracks the visible viewport so the bottom nav stays pinned */
     overflow: hidden;
   }
   .centerCol {
     height: 100vh;
+    height: 100dvh;
   }
   .leftCol, .rightCol { display: none; }
 }
