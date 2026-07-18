@@ -18,7 +18,7 @@ import cardsRouter   from './routes/cards.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app  = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 9510;
 
 app.set('trust proxy', 1);
 
@@ -29,7 +29,7 @@ app.set('trust proxy', 1);
 // `||` chain silently only ever picks the first truthy value.
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
-  'http://localhost:3000',
+  'https://trusted-card.xyz',
   'http://localhost:3001',
 ].filter(Boolean);
 
