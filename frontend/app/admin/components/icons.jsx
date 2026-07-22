@@ -12,4 +12,5 @@ export const Icons = {
   Send:       () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.3 2.3a1 1 0 0 0-1.1 1.3l2.2 6.4-2.2 6.4a1 1 0 0 0 1.4 1.2l15-7a1 1 0 0 0 0-1.8l-15-7a1 1 0 0 0-.3-.1zm1.6 2.9L14.7 10 3.9 14.8 5.3 11H10V9H5.3L3.9 5.2z"/></svg>,
   Payments:   () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1H2V5zm0 3h16v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8zm10 5h4v-2h-4v2z"/></svg>,
   Funds:      () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 1a2 2 0 0 1 2 2v4h2.5a.5.5 0 0 1 .37.84l-4.5 5a.5.5 0 0 1-.74 0l-4.5-5A.5.5 0 0 1 5.5 7H8V3a2 2 0 0 1 2-2zM4 16h12a1 1 0 1 1 0 2H4a1 1 0 1 1 0-2z"/></svg>,
+  Analytics:  () => <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h14a1 1 0 1 0 0-2H4V4a1 1 0 0 0-1-1zm3 9a1 1 0 0 0 2 0V9a1 1 0 1 0-2 0v3zm4 0a1 1 0 0 0 2 0V6a1 1 0 1 0-2 0v6zm4 0a1 1 0 0 0 2 0v-2a1 1 0 1 0-2 0v2z"/></svg>,
 };

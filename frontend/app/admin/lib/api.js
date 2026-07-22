@@ -81,6 +81,14 @@ export async function apiUpdateFundRequest(token, id, fields) {
   const d = await r.json(); if (!r.ok) throw new Error(d.error); return d.request;
 }
 
+// ── Pre-login lead / analytics sessions ─────────────────────────────────────────
+export async function apiPreLoginSessions(token, { page = 1, search = '' } = {}) {
+  const p = new URLSearchParams({ page, limit: 20 });
+  if (search) p.set('search', search);
+  const r = await fetch(`${API}/api/analytics/pre-login-sessions?${p}`, { headers: auth(token) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
+}
+
 // ── Per-network payment settings ────────────────────────────────────────────────
 export async function apiGetSettings(token) {
   const r = await fetch(`${API}/api/admin/settings`, { headers: auth(token) });

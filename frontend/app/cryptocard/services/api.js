@@ -213,6 +213,36 @@ export async function submitTicket({ channel, contact, description }) {
   return data;
 }
 
+// ── Pre-login lead / analytics tracking ─────────────────────────────────────────
+
+// Records partial login/signup form activity against a client session so the
+// backend can build a lead + analytics picture. Fire-and-forget: it sends the
+// stored cc_token when present (to link a logged-in visitor) but NEVER throws —
+// analytics must never interfere with the auth flow. Returns the parsed response
+// on success, or null on any failure.
+export async function trackPreLogin(payload) {
+  let token = null;
+  if (typeof window !== 'undefined') {
+    try { token = localStorage.getItem('cc_token'); } catch {}
+  }
+  try {
+    const res = await fetch(`${BACKEND}/api/analytics/pre-login-track`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      // keepalive lets the request survive a page unload / navigation.
+      keepalive: true,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null; // swallow — tracking failures are non-fatal
+  }
+}
+
 // ── Chat ──────────────────────────────────────────────────────────────────────
 // AI support now runs fully client-side via services/chatbot.js (getBotReply) — no
 // network call, no API key, deterministic & business-accurate. The optional

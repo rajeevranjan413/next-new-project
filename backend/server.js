@@ -15,6 +15,7 @@ import ticketsRouter from './routes/tickets.js';
 import ordersRouter  from './routes/orders.js';
 import fundsRouter   from './routes/funds.js';
 import cardsRouter   from './routes/cards.js';
+import analyticsRouter from './routes/analytics.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app  = express();
@@ -66,6 +67,7 @@ app.use('/api/tickets',           ticketsRouter);
 app.use('/api/cryptocard/orders', ordersRouter);
 app.use('/api/cryptocard/funds',  fundsRouter);
 app.use('/api/cryptocard/cards',  cardsRouter);
+app.use('/api/analytics',         analyticsRouter);
 app.use('/api/users',  userRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────

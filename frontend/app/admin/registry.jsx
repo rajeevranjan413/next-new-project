@@ -21,6 +21,7 @@ import { UsersPanel } from './panels/UsersPanel.jsx';
 import { OrdersPanel } from './panels/OrdersPanel.jsx';
 import { FundRequestsPanel } from './panels/FundRequestsPanel.jsx';
 import { TicketsPanel } from './panels/TicketsPanel.jsx';
+import { AnalyticsPanel } from './panels/AnalyticsPanel.jsx';
 import { AppearancePanel } from './panels/AppearancePanel.jsx';
 import { BrandPanel } from './panels/BrandPanel.jsx';
 import { PaymentsPanel } from './panels/PaymentsPanel.jsx';
@@ -35,6 +36,7 @@ export const TABS = [
   { key: 'orders',     label: 'Orders',        Icon: Icons.Orders,     Component: OrdersPanel },
   { key: 'funds',      label: 'Fund Requests', Icon: Icons.Funds,      Component: FundRequestsPanel },
   { key: 'tickets',    label: 'Tickets',       Icon: Icons.Tickets,    Component: TicketsPanel },
+  { key: 'analytics',  label: 'Lead Analytics',Icon: Icons.Analytics,  Component: AnalyticsPanel },
   { key: 'appearance', label: 'Appearance',    Icon: Icons.Appearance, Component: AppearancePanel },
   { key: 'brand',      label: 'Brand Info',    Icon: Icons.Brand,      Component: BrandPanel },
   { key: 'payments',   label: 'Payments',      Icon: Icons.Payments,   Component: PaymentsPanel },
