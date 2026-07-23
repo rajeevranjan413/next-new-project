@@ -51,6 +51,21 @@ export const ORDER_FILTERS = [
 ];
 export const PAY_LABEL = { crypto: 'Crypto (USDT)', cod: 'Cash on Delivery' };
 
+// ── Add-funds requests ────────────────────────────────────────────────────────────
+export const FUND_STATUS_META = {
+  pending:  { label: 'Pending',  badge: 'bAmber' },
+  approved: { label: 'Approved', badge: 'bGreen' },
+  rejected: { label: 'Rejected', badge: 'bGrey'  },
+};
+export const FUND_FILTERS = [
+  { key: '',         label: 'All' },
+  { key: 'pending',  label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
+];
+// Maps the payment-panel network id to a readable label.
+export const FUND_NETWORK_LABEL = { trc20: 'USDT · TRC-20', bep20: 'USDT · BEP-20' };
+
 // ── Voucher popup ───────────────────────────────────────────────────────────────
 // Placeholders double as the built-in fallback copy so the admin sees what a
 // blank field will render as on the live app.

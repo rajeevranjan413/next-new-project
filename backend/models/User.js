@@ -10,6 +10,9 @@ const userSchema = new Schema(
     name:          { type: String, default: '' },
     passwordHash:  { type: String, select: false },
     isVerified:    { type: Boolean, default: false },
+    // Spendable USDT balance, credited only when an admin approves an Add-Funds
+    // request (see models/FundRequest.js). Surfaced by GET /api/auth/me.
+    walletBalance: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

@@ -29,7 +29,7 @@ module.exports = {
       max_memory_restart: '300M',
       env: {
         NODE_ENV: 'production',
-        PORT: 9000,
+        PORT: 9510,
         // Browser-facing frontend origin — must match how users reach the site.
         // Behind Nginx on the domain this is the https origin (no port).
         FRONTEND_URL: 'https://trusted-card.xyz',
@@ -41,7 +41,7 @@ module.exports = {
       // Call the Next.js binary directly so PM2 manages the node process itself
       // (more reliable than wrapping `npm start`). Requires `next build` first.
       script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 9001',
+      args: 'start -p 9511',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,

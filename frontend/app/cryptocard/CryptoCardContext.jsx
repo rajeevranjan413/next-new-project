@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { connectWallet as apiConnectWallet, authWithWallet, getMe, applyForCard, getMyCards } from './services/api';
+import { connectWallet as apiConnectWallet, authWithWallet, getMe, applyForCard, getMyCards, submitFundRequest as apiSubmitFundRequest } from './services/api';
 import { getBotReply } from './services/chatbot';
 import { detectCountry } from './services/geo';
 import { WORLD_COUNTRIES } from './config/content';
@@ -13,6 +13,10 @@ const DEFAULT_CONFIG = {
   tagline: 'Pay with Crypto, Anywhere in the World',
   logoUrl: '', supportEmail: '', supportPhone: '', websiteUrl: '',
   activeTheme: ACTIVE_THEME,
+  payment: {
+    walletTron: '', walletBnb: '',
+    connectWallet: { enabled: false, text: '', logoUrl: '', url: '' },
+  },
   voucher: {
     enabled: true, limitedText: '', title: '', highlight: '', subtitle: '',
     amount: '', bonusNote: '', offerMinutes: 15, ctaText: '', slots: 47, skipText: '',
@@ -48,8 +52,9 @@ export function CryptoCardProvider({ children, initialConfig }) {
   const [genCard, setGenCard] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
   const [chosenWallet, setChosenWallet] = useState('');
-  // Spendable wallet balance the user tops up via the "Add Funds" flow (USDT).
-  // Persisted in localStorage (cc_funds) so it survives reloads; reset on logout.
+  // Spendable wallet balance (USDT). Source of truth is the backend `walletBalance`,
+  // credited only when an admin approves an Add-Funds request. Mirrored here from the
+  // logged-in user so the Home/Card tiles show it; reset on logout.
   const [walletFunds, setWalletFunds] = useState(0);
 
   // Apply wizard
@@ -299,19 +304,29 @@ export function CryptoCardProvider({ children, initialConfig }) {
     } catch {}
   }, []);
 
-  // Top up the spendable wallet balance. Called from the Add Funds sheet once the
-  // user confirms an on-chain USDT payment (mock — the real settlement will be wired
-  // to a third-party service later). Persists so the balance survives a reload.
-  const addFunds = useCallback((amt) => {
-    const n = Number(amt) || 0;
-    if (n <= 0) return;
-    setWalletFunds((f) => {
-      const next = +(f + n).toFixed(2);
-      try { localStorage.setItem('cc_funds', String(next)); } catch {}
-      return next;
-    });
-    showToast(`Added ${n} USDT to your wallet`);
-  }, [showToast]);
+  // Re-pull the logged-in user from the backend so a freshly-approved Add-Funds
+  // credit surfaces (walletBalance → walletFunds via the mirror effect below).
+  // No-op for guests. Called when the Add Funds sheet opens.
+  const refreshUser = useCallback(async () => {
+    const token = typeof window !== 'undefined' && localStorage.getItem('cc_token');
+    if (!token) return null;
+    try {
+      const { user: fresh } = await getMe(token);
+      setUser(fresh);
+      try { localStorage.setItem('cc_user', JSON.stringify(fresh)); } catch {}
+      return fresh;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Raise an Add-Funds request. The wallet is NOT credited here — the request stays
+  // pending until an admin approves it in the panel. Returns the created request.
+  const submitFundRequest = useCallback(async ({ amount, network, payAddress }) => {
+    const token = typeof window !== 'undefined' && localStorage.getItem('cc_token');
+    if (!token) throw new Error('Please log in to add funds');
+    return apiSubmitFundRequest({ amount, network, payAddress }, token);
+  }, []);
 
   const animateStats = useCallback(() => {
     if (statsAnimated.current) return;
@@ -448,13 +463,11 @@ export function CryptoCardProvider({ children, initialConfig }) {
     } catch {}
   }, [user, applyWalletDisplay]);
 
-  // Restore the topped-up wallet balance (Add Funds) on reload.
+  // Mirror the backend wallet balance into the spendable-funds display. Runs on
+  // login (auth response carries walletBalance), on getMe refresh, and on logout
+  // (user → null → 0). This is the single source for the Home & Card balance tiles.
   useEffect(() => {
-    if (!user) return;
-    try {
-      const f = parseFloat(localStorage.getItem('cc_funds'));
-      if (!Number.isNaN(f)) setWalletFunds(f);
-    } catch {}
+    setWalletFunds(Number(user?.walletBalance) || 0);
   }, [user]);
 
   // ── Persist & restore language / region so the Profile selection survives reload ──
@@ -559,7 +572,7 @@ export function CryptoCardProvider({ children, initialConfig }) {
     user, authSheetOpen, setAuthSheetOpen, onAuthSuccess, logout,
     time, toast, showToast,
     applied, applying, genCard, walletBalance, chosenWallet,
-    walletFunds, addFunds,
+    walletFunds, submitFundRequest, refreshUser,
     step, setStep, chosenPlan, setChosenPlan,
     cardType, setCardType, cardTheme, setCardTheme,
     connectedWalletId, pickWallet,

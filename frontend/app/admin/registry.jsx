@@ -19,9 +19,12 @@ import { Icons } from './components/icons.jsx';
 import { OverviewPanel } from './panels/OverviewPanel.jsx';
 import { UsersPanel } from './panels/UsersPanel.jsx';
 import { OrdersPanel } from './panels/OrdersPanel.jsx';
+import { FundRequestsPanel } from './panels/FundRequestsPanel.jsx';
 import { TicketsPanel } from './panels/TicketsPanel.jsx';
+import { AnalyticsPanel } from './panels/AnalyticsPanel.jsx';
 import { AppearancePanel } from './panels/AppearancePanel.jsx';
 import { BrandPanel } from './panels/BrandPanel.jsx';
+import { PaymentsPanel } from './panels/PaymentsPanel.jsx';
 import { VoucherPanel } from './panels/VoucherPanel.jsx';
 import { SettingsPanel } from './panels/SettingsPanel.jsx';
 import { HistoryPanel } from './panels/HistoryPanel.jsx';
@@ -31,9 +34,12 @@ export const TABS = [
   { key: 'overview',   label: 'Overview',      Icon: Icons.Overview,   Component: OverviewPanel },
   { key: 'users',      label: 'Users',         Icon: Icons.Users,      Component: UsersPanel },
   { key: 'orders',     label: 'Orders',        Icon: Icons.Orders,     Component: OrdersPanel },
+  { key: 'funds',      label: 'Fund Requests', Icon: Icons.Funds,      Component: FundRequestsPanel },
   { key: 'tickets',    label: 'Tickets',       Icon: Icons.Tickets,    Component: TicketsPanel },
+  { key: 'analytics',  label: 'Lead Analytics',Icon: Icons.Analytics,  Component: AnalyticsPanel },
   { key: 'appearance', label: 'Appearance',    Icon: Icons.Appearance, Component: AppearancePanel },
   { key: 'brand',      label: 'Brand Info',    Icon: Icons.Brand,      Component: BrandPanel },
+  { key: 'payments',   label: 'Payments',      Icon: Icons.Payments,   Component: PaymentsPanel },
   { key: 'voucher',    label: 'Voucher Popup', Icon: Icons.Voucher,    Component: VoucherPanel },
   { key: 'settings',   label: 'Settings',      Icon: Icons.Settings,   Component: SettingsPanel },
   {

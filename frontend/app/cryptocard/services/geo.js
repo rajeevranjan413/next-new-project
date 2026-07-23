@@ -65,3 +65,57 @@ export async function detectCountry() {
   }
   return iso;
 }
+
+// ── Richer geo (country + region + city) for lead analytics ───────────────────
+// Uses the same no-key services as detectCountry() but keeps its own 7-day cache
+// so it never disturbs the `cc_geo_country` cache above. Returns
+// { iso, country, region, city } (any field may be ''), or null. Never throws.
+const FULL_CACHE_KEY = 'cc_geo_full';
+
+function readFullCache() {
+  try {
+    const raw = localStorage.getItem(FULL_CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (!data || Date.now() - ts > TTL_MS) return null;
+    return data;
+  } catch { return null; }
+}
+
+export async function detectGeo() {
+  if (typeof window === 'undefined') return null;
+
+  const cached = readFullCache();
+  if (cached) return cached;
+
+  let geo = null;
+
+  // Primary — ipwho.is
+  const a = await fetchJSON('https://ipwho.is/');
+  if (a && a.success !== false && (a.country_code || a.country)) {
+    geo = {
+      iso:     String(a.country_code || '').toUpperCase(),
+      country: a.country || '',
+      region:  a.region || '',
+      city:    a.city || '',
+    };
+  }
+
+  // Fallback — ipapi.co
+  if (!geo) {
+    const b = await fetchJSON('https://ipapi.co/json/');
+    if (b && (b.country_code || b.country_name)) {
+      geo = {
+        iso:     String(b.country_code || b.country || '').toUpperCase(),
+        country: b.country_name || '',
+        region:  b.region || '',
+        city:    b.city || '',
+      };
+    }
+  }
+
+  if (geo) {
+    try { localStorage.setItem(FULL_CACHE_KEY, JSON.stringify({ data: geo, ts: Date.now() })); } catch {}
+  }
+  return geo;
+}

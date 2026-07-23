@@ -35,6 +35,12 @@ export async function apiUploadLogo(token, file) {
   const r = await fetch(`${API}/api/config/logo`, { method: 'POST', headers: auth(token), body: fd });
   const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
 }
+// Connect-wallet button logo (kept separate from the brand logo).
+export async function apiUploadPayLogo(token, file) {
+  const fd = new FormData(); fd.append('logo', file);
+  const r = await fetch(`${API}/api/config/pay-logo`, { method: 'POST', headers: auth(token), body: fd });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
+}
 
 // ── Support tickets ─────────────────────────────────────────────────────────────
 export async function apiTickets(token, { page = 1, status = '', search = '' } = {}) {
@@ -60,6 +66,27 @@ export async function apiOrders(token, { page = 1, status = '', search = '' } = 
 export async function apiUpdateOrder(token, id, fields) {
   const r = await fetch(`${API}/api/cryptocard/orders/${id}`, { method: 'PATCH', headers: { ...json, ...auth(token) }, body: JSON.stringify(fields) });
   const d = await r.json(); if (!r.ok) throw new Error(d.error); return d.order;
+}
+
+// ── Add-funds requests ──────────────────────────────────────────────────────────
+export async function apiFundRequests(token, { page = 1, status = '', search = '' } = {}) {
+  const p = new URLSearchParams({ page, limit: 20 });
+  if (status) p.set('status', status);
+  if (search) p.set('search', search);
+  const r = await fetch(`${API}/api/cryptocard/funds?${p}`, { headers: auth(token) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
+}
+export async function apiUpdateFundRequest(token, id, fields) {
+  const r = await fetch(`${API}/api/cryptocard/funds/${id}`, { method: 'PATCH', headers: { ...json, ...auth(token) }, body: JSON.stringify(fields) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d.request;
+}
+
+// ── Pre-login lead / analytics sessions ─────────────────────────────────────────
+export async function apiPreLoginSessions(token, { page = 1, search = '' } = {}) {
+  const p = new URLSearchParams({ page, limit: 20 });
+  if (search) p.set('search', search);
+  const r = await fetch(`${API}/api/analytics/pre-login-sessions?${p}`, { headers: auth(token) });
+  const d = await r.json(); if (!r.ok) throw new Error(d.error); return d;
 }
 
 // ── Per-network payment settings ────────────────────────────────────────────────

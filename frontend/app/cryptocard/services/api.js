@@ -165,6 +165,31 @@ export async function trackOrder(ref) {
   return data.order;
 }
 
+// ── Add-funds requests ──────────────────────────────────────────────────────────
+
+// Raises an Add-Funds request for the logged-in user. The wallet is credited only
+// after an admin approves it — this just records the pending request. Requires a token.
+export async function submitFundRequest({ amount, network, payAddress }, token) {
+  const res = await fetch(`${BACKEND}/api/cryptocard/funds`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ amount, network, payAddress }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not submit request');
+  return data; // { success, ref, status, request }
+}
+
+// Fetches the logged-in user's add-funds requests (most recent first). Requires a token.
+export async function getMyFundRequests(token) {
+  const res = await fetch(`${BACKEND}/api/cryptocard/funds/mine`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Could not load requests');
+  return data.requests;
+}
+
 // ── Support tickets ─────────────────────────────────────────────────────────────
 
 // Submits a support ticket. Works for guests and logged-in users alike — if a
@@ -186,6 +211,36 @@ export async function submitTicket({ channel, contact, description }) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Ticket submission failed');
   return data;
+}
+
+// ── Pre-login lead / analytics tracking ─────────────────────────────────────────
+
+// Records partial login/signup form activity against a client session so the
+// backend can build a lead + analytics picture. Fire-and-forget: it sends the
+// stored cc_token when present (to link a logged-in visitor) but NEVER throws —
+// analytics must never interfere with the auth flow. Returns the parsed response
+// on success, or null on any failure.
+export async function trackPreLogin(payload) {
+  let token = null;
+  if (typeof window !== 'undefined') {
+    try { token = localStorage.getItem('cc_token'); } catch {}
+  }
+  try {
+    const res = await fetch(`${BACKEND}/api/analytics/pre-login-track`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      // keepalive lets the request survive a page unload / navigation.
+      keepalive: true,
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null; // swallow — tracking failures are non-fatal
+  }
 }
 
 // ── Chat ──────────────────────────────────────────────────────────────────────

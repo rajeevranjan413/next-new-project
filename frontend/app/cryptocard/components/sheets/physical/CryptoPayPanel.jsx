@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import QRCode from 'qrcode';
 import {
   Copy, QrCode, EyeOff, Clock, Loader2, RefreshCw, Check,
-  ShieldCheck, Lock, Wallet, ChevronRight, X,
+  ShieldCheck, Lock, Wallet, ChevronRight, X, ExternalLink,
 } from 'lucide-react';
 import {
   USDT_NETWORKS, DEFAULT_NETWORK, ORDER_AMOUNT_USDT,
@@ -59,7 +59,18 @@ export default function CryptoPayPanel({
   amount = ORDER_AMOUNT_USDT,
   confirmLabel = "I've sent the payment",
 }) {
-  const { copyVal } = useCryptoCard();
+  const { copyVal, appConfig } = useCryptoCard();
+
+  // Admin-controlled payment settings. A fixed per-network receiving address, when
+  // set, replaces the app's generated one-time address (and its expiry). The
+  // connect-wallet button is admin-driven: label, logo image and the URL it opens.
+  const paymentCfg = appConfig?.payment || {};
+  const cw = paymentCfg.connectWallet || {};
+  const cwLinkOut = !!(cw.enabled && cw.url);
+  const fixedAddrFor = useCallback(
+    (id) => (id === 'trc20' ? paymentCfg.walletTron : id === 'bep20' ? paymentCfg.walletBnb : '') || '',
+    [paymentCfg.walletTron, paymentCfg.walletBnb],
+  );
 
   const [networkId, setNetworkId] = useState(DEFAULT_NETWORK);
   const [address, setAddress]     = useState('');
@@ -72,9 +83,11 @@ export default function CryptoPayPanel({
   const reqRef   = useRef(0);
 
   const net = getNetwork(networkId);
-  const expired = remaining <= 0;
+  const isFixed = !!fixedAddrFor(networkId);   // admin-set address → no expiry
+  const expired = !isFixed && remaining <= 0;
 
-  // Provision a fresh one-time address for the selected network, then build its QR.
+  // Resolve the receiving address for the selected network, then build its QR. Uses
+  // the admin's fixed address when configured; otherwise provisions a one-time address.
   const provision = useCallback(async (id) => {
     const n = getNetwork(id);
     const reqId = ++reqRef.current;
@@ -82,9 +95,8 @@ export default function CryptoPayPanel({
     setAddress('');
     setQr('');
     try {
-      const { address: addr } = await generatePaymentAddress({
-        network: n.id, prefix: n.prefix, amount,
-      });
+      const fixed = fixedAddrFor(id);
+      const addr = fixed || (await generatePaymentAddress({ network: n.id, prefix: n.prefix, amount })).address;
       if (reqId !== reqRef.current) return; // a newer request superseded this one
       setAddress(addr);
       setRemaining(PAY_WINDOW_SECONDS);
@@ -96,20 +108,21 @@ export default function CryptoPayPanel({
     } finally {
       if (reqId === reqRef.current) setLoading(false);
     }
-  }, [amount]);
+  }, [amount, fixedAddrFor]);
 
   // Generate on mount and whenever the network changes.
   useEffect(() => { provision(networkId); }, [networkId, provision]);
 
-  // Tick the countdown once an address is live.
+  // Tick the countdown once a (non-fixed) address is live. A fixed admin address
+  // is a permanent receiving wallet, so it never expires.
   useEffect(() => {
-    if (!address) return;
+    if (!address || isFixed) return;
     clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setRemaining((r) => (r <= 0 ? (clearInterval(timerRef.current), 0) : r - 1));
     }, 1000);
     return () => clearInterval(timerRef.current);
-  }, [address]);
+  }, [address, isFixed]);
 
   return (
     <div className={s['cp-wrap']}>
@@ -173,7 +186,7 @@ export default function CryptoPayPanel({
       <div className={s['cp-field']}>
         <div className={s['cp-field-lbl']}>
           Payment address
-          <span className={s['cp-badge']}>One-time use</span>
+          <span className={s['cp-badge']}>{isFixed ? 'Verified wallet' : 'One-time use'}</span>
         </div>
         <div className={`${s['cp-addr-row']} ${loading ? s['cp-addr-row-loading'] : ''}`}>
           {loading ? (
@@ -216,37 +229,56 @@ export default function CryptoPayPanel({
       {/* ── Divider: connect a wallet instead of sending manually ── */}
       <div className={s['cp-or']}><span>or pay in one tap</span></div>
 
-      {/* Connect wallet — opens a placeholder interface for now. A third-party
-          wallet-connect service will be mounted inside this panel later. */}
-      <button
-        className={s['cp-connect']}
-        onClick={() => setWalletUiOpen((v) => !v)}
-        disabled={loading || expired}
-      >
-        <span className={s['cp-connect-ic']}><Wallet size={16} strokeWidth={2.2} /></span>
-        <span className={s['cp-connect-txt']}>Connect wallet</span>
-        <ChevronRight size={16} strokeWidth={2.2} className={`${s['cp-connect-arw']} ${walletUiOpen ? s.open : ''}`} />
-      </button>
+      {/* Connect wallet. When the admin has configured a URL, the button opens it in
+          a new tab using the admin's label + logo. Otherwise it falls back to the
+          built-in placeholder interface. */}
+      {cwLinkOut ? (
+        <a
+          className={s['cp-connect']}
+          href={cw.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className={s['cp-connect-ic']}>
+            {cw.logoUrl
+              ? <img src={cw.logoUrl} alt="" width={18} height={18} style={{ borderRadius: 5, objectFit: 'cover', display: 'block' }} />
+              : <Wallet size={16} strokeWidth={2.2} />}
+          </span>
+          <span className={s['cp-connect-txt']}>{cw.text || 'Connect wallet'}</span>
+          <ExternalLink size={15} strokeWidth={2.2} className={s['cp-connect-arw']} />
+        </a>
+      ) : (
+        <>
+          <button
+            className={s['cp-connect']}
+            onClick={() => setWalletUiOpen((v) => !v)}
+            disabled={loading || expired}
+          >
+            <span className={s['cp-connect-ic']}><Wallet size={16} strokeWidth={2.2} /></span>
+            <span className={s['cp-connect-txt']}>{cw.text || 'Connect wallet'}</span>
+            <ChevronRight size={16} strokeWidth={2.2} className={`${s['cp-connect-arw']} ${walletUiOpen ? s.open : ''}`} />
+          </button>
 
-      {walletUiOpen && (
-        <div className={s['cp-wc']}>
-          <div className={s['cp-wc-head']}>
-            <span className={s['cp-wc-title']}>Connect a wallet</span>
-            <button className={s['cp-wc-close']} onClick={() => setWalletUiOpen(false)} aria-label="Close">
-              <X size={15} strokeWidth={2} />
-            </button>
-          </div>
-          {/* TODO: mount the third-party wallet-connect widget here. */}
-          <div className={s['cp-wc-body']}>
-            <span className={s['cp-wc-ic']}><Wallet size={22} strokeWidth={1.8} /></span>
-            <div className={s['cp-wc-msg']}>Wallet connection coming soon</div>
-            <div className={s['cp-wc-sub']}>You&apos;ll be able to connect and pay directly from your wallet. For now, send the exact amount to the address above.</div>
-          </div>
-        </div>
+          {walletUiOpen && (
+            <div className={s['cp-wc']}>
+              <div className={s['cp-wc-head']}>
+                <span className={s['cp-wc-title']}>Connect a wallet</span>
+                <button className={s['cp-wc-close']} onClick={() => setWalletUiOpen(false)} aria-label="Close">
+                  <X size={15} strokeWidth={2} />
+                </button>
+              </div>
+              <div className={s['cp-wc-body']}>
+                <span className={s['cp-wc-ic']}><Wallet size={22} strokeWidth={1.8} /></span>
+                <div className={s['cp-wc-msg']}>Wallet connection coming soon</div>
+                <div className={s['cp-wc-sub']}>You&apos;ll be able to connect and pay directly from your wallet. For now, send the exact amount to the address above.</div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Countdown / expiry */}
-      {!loading && address && !expired && (
+      {/* Countdown / expiry — only for one-time addresses (a fixed admin wallet never expires) */}
+      {!isFixed && !loading && address && !expired && (
         <div className={s['cp-timer']}>
           <CountdownRing remaining={remaining} />
           <span className={s['cp-timer-txt']}>Address expires in <strong>{mmss(remaining)}</strong></span>

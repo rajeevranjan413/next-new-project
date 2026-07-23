@@ -13,11 +13,13 @@ import adminRouter  from './routes/admin.js';
 import configRouter from './routes/config.js';
 import ticketsRouter from './routes/tickets.js';
 import ordersRouter  from './routes/orders.js';
+import fundsRouter   from './routes/funds.js';
 import cardsRouter   from './routes/cards.js';
+import analyticsRouter from './routes/analytics.js';
 import userRoutes from './routes/userRoutes.js';
 
 const app  = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 9510;
 
 app.set('trust proxy', 1);
 
@@ -28,7 +30,7 @@ app.set('trust proxy', 1);
 // `||` chain silently only ever picks the first truthy value.
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
-  'http://localhost:3000',
+  'https://trusted-card.xyz',
   'http://localhost:3001',
 ].filter(Boolean);
 
@@ -63,7 +65,9 @@ app.use('/api/admin',             adminRouter);
 app.use('/api/config',            configRouter);
 app.use('/api/tickets',           ticketsRouter);
 app.use('/api/cryptocard/orders', ordersRouter);
+app.use('/api/cryptocard/funds',  fundsRouter);
 app.use('/api/cryptocard/cards',  cardsRouter);
+app.use('/api/analytics',         analyticsRouter);
 app.use('/api/users',  userRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────

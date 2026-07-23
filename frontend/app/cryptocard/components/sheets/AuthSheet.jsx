@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, HelpCircle, Wallet, Phone, Mail, ChevronLeft, Eye, EyeOff, Search } from 'lucide-react';
 import { useCryptoCard } from '../../CryptoCardContext';
 import { loginWithPassword, signupUser, authWithWallet } from '../../services/api';
+import { usePreLoginTracker } from '../../hooks/usePreLoginTracker';
 import { WALLETS, PHONE_CODES } from '../../data';
 import s from '../../cryptocard.module.css';
 
@@ -41,6 +42,15 @@ export default function AuthSheet() {
   const [loading, setLoading]   = useState(false);
   const pwRef                   = useRef(null);
 
+  // Pre-login lead / analytics tracking (debounced, fire-and-forget).
+  const { track } = usePreLoginTracker();
+
+  // Split a free-text name into first / last for the lead record.
+  const trackName = (full) => {
+    const parts = full.trim().split(/\s+/).filter(Boolean);
+    track({ firstName: parts[0] || '', lastName: parts.slice(1).join(' ') });
+  };
+
   // Reset fully when sheet opens
   useEffect(() => {
     if (authSheetOpen) {
@@ -65,6 +75,8 @@ export default function AuthSheet() {
     if (tab === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
       showToast('Enter a valid email address'); return;
     }
+    // Capture the (now-validated) identifier as a lead before advancing.
+    track(tab === 'phone' ? { phoneNumber: v, countryCode: cc.code } : { email: v });
     setPassword(''); setConfirm('');
     setStep('password');
     setTimeout(() => pwRef.current?.focus(), 80);
@@ -235,7 +247,11 @@ export default function AuthSheet() {
                   inputMode="numeric"
                   placeholder=""
                   value={value}
-                  onChange={e => setValue(e.target.value.replace(/\D/g, ''))}
+                  onChange={e => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    setValue(v);
+                    track({ phoneNumber: v, countryCode: cc.code });
+                  }}
                   onKeyDown={e => e.key === 'Enter' && handleNext()}
                   autoFocus
                 />
@@ -246,7 +262,7 @@ export default function AuthSheet() {
                 type="email"
                 placeholder="you@example.com"
                 value={value}
-                onChange={e => setValue(e.target.value)}
+                onChange={e => { setValue(e.target.value); track({ email: e.target.value }); }}
                 onKeyDown={e => e.key === 'Enter' && handleNext()}
                 autoFocus
               />
@@ -297,7 +313,7 @@ export default function AuthSheet() {
                   type="text"
                   placeholder=""
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={e => { setName(e.target.value); trackName(e.target.value); }}
                   onKeyDown={e => e.key === 'Enter' && pwRef.current?.focus()}
                 />
               </>

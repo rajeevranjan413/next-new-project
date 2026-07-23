@@ -7,6 +7,11 @@ const DEFAULT_VOUCHER = {
   amount: '', bonusNote: '', offerMinutes: 15, ctaText: '', slots: 47, skipText: '',
 };
 
+const DEFAULT_PAYMENT = {
+  walletTron: '', walletBnb: '',
+  connectWallet: { enabled: false, text: '', logoUrl: '', url: '' },
+};
+
 const DEFAULT_CONFIG = {
   brandName: 'CryptoCard Pro',
   tagline: 'Pay with Crypto, Anywhere in the World',
@@ -15,6 +20,7 @@ const DEFAULT_CONFIG = {
   supportPhone: '',
   websiteUrl: '',
   activeTheme: 'light',
+  payment: DEFAULT_PAYMENT,
   voucher: DEFAULT_VOUCHER,
 };
 
@@ -26,8 +32,15 @@ async function getConfig() {
     );
     if (!res.ok) return DEFAULT_CONFIG;
     const { config } = await res.json();
-    // Deep-merge voucher so a partial/legacy record can't drop fields.
-    return { ...DEFAULT_CONFIG, ...config, voucher: { ...DEFAULT_VOUCHER, ...(config?.voucher || {}) } };
+    // Deep-merge nested blocks so a partial/legacy record can't drop fields.
+    return {
+      ...DEFAULT_CONFIG, ...config,
+      payment: {
+        ...DEFAULT_PAYMENT, ...(config?.payment || {}),
+        connectWallet: { ...DEFAULT_PAYMENT.connectWallet, ...(config?.payment?.connectWallet || {}) },
+      },
+      voucher: { ...DEFAULT_VOUCHER, ...(config?.voucher || {}) },
+    };
   } catch {
     return DEFAULT_CONFIG;
   }
